@@ -1,6 +1,6 @@
 # Vsave
 
-![Vsave Logo](./assets/images/Vsave-logo.jpg)
+![Vsave Logo](./assets/images/favicon/web-app-manifest-192x192.png)
 
 [cite_start]Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly[cite: 551]. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
 
@@ -42,27 +42,27 @@ Follow these steps to get the project up and running on your local machine.
 
 1. **Clone the repository**
 
-    ```bash
-    git clone [https://github.com/OsinnowoDavid/VsaveFrontend.git](https://github.com/OsinnowoDavid/VsaveFrontend.git)
-    ```
+   ```bash
+   git clone [https://github.com/OsinnowoDavid/VsaveFrontend.git](https://github.com/OsinnowoDavid/VsaveFrontend.git)
+   ```
 
 2. **Navigate to the project directory**
 
-    ```bash
-    cd Vsave
-    ```
+   ```bash
+   cd Vsave
+   ```
 
 3. **Install the dependencies**
 
-    ```bash
-    npm install
-    ```
+   ```bash
+   npm install
+   ```
 
-    or
+   or
 
-    ```bash
-    yarn
-    ```
+   ```bash
+   yarn
+   ```
 
 ---
 
@@ -72,11 +72,11 @@ After installation, you can run the app in different ways:
 
 - **Run on a local development server**
 
-    ```bash
-    npm start
-    ```
+  ```bash
+  npm start
+  ```
 
-    This will open the Expo DevTools in your browser. From there, you can scan the QR code with the Expo Go app on your phone to see the app running on your device, or choose to run it on an iOS or Android simulator/emulator.
+  This will open the Expo DevTools in your browser. From there, you can scan the QR code with the Expo Go app on your phone to see the app running on your device, or choose to run it on an iOS or Android simulator/emulator.
 
 ---
 

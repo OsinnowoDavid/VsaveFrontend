@@ -1,14 +1,31 @@
 {
-  "name": "vsavefr",
+  "name": "vsave-frontend",
   "main": "expo-router/entry",
   "version": "1.0.0",
+  "description": "Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly[cite: 551]. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.",
+  "keywords": [
+    "savings",
+    "wallet",
+    "lottery",
+    "finance"
+  ],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OsinnowoDavid/VsaveFrontend.git"
+  },
+  "author": {
+    "name": "David Osinnowo",
+    "email": "davidadewale151@gmail.com"
+  },
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -41,9 +58,10 @@
   "devDependencies": {
     "@babel/core": "^7.25.2",
     "@types/react": "~19.0.10",
-    "typescript": "~5.8.3",
     "eslint": "^9.25.0",
-    "eslint-config-expo": "~9.2.0"
+    "eslint-config-expo": "~9.2.0",
+    "prettier": "^3.6.2",
+    "typescript": "~5.8.3"
   },
   "private": true
 }
