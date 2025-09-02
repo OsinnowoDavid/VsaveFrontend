@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "VsaveFr",
-    "slug": "VsaveFr",
+    "name": "Vsave",
+    "slug": "Vsave",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "vsavefr",
+    "icon": "./assets/images/logo.png",
+    "scheme": "vsave",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
@@ -13,7 +13,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/favicon/web-app-manifest-512x512.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true
@@ -21,16 +21,15 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "favicon": "./assets/images/favicon/favicon.ico"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
+          "image": "./assets/images/splash-icon.jpg",
+          "resizeMode": "cover",
           "backgroundColor": "#ffffff"
         }
       ]
