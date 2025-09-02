@@ -2,13 +2,13 @@
 
 ### 1. Introduction & General Concepts
 
-* **API Name:** VSAVE Backend API
-* **Base URL:** `https://api.vsave.com/v1`
-* **Purpose:** To provide a RESTful interface for managing users, wallets, savings plans, and administrative tasks for the VSAVE platform.
-* **Authentication:** All API requests must include a valid JSON Web Token (JWT) in the `Authorization` header, like so: `Authorization: Bearer [your_jwt_token]`.
-* **Data Format:** All requests and responses use **JSON**.
-* **HTTP Status Codes:** The API uses standard HTTP status codes to indicate the success or failure of a request.
-* **Error Responses:** All error responses will follow a consistent JSON format:
+- **API Name:** VSAVE Backend API
+- **Base URL:** `https://api.vsave.com/v1`
+- **Purpose:** To provide a RESTful interface for managing users, wallets, savings plans, and administrative tasks for the VSAVE platform.
+- **Authentication:** All API requests must include a valid JSON Web Token (JWT) in the `Authorization` header, like so: `Authorization: Bearer [your_jwt_token]`.
+- **Data Format:** All requests and responses use **JSON**.
+- **HTTP Status Codes:** The API uses standard HTTP status codes to indicate the success or failure of a request.
+- **Error Responses:** All error responses will follow a consistent JSON format:
 
         ```json
         {
@@ -18,16 +18,16 @@
         }
         ```
 
-***
+---
 
 ### 2. API Endpoints
 
 #### **`Users`**
 
-* **`POST /users/register`**
-  * **Description:** Creates a new user account.
-  * **Authentication:** None.
-  * **Request Body:**
+- **`POST /users/register`**
+  - **Description:** Creates a new user account.
+  - **Authentication:** None.
+  - **Request Body:**
 
         ```json
         {
@@ -39,7 +39,7 @@
         }
         ```
 
-  * **Successful Response (`201 Created`):**
+  - **Successful Response (`201 Created`):**
 
         ```json
         {
@@ -48,10 +48,10 @@
         }
         ```
 
-* **`GET /users/me`**
-  * **Description:** Retrieves the profile of the currently authenticated user.
-  * **Authentication:** Required.
-  * **Successful Response (`200 OK`):**
+- **`GET /users/me`**
+  - **Description:** Retrieves the profile of the currently authenticated user.
+  - **Authentication:** Required.
+  - **Successful Response (`200 OK`):**
 
         ```json
         {
@@ -68,10 +68,10 @@
 
 #### **`Wallets`**
 
-* **`POST /wallets/deposit/manual`**
-  * **Description:** Initiates a manual cash deposit to a user's wallet. This endpoint is restricted to **Marketer** and **Admin** roles.
-  * **Authentication:** Required.
-  * **Request Body:**
+- **`POST /wallets/deposit/manual`**
+  - **Description:** Initiates a manual cash deposit to a user's wallet. This endpoint is restricted to **Marketer** and **Admin** roles.
+  - **Authentication:** Required.
+  - **Request Body:**
 
         ```json
         {
@@ -81,7 +81,7 @@
         }
         ```
 
-  * **Successful Response (`200 OK`):**
+  - **Successful Response (`200 OK`):**
 
         ```json
         {
@@ -92,10 +92,10 @@
 
 #### **`Savings`**
 
-* **`POST /savings/plan/start`**
-  * **Description:** Creates a new automated savings plan for a user.
-  * **Authentication:** Required.
-  * **Request Body:**
+- **`POST /savings/plan/start`**
+  - **Description:** Creates a new automated savings plan for a user.
+  - **Authentication:** Required.
+  - **Request Body:**
 
         ```json
         {
@@ -106,7 +106,7 @@
         }
         ```
 
-  * **Successful Response (`201 Created`):**
+  - **Successful Response (`201 Created`):**
 
         ```json
         {
