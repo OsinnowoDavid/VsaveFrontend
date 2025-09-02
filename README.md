@@ -1,50 +1,103 @@
-# Welcome to your Expo app 👋
+# Vsave
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![Vsave Logo](./assets/images/Vsave-logo.jpg)
 
-## Get started
+[cite_start]Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly[cite: 551]. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
 
-1. Install dependencies
+---
 
-   ```bash
-   npm install
-   ```
+## Features
 
-2. Start the app
+- [cite_start]**Team & User Management:** The platform provides a clear, competitive, and trackable hierarchy for team management, from General Admin down to individual Marketers[cite: 58]. [cite_start]Marketers can onboard new users, and admins can set savings targets and monitor performance via leaderboards[cite: 66, 75].
+- [cite_start]**Saving Management:** Users can set up daily, weekly, or monthly savings plans, as well as fixed savings products[cite: 199, 201]. [cite_start]The system includes a configurable admin fee structure and rules for handling insufficient funds and early withdrawals[cite: 203, 206, 210].
+- [cite_start]**Wallet & Overdraft Management:** Users are assigned a unique virtual account for instant deposits and can withdraw funds to any Nigerian bank account or another Vsave user[cite: 447, 455]. [cite_start]The platform also features an overdraft system with configurable eligibility rules, limits, and repayment plans[cite: 325, 326, 327, 329].
+- [cite_start]**Bonus & Fraud Prevention:** A separate bonus wallet rewards users for manual cash deposits, referrals, and transfers[cite: 457, 458, 459]. [cite_start]The system includes controls to prevent fraud, such as flagging double transfers and limiting daily bonus transfers[cite: 461, 463].
+- [cite_start]**Accounting & Reporting:** A double-entry general ledger and automated journal posting engine ensure accurate financial records[cite: 651, 653]. [cite_start]The system provides real-time dashboards and downloadable reports for key metrics, including deposits, withdrawals, fees, and marketer performance[cite: 765, 767, 769].
+- [cite_start]**Risk Management:** A risk management framework is in place to ensure solvency, with features like liquidity pools, overdraft risk controls, and a user credit scoring algorithm to assess risk dynamically[cite: 859, 860, 861, 862, 870].
 
-   ```bash
-   npx expo start
-   ```
+---
 
-In the output, you'll find options to open the app in a
+## Tech Stack
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+This project is built using the following technologies:
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- **React Native** - The framework for building native apps.
+- **Expo** - The toolchain for building and deploying React Native apps.
+- **TypeScript** - A typed superset of JavaScript for enhanced code quality.
+- **Node.js** - For backend services and development tools.
 
-## Get a fresh project
+### Service Integrations
 
-When you're ready, run:
+[cite_start]The Vsave platform integrates with several third-party services to ensure functionality, security, and compliance[cite: 552]:
 
-```bash
-npm run reset-project
-```
+- [cite_start]**Banking & Payments:** Wema Bank (ALAT APIs), Sterling Bank (PaywithSpecta), and GTBank (Squad) for virtual accounts, real-time payments, and transfers[cite: 553, 554, 555].
+- [cite_start]**KYC & Compliance:** SmileID for ID verification, face match, and sanctions screening to comply with CBN AML/CFT regulations[cite: 556].
+- [cite_start]**Communication:** A dual SMS provider strategy with Termii for OTP verification and SmartSMS for alerts and bulk messaging[cite: 556].
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Installation
 
-To learn more about developing your project with Expo, look at the following resources:
+Follow these steps to get the project up and running on your local machine.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. **Clone the repository**
 
-## Join the community
+    ```bash
+    git clone [https://github.com/OsinnowoDavid/VsaveFrontend.git](https://github.com/OsinnowoDavid/VsaveFrontend.git)
+    ```
 
-Join our community of developers creating universal apps.
+2. **Navigate to the project directory**
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+    ```bash
+    cd Vsave
+    ```
+
+3. **Install the dependencies**
+
+    ```bash
+    npm install
+    ```
+
+    or
+
+    ```bash
+    yarn
+    ```
+
+---
+
+## Usage
+
+After installation, you can run the app in different ways:
+
+- **Run on a local development server**
+
+    ```bash
+    npm start
+    ```
+
+    This will open the Expo DevTools in your browser. From there, you can scan the QR code with the Expo Go app on your phone to see the app running on your device, or choose to run it on an iOS or Android simulator/emulator.
+
+---
+
+## Contributing
+
+We welcome contributions to the Vsave project! To contribute, follow these steps:
+
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature-name`).
+3. Make your changes and commit them (`git commit -m 'Add a new feature'`).
+4. Push to the branch (`git push origin feature/your-feature-name`).
+5. Open a Pull Request.
+
+---
+
+## License
+
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+## Contact
+
+You can reach me via my GitHub profile at [https://github.com/OsinnowoDavid](https://github.com/OsinnowoDavid).
