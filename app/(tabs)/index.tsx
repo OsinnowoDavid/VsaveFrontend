@@ -1,12 +1,12 @@
-import { Image, StyleSheet } from "react-native";
-import { ThemedText } from "../../components/ThemedText";
-import { ThemedView } from "../../components/ThemedView";
+import { Image, StyleSheet } from 'react-native';
+import { ThemedText } from '../../components/ThemedText';
+import { ThemedView } from '../../components/ThemedView';
 
 export default function HomeScreen() {
   return (
     <ThemedView style={styles.container}>
       <Image
-        source={require("../../assets/images/logo.png")}
+        source={require('../../assets/images/logo.png')}
         style={styles.logo}
       />
       <ThemedText type="title" style={styles.text}>
@@ -19,13 +19,13 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#f0f0f0",
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f0f0',
   },
   text: {
     fontSize: 24,
-    fontWeight: "bold",
+    fontWeight: 'bold',
   },
   logo: {
     width: 200,
