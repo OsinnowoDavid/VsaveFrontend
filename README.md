@@ -2,18 +2,18 @@
 
 ![Vsave Logo](./assets/images/favicon/web-app-manifest-192x192.png)
 
-[cite_start]Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly[cite: 551]. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
+Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
 
 ---
 
 ## Features
 
-- [cite_start]**Team & User Management:** The platform provides a clear, competitive, and trackable hierarchy for team management, from General Admin down to individual Marketers[cite: 58]. [cite_start]Marketers can onboard new users, and admins can set savings targets and monitor performance via leaderboards[cite: 66, 75].
-- [cite_start]**Saving Management:** Users can set up daily, weekly, or monthly savings plans, as well as fixed savings products[cite: 199, 201]. [cite_start]The system includes a configurable admin fee structure and rules for handling insufficient funds and early withdrawals[cite: 203, 206, 210].
-- [cite_start]**Wallet & Overdraft Management:** Users are assigned a unique virtual account for instant deposits and can withdraw funds to any Nigerian bank account or another Vsave user[cite: 447, 455]. [cite_start]The platform also features an overdraft system with configurable eligibility rules, limits, and repayment plans[cite: 325, 326, 327, 329].
-- [cite_start]**Bonus & Fraud Prevention:** A separate bonus wallet rewards users for manual cash deposits, referrals, and transfers[cite: 457, 458, 459]. [cite_start]The system includes controls to prevent fraud, such as flagging double transfers and limiting daily bonus transfers[cite: 461, 463].
-- [cite_start]**Accounting & Reporting:** A double-entry general ledger and automated journal posting engine ensure accurate financial records[cite: 651, 653]. [cite_start]The system provides real-time dashboards and downloadable reports for key metrics, including deposits, withdrawals, fees, and marketer performance[cite: 765, 767, 769].
-- [cite_start]**Risk Management:** A risk management framework is in place to ensure solvency, with features like liquidity pools, overdraft risk controls, and a user credit scoring algorithm to assess risk dynamically[cite: 859, 860, 861, 862, 870].
+- **Team & User Management:** The platform provides a clear, competitive, and trackable hierarchy for team management, from General Admin down to individual Marketers. Marketers can onboard new users, and admins can set savings targets and monitor performance via leaderboards.
+- **Saving Management:** Users can set up daily, weekly, or monthly savings plans, as well as fixed savings products. The system includes a configurable admin fee structure and rules for handling insufficient funds and early withdrawals.
+- **Wallet & Overdraft Management:** Users are assigned a unique virtual account for instant deposits and can withdraw funds to any Nigerian bank account or another Vsave user. The platform also features an overdraft system with configurable eligibility rules, limits, and repayment plans.
+- **Bonus & Fraud Prevention:** A separate bonus wallet rewards users for manual cash deposits, referrals, and transfers. The system includes controls to prevent fraud, such as flagging double transfers and limiting daily bonus transfers.
+- **Accounting & Reporting:** A double-entry general ledger and automated journal posting engine ensure accurate financial records. The system provides real-time dashboards and downloadable reports for key metrics, including deposits, withdrawals, fees, and marketer performance.
+- **Risk Management:** A risk management framework is in place to ensure solvency, with features like liquidity pools, overdraft risk controls, and a user credit scoring algorithm to assess risk dynamically.
 
 ---
 
@@ -28,11 +28,11 @@ This project is built using the following technologies:
 
 ### Service Integrations
 
-[cite_start]The Vsave platform integrates with several third-party services to ensure functionality, security, and compliance[cite: 552]:
+The Vsave platform integrates with several third-party services to ensure functionality, security, and compliance:
 
-- [cite_start]**Banking & Payments:** Wema Bank (ALAT APIs), Sterling Bank (PaywithSpecta), and GTBank (Squad) for virtual accounts, real-time payments, and transfers[cite: 553, 554, 555].
-- [cite_start]**KYC & Compliance:** SmileID for ID verification, face match, and sanctions screening to comply with CBN AML/CFT regulations[cite: 556].
-- [cite_start]**Communication:** A dual SMS provider strategy with Termii for OTP verification and SmartSMS for alerts and bulk messaging[cite: 556].
+- **Banking & Payments:** Wema Bank (ALAT APIs), Sterling Bank (PaywithSpecta), and GTBank (Squad) for virtual accounts, real-time payments, and transfers.
+- **KYC & Compliance:** SmileID for ID verification, face match, and sanctions screening to comply with CBN AML/CFT regulations.
+- **Communication:** A dual SMS provider strategy with Termii for OTP verification and SmartSMS for alerts and bulk messaging.
 
 ---
 
