@@ -1,0 +1,20 @@
+name: Add PR Metadata
+
+on:
+  workflow_call:
+    inputs:
+      pr_url:
+        required: true
+        description: 'This is the url that points to the pull request'
+        type: string
+
+jobs:
+  add-pr-meta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add PR Metadata
+        run: |
+          gh pr comment --body "✅ Code quality checks will run shortly. [View PR](${{inputs.pr_url}})"
+          gh pr edit --add-label "automated"
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
