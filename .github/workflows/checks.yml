@@ -1,0 +1,48 @@
+name: Code Quality Checks
+
+on:
+  workflow_call:
+    inputs:
+      node-version:
+        required: false
+        default: '20'
+        type: string
+    outputs:
+      checks-passed:
+        description: 'Whether all quality checks passed'
+        value: ${{ jobs.run-checks.outputs.checks-passed }}
+
+jobs:
+  run-checks:
+    runs-on: ubuntu-latest
+    outputs:
+      checks-passed: ${{ steps.set-output.outputs.checks-passed }}
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{inputs.node-version}}
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Check for NPM scripts
+        run: |
+          if ! jq 'has("scripts") and (.scripts | has("format") and has("lint") and has("test"))' package.json > /dev/null 2>&1; then
+            echo "Required NPM scripts are missing!"
+            exit 1
+          fi
+
+      - name: Run Formatter
+        run: npm run format -- --check
+
+      - name: Run Linter
+        run: npm run lint
+
+      - name: Run Test
+        run: npm run test
+
+      - name: Set output on success
+        id: set-output
+        if: success()
+        run: echo "checks-passed=true" >> $GITHUB_OUTPUT

@@ -1,0 +1,54 @@
+name: Create GitHub Issue
+
+on:
+  workflow_call:
+    inputs:
+      title:
+        required: true
+        type: string
+      body:
+        required: false
+        type: string
+      labels:
+        required: false
+        type: string
+      assignees:
+        required: false
+        type: string
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  create-issue:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check for Existing Issue
+        id: check-issue
+        run: |
+          existing=$(gh issue list \
+            --repo ${{ github.repository }} \
+            --state open \
+            --search "${{ inputs.title }}" \
+            --json number,title \
+            --jq '.[0].number')
+
+          if [ -n "$existing" ]; then
+            echo "Issue already exists: #$existing"
+            echo "skip=true" >> $GITHUB_OUTPUT
+          else
+            echo "skip=false" >> $GITHUB_OUTPUT
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create Issue
+        if: steps.check-issue.outputs.skip == 'false'
+        run: |
+          gh issue create \
+            --title "${{ inputs.title }}" \
+            --body "${{ inputs.body || 'No description provided.' }}" \
+            ${{ inputs.labels && format('--label "{0}"', inputs.labels) || '' }} \
+            ${{ inputs.assignees && format('--assignee "{0}"', inputs.assignees) || '' }} \
+            --repo ${{ github.repository }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
