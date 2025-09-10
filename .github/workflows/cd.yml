@@ -1,0 +1,54 @@
+name: CI/CD Pipeline
+
+on:
+  workflow_run:
+    workflows: ['CodeQL Advanced', 'Automate Pull Request']
+    types: [completed]
+
+jobs:
+  cd_build:
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Deployment Dependencies Check
+        id: check-dependencies
+        run: |
+          if [ -n "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "depSatisfied=true" >> $GITHUB_OUTPUT
+          else
+            echo "depSatisfied=false" >> $GITHUB_OUTPUT
+            echo "Error: EXPO_TOKEN is not set. Please set it in the repository secrets"
+          fi
+
+      - name: Raise Issue for Missing EXPO_TOKEN
+        if: steps.check-dependencies.outputs.depSatisfied == 'false'
+        uses: ./.github/workflows/create-issue.yml
+        with:
+          title: '🚫 Missing EXPO_TOKEN Secret'
+          body: |
+            The `EXPO_TOKEN` secret is not set for this repository.
+
+            This token is required for Expo deployment workflows.  
+            Please add it via **Settings → Secrets → Actions → EXPO_TOKEN**.
+          labels: 'infra,automation'
+          assignees: '${{ github.actor }}'
+
+      - name: Setup EAS
+        if: steps.check-dependencies.outputs.depSatisfied == 'true'
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ secrets.EXPO_TOKEN }} # Make sure EXPO_TOKEN is set in your repository's GitHub Actions secrets
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run EAS Build
+        run: eas build --profile preview --platform android

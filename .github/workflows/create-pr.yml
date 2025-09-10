@@ -1,0 +1,38 @@
+name: Automate PR Creation
+
+on:
+  workflow_call:
+    inputs:
+      branch:
+        required: true
+        description: 'The create branch the pr is to be created'
+        type: string
+
+jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Pull Request
+        id: create-pr
+        run: |
+          gh pr create \
+            --title "chore: automated formatting for ${{ inputs.branch }}" \
+            --body "
+          ## 🤖 Automated PR
+
+          This pull request was generated from branch `${{ inputs.branch }}`.
+
+          ### ✅ What’s Included
+          - Code formatting
+          - Dependency updates
+          - Security checks
+
+          ### 📦 Workflow Metadata
+          - Triggered by: `${{ github.workflow }}`
+          - Commit: `${{ github.sha }}`
+          - Actor: `${{ github.actor }}`" \
+                    --base main \
+                    --head ${{ inputs.branch }} \
+                    --repo ${{ github.repository }}
+          env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
