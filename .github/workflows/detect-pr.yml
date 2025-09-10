@@ -11,11 +11,15 @@ on:
       skip_pr_creation:
         description: 'If PR creation needs to be skipped'
         value: ${{jobs.check-for-prs.outputs.skip_pr_creation}}
+      pr_number:
+        description: 'The pull request number'
+        value: ${{jobs.check-for-prs.outputs.pr_number}}
 jobs:
   check-for-prs:
     runs-on: ubuntu-latest
     outputs:
       skip_pr_creation: ${{steps.pr-check.outputs.skip_pr_creation}}
+      pr_number: ${{steps.pr-check.outputs.pr_number}}
     steps:
       - name: Check for existing PR
         id: pr-check
@@ -24,6 +28,7 @@ jobs:
           if [ -n "$existing_pr" ]; then
             echo "There is already an existing PR (#$existing_pr) for branch ${{ inputs.branch }}."
             echo "skipping PR creation and moving to checks, then auto-merge if checks pass."
+            echo "pr_number=$existing_pr" >> $GITHUB_OUTPUT
             echo "skip_pr_creation=true" >> $GITHUB_OUTPUT
           else
             echo "There is no existing PR for branch ${{ inputs.branch }}."
