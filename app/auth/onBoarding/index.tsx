@@ -5,7 +5,7 @@ export class loginOrSign extends Component {
   render() {
     return (
       <View>
-        <Text> textInComponent </Text>
+        <Text className='bg-black text-white'> Login and sign up page</Text>
       </View>
     )
   }
