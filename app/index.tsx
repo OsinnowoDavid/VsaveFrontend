@@ -1,12 +1,12 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, ImageBackground, Pressable, Text, View } from "react-native";
+import { Image, ImageBackground, Text, View } from "react-native";
+import Button from "../components/Button";
 import GradientText from "../components/GradientText";
 import "../global.css";
 
-const router = useRouter();
-
 export default function App() {
+  const router = useRouter();
   return (
     <ImageBackground
       source={require("../assets/images/onboarding-wallpaper.jpg")}
@@ -23,28 +23,28 @@ export default function App() {
         <GradientText>Enjoy Later</GradientText>
       </View>
       <View className="absolute bottom-28 w-[90%] gap-2.5">
-        <Pressable
-          className="bg-white w-full py-3 rounded-lg"
+        <Button
           onPress={() => {
             router.push({
               pathname: "/auth/login",
               params: { type: "register" },
             });
           }}
-        >
-          <Text className="text-center font-semibold">Get Started</Text>
-        </Pressable>
-        <Pressable
-          className="bg-transparent border-2 border-white w-full py-3 rounded-lg "
+          input="Get Started"
+          bg="bg-white"
+          color="text-black"
+        />
+        <Button
+          input="Login"
+          bg="bg-transparent"
+          border="border-[1px] border-white"
           onPress={() => {
             router.push({
               pathname: "/auth/login",
               params: { type: "login" },
             });
           }}
-        >
-          <Text className="text-white text-center font-semibold">Login</Text>
-        </Pressable>
+        />
       </View>
     </ImageBackground>
   );

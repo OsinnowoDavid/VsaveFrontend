@@ -1,0 +1,53 @@
+import React, { useState } from "react";
+import { Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
+
+export default function PinInput() {
+  const [pin, setPin] = useState("");
+  const maxLength = 6;
+
+  const handleChange = (text: string) => {
+    if (/^\d{0,6}$/.test(text)) {
+      setPin(text);
+    }
+  };
+
+  return (
+    <View>
+      <Text className="text-xl font-bold text-gray-600 mb-4">Pin code</Text>
+
+      <TouchableWithoutFeedback>
+        <View className="flex-row gap-2 mb-6 justify-center items-center">
+          {Array.from({ length: maxLength }).map((_, i) => (
+            <View
+              key={i}
+              className="w-12 h-12 border border-gray-300 rounded-md items-center justify-center bg-white"
+            >
+              <Text className="text-xl font-medium">{pin[i] ?? ""}</Text>
+            </View>
+          ))}
+        </View>
+      </TouchableWithoutFeedback>
+
+      {/* Hidden input outside the touchable */}
+      <TextInput
+        value={pin}
+        onChangeText={handleChange}
+        keyboardType="number-pad"
+        maxLength={maxLength}
+        focusable
+        className="border"
+        style={{
+          position: "absolute",
+          top: 35,
+          width: "200%",
+          left: -100,
+          height: 40,
+          opacity: 1,
+          zIndex: 1,
+          pointerEvents: "auto",
+          borderWidth: 0,
+        }}
+      />
+    </View>
+  );
+}
