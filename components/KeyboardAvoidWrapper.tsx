@@ -24,7 +24,7 @@ export default function KeyboardAvoidingWrapper({ children }) {
           flex: 1,
           justifyContent: "flex-end",
           margin: 0,
-          borderWidth: 1,
+          borderWidth: 0,
           width: "100%",
         }}
       >

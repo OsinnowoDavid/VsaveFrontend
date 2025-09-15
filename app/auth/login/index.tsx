@@ -17,7 +17,7 @@ export default function App() {
   return (
     <ImageBackground
       source={require("../../../assets/images/onboarding-wallpaper.jpg")}
-      className="flex-1 justify-around items-center relative border"
+      className="flex-1 justify-around items-center relative"
       resizeMode="cover"
     >
       <Image
@@ -30,7 +30,7 @@ export default function App() {
         <GradientText>Enjoy Later</GradientText>
       </View>
       <KeyboardAvoidingWrapper>
-        <View className="px-6 py-8 bg-white w-full rounded-t-xl">
+        <View className="px-6 py-8 bg-white w-full rounded-t-3xl">
           <Text className="text-2xl font-bold pb-4 mb-8 text-center border-b-[0.3px] border-gray-500">
             Login
           </Text>
