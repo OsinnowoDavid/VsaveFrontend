@@ -5,10 +5,11 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start",
+    "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "lint": "expo lint",
+    "test": "echo \"There is currently no tests to run\""
   },
   "dependencies": {
     "@expo/metro-runtime": "^6.1.2",
