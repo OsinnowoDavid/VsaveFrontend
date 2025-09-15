@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Image,
@@ -15,7 +16,8 @@ import GradientText from "../../../components/GradientText";
 import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
 
-export default function App() {
+export default function SignUpScreen() {
+  const router = useRouter();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -33,7 +35,9 @@ export default function App() {
       : setBarStyle("light-content");
   }, [keyboardVisible]);
 
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    router.push("/auth/otp");
+  };
 
   return (
     <ImageBackground
@@ -95,13 +99,7 @@ export default function App() {
               placeholder="..........."
             />
 
-            <Button
-              input="Sign Up"
-              onPress={() => {
-                handleSubmit;
-              }}
-              color="text-white"
-            />
+            <Button input="Sign Up" onPress={handleSubmit} color="text-white" />
           </ScrollView>
         </View>
       </KeyboardAvoidingWrapper>
