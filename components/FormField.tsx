@@ -24,6 +24,7 @@ export default function FormField({
         value={value}
         onChangeText={onChangeText}
         placeholder={placeholder}
+        placeholderTextColor="#6B7280"
         secureTextEntry={secureTextEntry}
       />
     </View>

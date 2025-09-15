@@ -1,6 +1,6 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, ImageBackground, Text, View } from "react-native";
+import { Image, ImageBackground, StatusBar, Text, View } from "react-native";
 import Button from "../components/Button";
 import GradientText from "../components/GradientText";
 import "../global.css";
@@ -13,6 +13,7 @@ export default function App() {
       className="flex-1 justify-center items-center relative"
       resizeMode="cover"
     >
+      <StatusBar barStyle="light-content" />
       <Image
         source={require("../assets/images/transparent-logo.png")}
         className="absolute top-20"
@@ -25,10 +26,7 @@ export default function App() {
       <View className="absolute bottom-28 w-[90%] gap-2.5">
         <Button
           onPress={() => {
-            router.push({
-              pathname: "/auth/login",
-              params: { type: "register" },
-            });
+            router.push("/auth/signup");
           }}
           input="Get Started"
           bg="bg-white"
@@ -39,10 +37,7 @@ export default function App() {
           bg="bg-transparent"
           border="border-[1px] border-white"
           onPress={() => {
-            router.push({
-              pathname: "/auth/login",
-              params: { type: "login" },
-            });
+            router.push("/auth/login");
           }}
         />
       </View>
