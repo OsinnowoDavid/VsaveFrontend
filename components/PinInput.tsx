@@ -1,7 +1,13 @@
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 
-export default function PinInput() {
+export default function PinInput({
+  label = "Pin code",
+  icon,
+}: {
+  label?: string;
+  icon?: ReactNode;
+}) {
   const [pin, setPin] = useState("");
   const maxLength = 6;
 
@@ -13,7 +19,10 @@ export default function PinInput() {
 
   return (
     <View>
-      <Text className="text-xl font-bold text-gray-600 mb-4">Pin code</Text>
+      <View className="flex flex-row gap-2 items-center justify-center mb-4">
+        <Text className="text-md font-bold text-gray-600">{label}</Text>
+        {icon}
+      </View>
 
       <TouchableWithoutFeedback>
         <View className="flex-row gap-2 mb-6 justify-center items-center">

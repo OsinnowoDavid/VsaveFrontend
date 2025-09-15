@@ -13,6 +13,7 @@ module.exports = {
     "border-white",
     "border-gray-300",
     "text-gray-700",
+    "text-gray-600",
     "px-3",
     "py-2",
     "py-3",

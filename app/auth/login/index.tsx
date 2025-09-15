@@ -6,7 +6,7 @@ import GradientText from "../../../components/GradientText";
 import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
 import PinInput from "../../../components/PinInput";
 
-export default function App() {
+export default function LoginScreen() {
   const [form, setForm] = useState({
     email: "",
     password: "",
