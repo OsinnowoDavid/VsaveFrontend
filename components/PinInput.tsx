@@ -4,9 +4,11 @@ import { Text, TextInput, TouchableWithoutFeedback, View } from "react-native";
 export default function PinInput({
   label = "Pin code",
   icon,
+  textPosition,
 }: {
   label?: string;
   icon?: ReactNode;
+  textPosition?: "text-center" | "text-left" | "text-right";
 }) {
   const [pin, setPin] = useState("");
   const maxLength = 6;
@@ -20,7 +22,11 @@ export default function PinInput({
   return (
     <View>
       <View className="flex flex-row gap-2 items-center justify-center mb-4">
-        <Text className="text-md font-bold text-gray-600">{label}</Text>
+        <Text
+          className={`text-md font-bold text-gray-600 ${textPosition} w-[90%]`}
+        >
+          {label}
+        </Text>
         {icon}
       </View>
 
