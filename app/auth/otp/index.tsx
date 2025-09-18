@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
@@ -11,7 +12,11 @@ export default function OTPScreen() {
     password: "",
   });
 
-  const handleSubmit = () => {};
+  const router = useRouter();
+
+  const handleSubmit = () => {
+    router.push("/auth/kyc");
+  };
 
   return (
     <ScreenWrapper>
@@ -41,9 +46,7 @@ export default function OTPScreen() {
           </View>
           <Button
             input="Verify and Continue"
-            onPress={() => {
-              handleSubmit;
-            }}
+            onPress={handleSubmit}
             color="text-white"
           />
         </View>
