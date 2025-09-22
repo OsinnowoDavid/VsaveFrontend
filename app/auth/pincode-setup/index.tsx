@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Text, View } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -5,6 +6,7 @@ import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
 import PinInput from "../../../components/PinInput";
 
 export default function PinCodeSetupScreen() {
+  const router = useRouter();
   return (
     <ScreenWrapper>
       <KeyboardAvoidingWrapper>
@@ -14,7 +16,12 @@ export default function PinCodeSetupScreen() {
           </Text>
           <PinInput label="Enter Pin Code" textPosition="text-left" />
           <PinInput label="Confirm Pin Code" textPosition="text-left" />
-          <Button input="Login" onPress={() => {}} />
+          <Button
+            input="Login"
+            onPress={() => {
+              router.push("/home");
+            }}
+          />
         </View>
       </KeyboardAvoidingWrapper>
     </ScreenWrapper>
