@@ -1,11 +1,10 @@
 import { Country, State } from "country-state-city";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { Text, View } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
-import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
+import FormWrapper from "../../../components/FormWrapper";
 
 const countries = Country.getAllCountries();
 const countryIndexToCodeMap = {};
@@ -39,67 +38,62 @@ export default function KYCScreen() {
   const router = useRouter();
   return (
     <ScreenWrapper>
-      <KeyboardAvoidingWrapper>
-        <View className="px-6 py-8 bg-white w-full rounded-t-3xl">
-          <Text className="text-2xl font-bold pb-4 mb-8 text-center border-b-[0.3px] border-gray-500">
-            KYC
-          </Text>
-          <FormField
-            label="Profession"
-            onChangeText={() => {}}
-            type="select"
-            value=""
-            options={[
-              { label: "Lottery Agent", value: "lottery-agent" },
-              { label: "Student", value: "student" },
-              { label: "Self Employed", value: "self-employed" },
-              { label: "Unemployed", value: "unemployed" },
-              { label: "Others", value: "other" },
-            ]}
-          />
-          <FormField
-            label="Account Name"
-            placeholder=""
-            onChangeText={() => {}}
-            value=""
-          />
-          <FormField
-            label="Account Details"
-            placeholder=""
-            onChangeText={() => {}}
-            value=""
-          />
-          <FormField
-            label="Country"
-            onChangeText={(value) => {
-              setSelectedCountry(countryOptions[countryIndexToCodeMap[value]]);
-            }}
-            type="select"
-            value={selectedCountry.value}
-            options={countryOptions}
-          />
-          <FormField
-            label="State"
-            type="select"
-            placeholder=""
-            options={selectedStateList as { label: string; value: string }[]}
-            onChangeText={() => {}}
-            value=""
-          />
-          <FormField
-            label="NIN"
-            placeholder=""
-            onChangeText={() => {}}
-            value=""
-          />
-          <Button
-            onPress={() => {
-              router.push("/auth/fingerprint-setup");
-            }}
-            input="Verify"
-          />
-        </View>
-      </KeyboardAvoidingWrapper>
+      <FormWrapper heading="KYC">
+        <FormField
+          label="Profession"
+          onChangeText={() => {}}
+          type="select"
+          value=""
+          options={[
+            { label: "Lottery Agent", value: "lottery-agent" },
+            { label: "Student", value: "student" },
+            { label: "Self Employed", value: "self-employed" },
+            { label: "Unemployed", value: "unemployed" },
+            { label: "Others", value: "other" },
+          ]}
+        />
+        <FormField
+          label="Account Name"
+          placeholder=""
+          onChangeText={() => {}}
+          value=""
+        />
+        <FormField
+          label="Account Details"
+          placeholder=""
+          onChangeText={() => {}}
+          value=""
+        />
+        <FormField
+          label="Country"
+          onChangeText={(value) => {
+            setSelectedCountry(countryOptions[countryIndexToCodeMap[value]]);
+          }}
+          type="select"
+          value={selectedCountry.value}
+          options={countryOptions}
+        />
+        <FormField
+          label="State"
+          type="select"
+          placeholder=""
+          options={selectedStateList as { label: string; value: string }[]}
+          onChangeText={() => {}}
+          value=""
+        />
+        <FormField
+          label="NIN"
+          placeholder=""
+          onChangeText={() => {}}
+          value=""
+        />
+        <Button
+          onPress={() => {
+            router.push("/auth/fingerprint-setup");
+          }}
+          input="Verify"
+        />
+      </FormWrapper>
     </ScreenWrapper>
   );
 }
