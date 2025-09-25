@@ -1,4 +1,3 @@
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
@@ -6,9 +5,16 @@ import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
+import {
+  confirmPasswordSchema,
+  emailSchema,
+  fullNameSchema,
+  passwordSchema,
+  signupSchema,
+} from "../../../schema/form";
+import { validateFormField } from "../../../utils";
 
 export default function SignUpScreen() {
-  const router = useRouter();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -27,7 +33,17 @@ export default function SignUpScreen() {
   }, [keyboardVisible]);
 
   const handleSubmit = () => {
-    router.push("/auth/otp");
+    const formObject = {
+      fullName: form.fullName,
+      email: form.email,
+      password: form.password,
+    };
+    const { isValid } = validateFormField(signupSchema, formObject);
+    if (!isValid) {
+      alert("Some fields are incorrect. Please review the form.");
+    } else if (form.password !== form.confirmPassword) {
+      alert("Passwords don't match.");
+    }
   };
 
   return (
@@ -50,12 +66,18 @@ export default function SignUpScreen() {
             value={form.fullName}
             onChangeText={(fullName) => setForm({ ...form, fullName })}
             placeholder="John Doe"
+            schema={fullNameSchema}
+            validate
+            field={form.fullName}
           />
           <FormField
             label="Email"
             value={form.email}
             onChangeText={(email) => setForm({ ...form, email })}
             placeholder="you@example.com"
+            validate
+            schema={emailSchema}
+            field={form.email}
           />
           <FormField
             label="Password"
@@ -63,6 +85,9 @@ export default function SignUpScreen() {
             onChangeText={(password) => setForm({ ...form, password })}
             placeholder="........."
             secureTextEntry
+            validate
+            schema={passwordSchema}
+            field={form.password}
           />
           <FormField
             label="Confirm Password"
@@ -70,7 +95,14 @@ export default function SignUpScreen() {
             onChangeText={(confirmPassword) =>
               setForm({ ...form, confirmPassword })
             }
-            placeholder="..........."
+            placeholder=".........."
+            secureTextEntry
+            validate
+            schema={confirmPasswordSchema}
+            field={{
+              password: form.password,
+              confirmPassword: form.confirmPassword,
+            }}
           />
 
           <Button input="Sign Up" onPress={handleSubmit} color="text-white" />
