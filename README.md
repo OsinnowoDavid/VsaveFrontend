@@ -1,50 +1,103 @@
-# Welcome to your Expo app 👋
+# Vsave
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+![Vsave Logo](./assets/images/favicon/web-app-manifest-192x192.png)
 
-## Get started
+Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
 
-1. Install dependencies
+---
+
+## Features
+
+- **Team & User Management:** The platform provides a clear, competitive, and trackable hierarchy for team management, from General Admin down to individual Marketers. Marketers can onboard new users, and admins can set savings targets and monitor performance via leaderboards.
+- **Saving Management:** Users can set up daily, weekly, or monthly savings plans, as well as fixed savings products. The system includes a configurable admin fee structure and rules for handling insufficient funds and early withdrawals.
+- **Wallet & Overdraft Management:** Users are assigned a unique virtual account for instant deposits and can withdraw funds to any Nigerian bank account or another Vsave user. The platform also features an overdraft system with configurable eligibility rules, limits, and repayment plans.
+- **Bonus & Fraud Prevention:** A separate bonus wallet rewards users for manual cash deposits, referrals, and transfers. The system includes controls to prevent fraud, such as flagging double transfers and limiting daily bonus transfers.
+- **Accounting & Reporting:** A double-entry general ledger and automated journal posting engine ensure accurate financial records. The system provides real-time dashboards and downloadable reports for key metrics, including deposits, withdrawals, fees, and marketer performance.
+- **Risk Management:** A risk management framework is in place to ensure solvency, with features like liquidity pools, overdraft risk controls, and a user credit scoring algorithm to assess risk dynamically.
+
+---
+
+## Tech Stack
+
+This project is built using the following technologies:
+
+- **React Native** - The framework for building native apps.
+- **Expo** - The toolchain for building and deploying React Native apps.
+- **TypeScript** - A typed superset of JavaScript for enhanced code quality.
+- **Node.js** - For backend services and development tools.
+
+### Service Integrations
+
+The Vsave platform integrates with several third-party services to ensure functionality, security, and compliance:
+
+- **Banking & Payments:** Wema Bank (ALAT APIs), Sterling Bank (PaywithSpecta), and GTBank (Squad) for virtual accounts, real-time payments, and transfers.
+- **KYC & Compliance:** SmileID for ID verification, face match, and sanctions screening to comply with CBN AML/CFT regulations.
+- **Communication:** A dual SMS provider strategy with Termii for OTP verification and SmartSMS for alerts and bulk messaging.
+
+---
+
+## Installation
+
+Follow these steps to get the project up and running on your local machine.
+
+1. **Clone the repository**
+
+   ```bash
+   git clone [https://github.com/OsinnowoDavid/VsaveFrontend.git](https://github.com/OsinnowoDavid/VsaveFrontend.git)
+   ```
+
+2. **Navigate to the project directory**
+
+   ```bash
+   cd Vsave
+   ```
+
+3. **Install the dependencies**
 
    ```bash
    npm install
    ```
 
-2. Start the app
+   or
 
    ```bash
-   npx expo start
+   yarn
    ```
 
-In the output, you'll find options to open the app in a
+---
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+## Usage
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+After installation, you can run the app in different ways:
 
-## Get a fresh project
+- **Run on a local development server**
 
-When you're ready, run:
+  ```bash
+  npm start
+  ```
 
-```bash
-npm run reset-project
-```
+  This will open the Expo DevTools in your browser. From there, you can scan the QR code with the Expo Go app on your phone to see the app running on your device, or choose to run it on an iOS or Android simulator/emulator.
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+---
 
-## Learn more
+## Contributing
 
-To learn more about developing your project with Expo, look at the following resources:
+We welcome contributions to the Vsave project! To contribute, follow these steps:
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+1. Fork the repository.
+2. Create a new branch (`git checkout -b feature/your-feature-name`).
+3. Make your changes and commit them (`git commit -m 'Add a new feature'`).
+4. Push to the branch (`git push origin feature/your-feature-name`).
+5. Open a Pull Request.
 
-## Join the community
+---
 
-Join our community of developers creating universal apps.
+## License
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+This project is licensed under the [MIT License](https://opensource.org/licenses/MIT).
+
+---
+
+## Contact
+
+You can reach me via my GitHub profile at [https://github.com/OsinnowoDavid](https://github.com/OsinnowoDavid).
