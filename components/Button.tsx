@@ -1,18 +1,20 @@
 import { Pressable, Text } from "react-native";
 
 export default function Button({
-  onPress,
-  bg = "bg-green-700",
-  border = "",
-  color = "text-white",
-  input = "",
+    onPress,
+    bg = "bg-green-700",
+    border = "",
+    color = "text-white",
+    input = "",
 }) {
-  return (
-    <Pressable
-      className={`w-full py-3 rounded-xl ${bg} ${border}`}
-      onPress={onPress}
-    >
-      <Text className={`text-center font-semibold ${color}`}>{input}</Text>
-    </Pressable>
-  );
+    return (
+        <Pressable
+            className={`w-full py-3 rounded-xl ${bg} ${border}`}
+            onPress={onPress}
+        >
+            <Text className={`text-center font-semibold ${color}`}>
+                {input}
+            </Text>
+        </Pressable>
+    );
 }

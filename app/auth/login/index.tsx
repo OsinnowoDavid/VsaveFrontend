@@ -8,31 +8,35 @@ import PinInput from "../../../components/PinInput";
 import { emailSchema } from "../../../schema/form";
 
 export default function LoginScreen() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-  const router = useRouter();
+    const [form, setForm] = useState({
+        email: "",
+        password: "",
+    });
+    const router = useRouter();
 
-  const handleSubmit = () => {
-    router.push("/home");
-  };
+    const handleSubmit = () => {
+        router.push("/home");
+    };
 
-  return (
-    <ScreenWrapper>
-      <FormWrapper heading="Login">
-        <FormField
-          label="Email"
-          value={form.email}
-          onChangeText={(email) => setForm({ ...form, email })}
-          placeholder="you@example.com"
-          validate
-          schema={emailSchema}
-          field={form.email}
-        />
-        <PinInput />
-        <Button input="Login" onPress={handleSubmit} color="text-white" />
-      </FormWrapper>
-    </ScreenWrapper>
-  );
+    return (
+        <ScreenWrapper>
+            <FormWrapper heading="Login">
+                <FormField
+                    label="Email"
+                    value={form.email}
+                    onChangeText={(email) => setForm({ ...form, email })}
+                    placeholder="you@example.com"
+                    validate
+                    schema={emailSchema}
+                    field={form.email}
+                />
+                <PinInput />
+                <Button
+                    input="Login"
+                    onPress={handleSubmit}
+                    color="text-white"
+                />
+            </FormWrapper>
+        </ScreenWrapper>
+    );
 }

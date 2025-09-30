@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 .growth-emerald-text {
-  color: linear-gradient(90deg, #008e4c 31%, #224c38 92%) !important;
+    color: linear-gradient(90deg, #008e4c 31%, #224c38 92%) !important;
 }
