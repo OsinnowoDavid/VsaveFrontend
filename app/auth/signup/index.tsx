@@ -26,11 +26,14 @@ export default function SignUpScreen() {
 
   const [barStyle, setBarStyle] = useState("light-content");
 
-  useEffect(() => {
+  function handleKeyboardVisible() {
     keyboardVisible
       ? setBarStyle("dark-content")
       : setBarStyle("light-content");
-  }, [keyboardVisible]);
+    return;
+  }
+
+  useEffect(handleKeyboardVisible, [keyboardVisible]);
 
   const handleSubmit = () => {
     const formObject = {

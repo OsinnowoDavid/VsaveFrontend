@@ -1,7 +1,7 @@
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
 import { Platform, Text, TextInput, View } from "react-native";
-import z from "zod";
+import { z } from "zod";
 import ScrollPicker from "../hooks/react-native-scroll-picker";
 import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";

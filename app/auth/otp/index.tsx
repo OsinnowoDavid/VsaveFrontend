@@ -1,5 +1,4 @@
 import { useRouter } from "expo-router";
-import { useState } from "react";
 import { Image, Pressable, Text, View } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -7,11 +6,6 @@ import FormWrapper from "../../../components/FormWrapper";
 import PinInput from "../../../components/PinInput";
 
 export default function OTPScreen() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
-
   const router = useRouter();
 
   const handleSubmit = () => {
@@ -33,7 +27,7 @@ export default function OTPScreen() {
           }
         />
         <View className="flex flex-row gap-3 justify-center mb-14 items-center">
-          <Text className="font-medium">Didn't recieve the OTP?</Text>
+          <Text className="font-medium">Didn&apos;t recieve the OTP?</Text>
           <Pressable>
             <Text className="text-green-700 font-medium text-[16px]">
               Resend
