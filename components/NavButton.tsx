@@ -19,7 +19,7 @@ export default function NavButton({
   onPress,
   bg = "bg-white",
   border = "",
-  color = "text-gray-300",
+  color = "text-gray-700",
   input = "",
   source,
   icon = true,

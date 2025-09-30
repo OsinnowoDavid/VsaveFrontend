@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -11,8 +12,11 @@ export default function LoginScreen() {
     email: "",
     password: "",
   });
+  const router = useRouter();
 
-  const handleSubmit = () => {};
+  const handleSubmit = () => {
+    router.push("/home");
+  };
 
   return (
     <ScreenWrapper>
@@ -27,13 +31,7 @@ export default function LoginScreen() {
           field={form.email}
         />
         <PinInput />
-        <Button
-          input="Login"
-          onPress={() => {
-            handleSubmit;
-          }}
-          color="text-white"
-        />
+        <Button input="Login" onPress={handleSubmit} color="text-white" />
       </FormWrapper>
     </ScreenWrapper>
   );
