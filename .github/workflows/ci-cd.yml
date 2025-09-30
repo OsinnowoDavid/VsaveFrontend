@@ -1,0 +1,70 @@
+name: "Continuous Integration"
+
+on:
+  workflow_run:
+    workflows: ["CodeQL Advanced"]
+    types: [completed]
+
+jobs:
+  run-checks:
+    runs-on: "ubuntu-latest"
+    outputs:
+      checks-passed: ${{steps.ts-checks.outputs.checks-passed}}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Run TS Checks
+        id: ts-checks
+        uses: owen-6936/ts-checks@v1.0.0
+
+  deploy:
+    runs-on: "ubuntu-latest"
+    needs: [run-checks]
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main' && needs.run-checks.outputs.checks-passed == 'true'
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Deployment Dependencies Check
+        id: check-dependencies
+        run: |
+          if [ -n "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "depSatisfied=true" >> $GITHUB_OUTPUT
+          else
+            echo "depSatisfied=false" >> $GITHUB_OUTPUT
+            echo "Error: EXPO_TOKEN is not set. Please set it in the repository secrets"
+            # 🛑 JOB FAILS HERE IF TOKEN IS MISSING
+            exit 1
+          fi
+
+      - name: Raise Issue for Missing EXPO_TOKEN
+        if: always() && steps.check-dependencies.outputs.depSatisfied == 'false'
+        uses: owen-6936/create-github-issue@v1.2.0
+        with:
+          title: "🚫 Missing EXPO_TOKEN Secret"
+          body: |
+            The `EXPO_TOKEN` secret is not set for this repository.
+
+            This token is required for Expo deployment workflows.  
+            Please add it via **Settings → Secrets → Actions → EXPO_TOKEN**.
+          labels: "automation,deployment"
+          assignees: "${{ github.actor }}"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup EAS
+        if: steps.check-dependencies.outputs.depSatisfied == 'true'
+        uses: expo/expo-github-action@v8
+        with:
+          token: ${{ secrets.EXPO_TOKEN }} # Make sure EXPO_TOKEN is set in your repository's GitHub Actions secrets
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Run EAS Build
+        run: eas build --profile preview --platform android
