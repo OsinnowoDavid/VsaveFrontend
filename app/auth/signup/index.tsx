@@ -1,21 +1,20 @@
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import {
-  Platform,
-  ScrollView,
-  StatusBar,
-  StatusBarStyle,
-  Text,
-  View,
-} from "react-native";
+import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
-import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
+import FormWrapper from "../../../components/FormWrapper";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
+import {
+  confirmPasswordSchema,
+  emailSchema,
+  fullNameSchema,
+  passwordSchema,
+  signupSchema,
+} from "../../../schema/form";
+import { validateFormField } from "../../../utils";
 
 export default function SignUpScreen() {
-  const router = useRouter();
   const [form, setForm] = useState({
     fullName: "",
     email: "",
@@ -34,7 +33,17 @@ export default function SignUpScreen() {
   }, [keyboardVisible]);
 
   const handleSubmit = () => {
-    router.push("/auth/otp");
+    const formObject = {
+      fullName: form.fullName,
+      email: form.email,
+      password: form.password,
+    };
+    const { isValid } = validateFormField(signupSchema, formObject);
+    if (!isValid) {
+      alert("Some fields are incorrect. Please review the form.");
+    } else if (form.password !== form.confirmPassword) {
+      alert("Passwords don't match.");
+    }
   };
 
   return (
@@ -46,48 +55,59 @@ export default function SignUpScreen() {
             : "light-content"
         }
       />
-      <KeyboardAvoidingWrapper>
-        <View className="px-6 py-8 bg-white w-full rounded-t-3xl">
-          <Text className="text-2xl font-bold pb-4 mb-10 text-center border-b-[0.3px] border-gray-500">
-            Sign Up
-          </Text>
-          <ScrollView
-            className="max-h-[400px]"
-            contentContainerStyle={{ paddingBottom: 24 }}
-            showsVerticalScrollIndicator={false}
-          >
-            <FormField
-              label="Full Name"
-              value={form.fullName}
-              onChangeText={(fullName) => setForm({ ...form, fullName })}
-              placeholder="John Doe"
-            />
-            <FormField
-              label="Email"
-              value={form.email}
-              onChangeText={(email) => setForm({ ...form, email })}
-              placeholder="you@example.com"
-            />
-            <FormField
-              label="Password"
-              value={form.password}
-              onChangeText={(password) => setForm({ ...form, password })}
-              placeholder="........."
-              secureTextEntry
-            />
-            <FormField
-              label="Confirm Password"
-              value={form.confirmPassword}
-              onChangeText={(confirmPassword) =>
-                setForm({ ...form, confirmPassword })
-              }
-              placeholder="..........."
-            />
+      <FormWrapper heading="Sign Up">
+        <ScrollView
+          className="max-h-[400px]"
+          contentContainerStyle={{ paddingBottom: 24 }}
+          showsVerticalScrollIndicator={false}
+        >
+          <FormField
+            label="Full Name"
+            value={form.fullName}
+            onChangeText={(fullName) => setForm({ ...form, fullName })}
+            placeholder="John Doe"
+            schema={fullNameSchema}
+            validate
+            field={form.fullName}
+          />
+          <FormField
+            label="Email"
+            value={form.email}
+            onChangeText={(email) => setForm({ ...form, email })}
+            placeholder="you@example.com"
+            validate
+            schema={emailSchema}
+            field={form.email}
+          />
+          <FormField
+            label="Password"
+            value={form.password}
+            onChangeText={(password) => setForm({ ...form, password })}
+            placeholder="........."
+            secureTextEntry
+            validate
+            schema={passwordSchema}
+            field={form.password}
+          />
+          <FormField
+            label="Confirm Password"
+            value={form.confirmPassword}
+            onChangeText={(confirmPassword) =>
+              setForm({ ...form, confirmPassword })
+            }
+            placeholder=".........."
+            secureTextEntry
+            validate
+            schema={confirmPasswordSchema}
+            field={{
+              password: form.password,
+              confirmPassword: form.confirmPassword,
+            }}
+          />
 
-            <Button input="Sign Up" onPress={handleSubmit} color="text-white" />
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingWrapper>
+          <Button input="Sign Up" onPress={handleSubmit} color="text-white" />
+        </ScrollView>
+      </FormWrapper>
     </ScreenWrapper>
   );
 }

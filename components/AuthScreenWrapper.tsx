@@ -1,15 +1,8 @@
 import React from "react";
-import { Image, ImageBackground, Text, View } from "react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
-import GradientText from "./GradientText";
-type Props = {
-  children: React.ReactNode;
-  bg?: string;
-};
+import { Image, ImageBackground } from "react-native";
+import SloganText from "./SloganText";
 
-const ScreenWrapper = ({ children, bg }: Props) => {
-  const { top } = useSafeAreaInsets();
-  const paddingTop = top > 0 ? top + 5 : 30;
+const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
   return (
     <ImageBackground
       source={require("../assets/images/onboarding-wallpaper.jpg")}
@@ -21,10 +14,7 @@ const ScreenWrapper = ({ children, bg }: Props) => {
         className="absolute top-20"
         resizeMode="cover"
       />
-      <View className="flex flex-row gap-1 absolute top-56">
-        <Text className="text-2xl font-bold">Save Now,</Text>
-        <GradientText>Enjoy Later</GradientText>
-      </View>
+      <SloganText />
       {children}
     </ImageBackground>
   );

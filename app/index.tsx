@@ -1,8 +1,8 @@
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, ImageBackground, StatusBar, Text, View } from "react-native";
+import { Image, ImageBackground, StatusBar, View } from "react-native";
 import Button from "../components/Button";
-import GradientText from "../components/GradientText";
+import SloganText from "../components/SloganText";
 import "../global.css";
 
 export default function App() {
@@ -19,10 +19,7 @@ export default function App() {
         className="absolute top-20"
         resizeMode="cover"
       />
-      <View className="flex flex-row gap-1 absolute top-56">
-        <Text className="text-2xl font-bold">Save Now,</Text>
-        <GradientText>Enjoy Later</GradientText>
-      </View>
+      <SloganText />
       <View className="absolute bottom-28 w-[90%] gap-2.5">
         <Button
           onPress={() => {
