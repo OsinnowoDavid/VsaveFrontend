@@ -29,16 +29,6 @@ export default function Home() {
                         <NavButton
                             border="border-[0.01px]"
                             bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Savings"
-                            onPress={() => {}}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send color="#1B8A52" />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
                             input="Send"
                             onPress={() => {}}
                             icon
@@ -50,6 +40,16 @@ export default function Home() {
                             border="border-[0.01px]"
                             bg="bg-[rgba(27,138,82,0.2)]"
                             input="Add Money"
+                            onPress={() => {}}
+                            icon
+                            iconType="component"
+                            iconComponent={<Send color="#1B8A52" />}
+                            width="w-[30%]"
+                        />
+                        <NavButton
+                            border="border-[0.01px]"
+                            bg="bg-[rgba(27,138,82,0.2)]"
+                            input="Terminal"
                             onPress={() => {
                                 router.push("/home/addMoney");
                             }}
