@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ReactNode } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -16,6 +17,7 @@ export default function HomeScreenWrapper({
     bgColor?: string;
     showFooter?: boolean;
 }) {
+    const router = useRouter();
     return (
         <SafeAreaView className={`h-full ${bgColor}`}>
             {children}
@@ -32,7 +34,9 @@ export default function HomeScreenWrapper({
                     <NavButton
                         input="Savings"
                         iconComponent={<WalletIcon />}
-                        onPress={() => {}}
+                        onPress={() => {
+                            router.push("/savings");
+                        }}
                     />
                     <NavButton
                         input="Reward"
