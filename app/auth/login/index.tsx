@@ -4,7 +4,7 @@ import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import PinInput from "../../../components/PinInput";
 import { emailSchema } from "../../../schema/form";
-
+import { View,Text } from "lucide-react-native";
 export default function LoginScreen() {
   const [form, setForm] = useState({
     email: "",

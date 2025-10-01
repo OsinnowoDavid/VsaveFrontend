@@ -13,6 +13,7 @@ import {
   signupSchema,
 } from "../../../schema/form";
 import { validateFormField } from "../../../utils";
+import { router } from "expo-router";
 
 export default function SignUpScreen() {
   const [form, setForm] = useState({
@@ -38,12 +39,12 @@ export default function SignUpScreen() {
       email: form.email,
       password: form.password,
     };
-    const { isValid } = validateFormField(signupSchema, formObject);
-    if (!isValid) {
-      alert("Some fields are incorrect. Please review the form.");
-    } else if (form.password !== form.confirmPassword) {
-      alert("Passwords don't match.");
-    }
+    // const { isValid } = validateFormField(signupSchema, formObject);
+    // if (!isValid) {
+    //   alert("Some fields are incorrect. Please review the form.");
+    // } else if (form.password !== form.confirmPassword) {
+    //   alert("Passwords don't match.");
+    // }
   };
 
   return (
@@ -105,7 +106,7 @@ export default function SignUpScreen() {
             }}
           />
 
-          <Button input="Sign Up" onPress={handleSubmit} color="text-white" />
+          <Button input="Sign Up" onPress={()=> router.push("/home")} color="text-white" />
         </ScrollView>
       </FormWrapper>
     </ScreenWrapper>

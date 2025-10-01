@@ -9,10 +9,10 @@ export default function Button({
 }) {
   return (
     <Pressable
-      className={`w-full py-3 rounded-xl ${bg} ${border}`}
+      className={`w-full py-3 rounded-xl  ${bg} ${border}`}
       onPress={onPress}
     >
-      <Text className={`text-center font-semibold ${color}`}>{input}</Text>
+      <Text className={`text-center font-semibold  ${color}`}>{input}</Text>
     </Pressable>
   );
 }

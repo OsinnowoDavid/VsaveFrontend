@@ -1,14 +1,19 @@
 import React, { useState } from "react";
 import {
-  Text,
-  View,
-  TouchableOpacity,
-  ScrollView,
-  TextInput,
   Image,
+  Keyboard,
+  KeyboardAvoidingView, Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View
 } from "react-native";
 import Ballance from "../../components/Ballance";
-
+import Button from "../../components/Button";
+import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 const networks = [
   { id: "mtn", Icon: require("../../assets/images/mtn.png") },
   { id: "airtel", Icon: require("../../assets/images/airtel.png") },
@@ -47,90 +52,123 @@ const Index = () => {
   const [customAmount, setCustomAmount] = useState("");
 
   return (
+    <HomeScreenWrapper>
+
     <View className="flex-1 bg-white">
-      {/* Balance Component */}
-      <Ballance />
 
-      <View className="absolute top-[155px] self-center w-[288px] h-[333px] bg-white rounded-xl p-4 shadow">
-        {/* Title */}
-        <Text className="text-[10px] font-medium text-[#212121] mb-2">
-          Choose Network
-        </Text>
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={{ flex: 1 }}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 64 : 0}
+      >
+        <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+          <View style={{ flex: 1 }}>
+            {/* Balance Component */}
+            <Ballance />
 
-        {/* Network Logos */}
-        <View className="flex-row justify-between mb-6">
-          {networks.map((net) => (
-            <TouchableOpacity
-              key={net.id}
-              onPress={() => {
-                setSelectedNetwork(net.id);
-                setSelectedPlan(null);
-                setCustomAmount("");
-              }}
-              className={`w-[50px] h-[50px] rounded-md border items-center justify-center ${
-                selectedNetwork === net.id
-                  ? "border-[#1B8A52]"
-                  : "border-[#E5E7EA]"
-              }`}
-            >
-              <Image
-                source={net.Icon}
-                style={{ width: 40, height: 40, resizeMode: "contain" }}
-              />
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {/* Data Plans */}
-        {selectedNetwork && (
-          <View className="mb-4">
-            <Text className="text-[12px] font-medium text-[#131927] mb-1">
-              Select Data Plan
-            </Text>
             <ScrollView
-              className="max-h-[120px] border border-[#E5E7EA] rounded-lg bg-[#F9FAFB]"
-              nestedScrollEnabled
+              keyboardShouldPersistTaps="handled"
+              contentContainerStyle={{ paddingBottom: 24 }}
             >
-              {dataPlans[selectedNetwork].map((plan) => (
-                <TouchableOpacity
-                  key={plan.id}
-                  onPress={() => {
-                    setSelectedPlan(plan.id);
-                    setCustomAmount(String(plan.price));
-                  }}
-                  className={`px-3 py-2 border-b border-[#E5E7EA] ${
-                    selectedPlan === plan.id ? "bg-[#1B8A52]" : "bg-transparent"
-                  }`}
-                >
-                  <Text
-                    className={`text-[14px] ${
-                      selectedPlan === plan.id ? "text-white" : "text-[#131927]"
-                    }`}
-                  >
-                    {plan.label} — ₦{plan.price}
+              <View className="self-center w-[288px]   mt-10">
+                {/* Title */}
+                <Text className="text-[10px] font-medium text-[#212121] mb-2">
+                  Choose Network
+                </Text>
+
+                {/* Network Logos */}
+                <View className="flex-row justify-between mb-6">
+                  {networks.map((net) => (
+                    <TouchableOpacity
+                      key={net.id}
+                      onPress={() => {
+                        setSelectedNetwork(net.id);
+                        setSelectedPlan(null);
+                        setCustomAmount("");
+                      }}
+                      className={`w-[50px] h-[50px] rounded-md border items-center justify-center ${
+                        selectedNetwork === net.id
+                          ? "border-[#1B8A52]"
+                          : "border-[#E5E7EA]"
+                      }`}
+                    >
+                      <Image
+                        source={net.Icon}
+                        style={{ width: 40, height: 40, resizeMode: "contain" }}
+                      />
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                {/* Data Plans */}
+                {selectedNetwork && (
+                  <View className="mb-4">
+                    <Text className="text-[12px] font-medium text-[#131927] mb-1">
+                      Select Data Plan
+                    </Text>
+                    <ScrollView
+                      className="max-h-[120px] border border-[#E5E7EA] rounded-lg bg-[#F9FAFB]"
+                      nestedScrollEnabled
+                      keyboardShouldPersistTaps="handled"
+                    >
+                      {dataPlans[selectedNetwork].map((plan) => (
+                        <TouchableOpacity
+                          key={plan.id}
+                          onPress={() => {
+                            setSelectedPlan(plan.id);
+                            setCustomAmount(String(plan.price));
+                          }}
+                          className={`px-3 py-2 border-b border-[#E5E7EA] ${
+                            selectedPlan === plan.id ? "bg-[#1B8A52]" : "bg-transparent"
+                          }`}
+                        >
+                          <Text
+                            className={`text-[14px] ${
+                              selectedPlan === plan.id ? "text-white" : "text-[#131927]"
+                            }`}
+                          >
+                            {plan.label} — ₦{plan.price}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </ScrollView>
+                  </View>
+                )}
+
+                {/* Custom Amount Input */}
+                <View>
+                  <Text className="text-[12px] font-medium text-[#131927] mb-1">
+                    Enter Custom Amount
                   </Text>
-                </TouchableOpacity>
-              ))}
+                  <TextInput
+                    value={customAmount}
+                    onChangeText={setCustomAmount}
+                    placeholder="Enter amount"
+                    keyboardType="numeric"
+                    returnKeyType="done"
+                    className="w-full h-[40px] px-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EA] text-[14px] text-[#131927]"
+                  />
+                </View>
+                {/* Proceed Button */}
+                <View className="mt-10 mb-5">
+              <Button input="Proceed" onPress={() => {}} />
+            </View>
+
+              </View>
             </ScrollView>
           </View>
-        )}
-
-        {/* Custom Amount Input */}
-        <View>
-          <Text className="text-[12px] font-medium text-[#131927] mb-1">
-            Enter Custom Amount
-          </Text>
-          <TextInput
-            value={customAmount}
-            onChangeText={setCustomAmount}
-            placeholder="Enter amount"
-            keyboardType="numeric"
-            className="w-full h-[40px] px-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EA] text-[14px] text-[#131927]"
-          />
-        </View>
-      </View>
+        </TouchableWithoutFeedback>
+      </KeyboardAvoidingView>
     </View>
+    </HomeScreenWrapper>
+
   );
 };
 
+      const styles = StyleSheet.create({
+        container: {
+          flex: 1,
+    padding: 20,
+        },
+      });
 export default Index;

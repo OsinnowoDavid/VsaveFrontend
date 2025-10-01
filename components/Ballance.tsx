@@ -24,7 +24,7 @@ export class Ballance extends Component {
             />
           </View>
           <View
-            className="mt-5 w-full h-40 rounded-2xl absolute -top-9 z-10 py-6 px-4 flex flex-col justify-between"
+            className="mt-5 w-full h-56 rounded-2xl absolute -top-9 z-10 py-6 px-4 flex flex-col justify-between"
             style={{
               backgroundColor: "rgba(27, 138, 82, 0.7)",
             }}
@@ -38,7 +38,7 @@ export class Ballance extends Component {
               </Text>
             </View>
             <View>
-              <Text className="text-[#EFEFEF] text-[16px]">
+              <Text className="text-[#EFEFEF] text-[16px] mb-10">
                 Pending Balance N2,500,000
               </Text>
             </View>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Text, View, TouchableOpacity, Image, TextInput } from "react-native";
+import { Text, View, TouchableOpacity, Image, TextInput, StatusBar } from "react-native";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import Ballance from "../../components/Ballance";
 import Button from "../../components/Button";
@@ -24,7 +24,7 @@ const Index = () => {
 
     
 
-      <View className="mt-2">
+      <View className="mt-2 ml-2 mr-2">
         <Ballance />
       </View>
 

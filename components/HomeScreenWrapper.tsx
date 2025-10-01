@@ -6,6 +6,7 @@ import MenuIcon from "../assets/icons/MenuIcon";
 import RewardIcon from "../assets/icons/RewardIcon";
 import WalletIcon from "../assets/icons/WalletIcon";
 import NavButton from "./NavButton";
+import { router } from "expo-router";
 
 export default function HomeScreenWrapper({
   children,
@@ -24,12 +25,12 @@ export default function HomeScreenWrapper({
         <NavButton
           iconComponent={<HomeIcon isActive={true} />}
           input="Home"
-          onPress={() => {}}
+          onPress={() => router.push("/home")}
         />
         <NavButton
           input="Savings"
-          iconComponent={<WalletIcon />}
-          onPress={() => {}}
+          iconComponent={<WalletIcon  />}
+          onPress={() => router.push("/SaveMoney")}
         />
         <NavButton
           input="Reward"
