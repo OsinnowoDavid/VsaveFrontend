@@ -14,6 +14,7 @@ import {
 } from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
 import { validateFormField } from "../../../utils";
+import { router } from "expo-router";
 
 export default function SignUpScreen() {
     const [form, setForm] = useState({
@@ -29,11 +30,19 @@ export default function SignUpScreen() {
 
     const [signupInput, setSignupInput] = useState("Sign Up");
 
-    const [signupBg, setSignBg] = useState("bg-green-700");
-
-    function handleKeyboardVisible() {
-        setBarStyle(keyboardVisible ? "dark-content" : "light-content");
-    }
+  const handleSubmit = () => {
+    const formObject = {
+      fullName: form.fullName,
+      email: form.email,
+      password: form.password,
+    };
+    // const { isValid } = validateFormField(signupSchema, formObject);
+    // if (!isValid) {
+    //   alert("Some fields are incorrect. Please review the form.");
+    // } else if (form.password !== form.confirmPassword) {
+    //   alert("Passwords don't match.");
+    // }
+  };
 
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
@@ -123,14 +132,9 @@ export default function SignUpScreen() {
                         }}
                     />
 
-                    <Button
-                        input={signupInput}
-                        onPress={handleSubmit}
-                        color="text-white"
-                        bg={signupBg}
-                    />
-                </ScrollView>
-            </FormWrapper>
-        </ScreenWrapper>
-    );
+          <Button input="Sign Up" onPress={()=> router.push("/home")} color="text-white" />
+        </ScrollView>
+      </FormWrapper>
+    </ScreenWrapper>
+  );
 }

@@ -7,14 +7,12 @@ export default function Button({
     color = "text-white",
     input = "",
 }) {
-    return (
-        <Pressable
-            className={`w-full py-3 rounded-xl ${bg ? bg : "bg-green-700"} ${border}`}
-            onPress={onPress}
-        >
-            <Text className={`text-center font-semibold ${color}`}>
-                {input}
-            </Text>
-        </Pressable>
-    );
+  return (
+    <Pressable
+      className={`w-full py-3 rounded-xl  ${bg} ${border}`}
+      onPress={onPress}
+    >
+      <Text className={`text-center font-semibold  ${color}`}>{input}</Text>
+    </Pressable>
+  );
 }
