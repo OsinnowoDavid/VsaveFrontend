@@ -12,6 +12,7 @@ import {
     passwordSchema,
     signupSchema,
 } from "../../../schema/form";
+import { handleSignup } from "../../../services/authService";
 import { validateFormField } from "../../../utils";
 
 export default function SignUpScreen() {
@@ -26,23 +27,36 @@ export default function SignUpScreen() {
 
     const [barStyle, setBarStyle] = useState("light-content");
 
+    const [signupInput, setSignupInput] = useState("Sign Up");
+
+    const [signupBg, setSignBg] = useState("bg-green-700");
+
     function handleKeyboardVisible() {
         setBarStyle(keyboardVisible ? "dark-content" : "light-content");
     }
 
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
-    const handleSubmit = () => {
+    const handleSubmit = async () => {
         const formObject = {
             fullName: form.fullName,
             email: form.email,
             password: form.password,
         };
+        setSignBg("bg-green-700");
         const { isValid } = validateFormField(signupSchema, formObject);
         if (!isValid) {
             alert("Some fields are incorrect. Please review the form.");
         } else if (form.password !== form.confirmPassword) {
             alert("Passwords don't match.");
+        } else {
+            setSignupInput("Submiting...");
+            const response = await handleSignup(formObject);
+            if (response === true) setSignupInput("Success! Account Created");
+            else {
+                setSignupInput("An error occured! Please try again");
+                setSignBg("bg-red-600");
+            }
         }
     };
 
@@ -110,9 +124,10 @@ export default function SignUpScreen() {
                     />
 
                     <Button
-                        input="Sign Up"
+                        input={signupInput}
                         onPress={handleSubmit}
                         color="text-white"
+                        bg={signupBg}
                     />
                 </ScrollView>
             </FormWrapper>
