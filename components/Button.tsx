@@ -1,11 +1,11 @@
 import { Pressable, Text } from "react-native";
 
 export default function Button({
-  onPress,
-  bg = "bg-green-700",
-  border = "",
-  color = "text-white",
-  input = "",
+    onPress,
+    bg = "bg-green-700",
+    border = "",
+    color = "text-white",
+    input = "",
 }) {
   return (
     <Pressable

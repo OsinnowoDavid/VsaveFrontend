@@ -6,12 +6,13 @@ import PinInput from "../../../components/PinInput";
 import { emailSchema } from "../../../schema/form";
 import { View,Text } from "lucide-react-native";
 export default function LoginScreen() {
-  const [form, setForm] = useState({
-    email: "",
-    password: "",
-  });
+    const [form, setForm] = useState({
+        email: "",
+        password: "",
+    });
+    const [signinInput, setSigninInput] = useState("Login");
 
-  const handleSubmit = () => {};
+    const [signupBg, setSignBg] = useState("bg-green-700");
 
   return (
     <ScreenWrapper>

@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ReactNode } from "react";
 import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -9,11 +10,13 @@ import NavButton from "./NavButton";
 import { router } from "expo-router";
 
 export default function HomeScreenWrapper({
-  children,
-  bgColor = "bg-white",
+    children,
+    bgColor = "bg-white",
+    showFooter = true,
 }: {
-  children: ReactNode;
-  bgColor?: string;
+    children: ReactNode;
+    bgColor?: string;
+    showFooter?: boolean;
 }) {
   return (
     <SafeAreaView className={`h-full ${bgColor}`}>

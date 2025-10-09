@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { Bell, Send, UserCircleIcon } from "lucide-react-native";
 import { Image, StatusBar, Text, View, ScrollView } from "react-native";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
