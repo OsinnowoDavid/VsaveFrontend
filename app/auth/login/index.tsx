@@ -65,7 +65,7 @@ export default function LoginScreen() {
                 />
                 <Button
                     input={signinInput}
-                    onPress={router.push("/home")}
+                    onPress={() => router.push("/home")}
                     color="text-white"
                     bg={signupBg}
                 />
