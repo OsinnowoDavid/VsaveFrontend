@@ -1,3 +1,5 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import {
     ArrowRight,
@@ -10,7 +12,7 @@ import {
     Shield,
     User,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
     Alert,
     ScrollView,
@@ -70,8 +72,62 @@ const supportItems = [
 
 export default function MenuScreen() {
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
-    const toggleBiometrics = () =>
-        setIsBiometricsEnabled((previousState) => !previousState);
+
+    // Load the saved preference when the component mounts
+    useEffect(() => {
+        const loadBiometricsPreference = async () => {
+            const savedValue = await AsyncStorage.getItem("biometrics_enabled");
+            setIsBiometricsEnabled(savedValue === "true");
+        };
+        loadBiometricsPreference();
+    }, []);
+
+    const handleBiometricsToggle = async () => {
+        const isEnabling = !isBiometricsEnabled;
+
+        if (!isEnabling) {
+            // Simply turn it off
+            await AsyncStorage.setItem("biometrics_enabled", "false");
+            setIsBiometricsEnabled(false);
+            Alert.alert(
+                "Biometrics Disabled",
+                "You have disabled biometric authentication.",
+            );
+            return;
+        }
+
+        // --- Logic for ENABLING biometrics ---
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        if (!hasHardware) {
+            Alert.alert(
+                "Unsupported Device",
+                "Your device does not support biometric authentication.",
+            );
+            return;
+        }
+
+        const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+        if (!isEnrolled) {
+            Alert.alert(
+                "No Biometrics Enrolled",
+                "You have not set up any biometrics on this device. Please go to your device settings to add a fingerprint or Face ID.",
+            );
+            return;
+        }
+
+        const { success } = await LocalAuthentication.authenticateAsync({
+            promptMessage: "Confirm to enable biometric login",
+        });
+
+        if (success) {
+            await AsyncStorage.setItem("biometrics_enabled", "true");
+            setIsBiometricsEnabled(true);
+            Alert.alert(
+                "Biometrics Enabled",
+                "You can now log in using biometrics.",
+            );
+        }
+    };
 
     const handleLogout = () => {
         Alert.alert(
@@ -135,7 +191,7 @@ export default function MenuScreen() {
                                                 ? "#f4f3f4"
                                                 : "#f4f3f4"
                                         }
-                                        onValueChange={toggleBiometrics}
+                                        onValueChange={handleBiometricsToggle}
                                         value={isBiometricsEnabled}
                                     />
                                 )}
