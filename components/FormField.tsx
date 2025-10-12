@@ -7,7 +7,7 @@ import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";
 
 interface FormFieldProps {
-    label: string;
+    label?: string;
     value: string;
     onChangeText: (text: string) => void;
     placeholder?: string;
@@ -45,14 +45,16 @@ export default function FormField({
 
     return (
         <View className="mb-4">
-            <Text className="text-xl font-bold text-gray-700 mb-2">
-                {label}
-            </Text>
+            {label && (
+                <Text className="text-xl font-bold text-gray-700 mb-2">
+                    {label}
+                </Text>
+            )}
 
             {type === "text" ? (
                 <>
                     <TextInput
-                        className="border border-gray-300 rounded-md px-3 py-3 text-base"
+                        className="border border-gray-300 rounded-md px-3 py-3 text-lg"
                         value={value}
                         onChangeText={onChangeText}
                         placeholder={placeholder}

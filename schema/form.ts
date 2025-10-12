@@ -1,10 +1,5 @@
 import z from "zod";
 
-interface Password {
-    password: string;
-    confirmPassword: string;
-}
-
 // Zod schema for validation
 export const fullNameSchema = z
     .string()
@@ -57,6 +52,11 @@ export const confirmPasswordSchema = z
         message: "Passwords don't match.",
         path: ["confirmPassword"],
     });
+
+export const signinSchema = z.object({
+    email: emailSchema,
+    password: passwordSchema,
+});
 
 export const signupSchema = z.object({
     fullName: fullNameSchema,
