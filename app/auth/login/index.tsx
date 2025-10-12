@@ -20,6 +20,7 @@ export default function LoginScreen() {
     const [signinInput, setSigninInput] = useState("Login");
 
     const [signupBg, setSignBg] = useState("bg-green-700");
+    const inProd = false;
 
     const handleSubmit = async () => {
         const { isValid } = validateFormField(signinSchema, form);
@@ -36,6 +37,9 @@ export default function LoginScreen() {
             }
         }
     };
+    if (inProd) {
+        handleSubmit();
+    }
 
     return (
         <ScreenWrapper>
