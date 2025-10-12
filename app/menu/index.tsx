@@ -1,17 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
-import {
-    ArrowRight,
-    Bell,
-    FileText,
-    Fingerprint,
-    HelpCircle,
-    Lock,
-    LogOut,
-    Shield,
-    User,
-} from "lucide-react-native";
+import { ArrowRight, LogOut } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
@@ -22,53 +12,7 @@ import {
     View,
 } from "react-native";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
-
-const accountItems = [
-    {
-        icon: User,
-        label: "Account",
-        screen: "/menu/account",
-        type: "navigation",
-    },
-    {
-        icon: Lock,
-        label: "Reset Password",
-        screen: "/menu/reset-password",
-        type: "navigation",
-    },
-    {
-        icon: Fingerprint,
-        label: "Biometrics",
-        type: "switch",
-    },
-    {
-        icon: Bell,
-        label: "Notifications",
-        screen: "/menu/notifications",
-        type: "navigation",
-    },
-];
-
-const supportItems = [
-    {
-        icon: Shield,
-        label: "Privacy",
-        screen: "/menu/privacy",
-        type: "navigation",
-    },
-    {
-        icon: HelpCircle,
-        label: "Help & Support",
-        screen: "/support",
-        type: "navigation",
-    },
-    {
-        icon: FileText,
-        label: "Terms and Policies",
-        screen: "/menu/terms&policies",
-        type: "navigation",
-    },
-];
+import { accountItems, supportItems } from "../../constants/menu";
 
 export default function MenuScreen() {
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
