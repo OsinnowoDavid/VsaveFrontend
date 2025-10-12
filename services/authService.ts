@@ -33,6 +33,7 @@ export const handleSignup = async (
         );
 
         const data = await response.json();
+        console.log(data);
 
         if (response.ok && data && data.status === "Success") {
             alert("Signup successful!");

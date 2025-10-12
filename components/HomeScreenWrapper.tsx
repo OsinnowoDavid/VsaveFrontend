@@ -29,7 +29,9 @@ export default function HomeScreenWrapper({
                     <NavButton
                         iconComponent={<HomeIcon isActive={true} />}
                         input="Home"
-                        onPress={() => {}}
+                        onPress={() => {
+                            router.push("/home");
+                        }}
                     />
                     <NavButton
                         input="Savings"
@@ -46,7 +48,9 @@ export default function HomeScreenWrapper({
                     <NavButton
                         input="Menu"
                         iconComponent={<MenuIcon />}
-                        onPress={() => {}}
+                        onPress={() => {
+                            router.push("/menu");
+                        }}
                     />
                 </View>
             )}

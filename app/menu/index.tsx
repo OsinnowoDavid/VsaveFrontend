@@ -1,0 +1,190 @@
+import { router } from "expo-router";
+import {
+    ArrowRight,
+    Bell,
+    FileText,
+    Fingerprint,
+    HelpCircle,
+    Lock,
+    LogOut,
+    Shield,
+    User,
+} from "lucide-react-native";
+import React, { useState } from "react";
+import {
+    Alert,
+    ScrollView,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
+import HomeScreenWrapper from "../../components/HomeScreenWrapper";
+
+const accountItems = [
+    {
+        icon: User,
+        label: "Account",
+        screen: "/menu/account",
+        type: "navigation",
+    },
+    {
+        icon: Lock,
+        label: "Reset Password",
+        screen: "/menu/reset-password",
+        type: "navigation",
+    },
+    {
+        icon: Fingerprint,
+        label: "Biometrics",
+        type: "switch",
+    },
+    {
+        icon: Bell,
+        label: "Notifications",
+        screen: "/menu/notifications",
+        type: "navigation",
+    },
+];
+
+const supportItems = [
+    {
+        icon: Shield,
+        label: "Privacy",
+        screen: "/menu/privacy",
+        type: "navigation",
+    },
+    {
+        icon: HelpCircle,
+        label: "Help & Support",
+        screen: "/support",
+        type: "navigation",
+    },
+    {
+        icon: FileText,
+        label: "Terms and Policies",
+        screen: "/menu/terms&policies",
+        type: "navigation",
+    },
+];
+
+export default function MenuScreen() {
+    const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
+    const toggleBiometrics = () =>
+        setIsBiometricsEnabled((previousState) => !previousState);
+
+    const handleLogout = () => {
+        Alert.alert(
+            "Log Out",
+            "Are you sure you want to log out?",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Log Out",
+                    onPress: () => router.replace("/auth/login"),
+                    style: "destructive",
+                },
+            ],
+            { cancelable: true },
+        );
+    };
+
+    return (
+        <HomeScreenWrapper bgColor="bg-gray-50">
+            <ScrollView className="flex-1">
+                <View className="p-4 mt-6">
+                    {/* Account Section */}
+                    <Text className="text-sm font-semibold text-gray-500 uppercase mb-2 px-1">
+                        Account
+                    </Text>
+                    <View className="bg-white rounded-lg shadow-sm mb-8">
+                        {accountItems.map((item, index) => (
+                            <TouchableOpacity
+                                key={item.label}
+                                className={`flex-row items-center justify-between p-4 ${
+                                    index < accountItems.length - 1
+                                        ? "border-b border-gray-100"
+                                        : ""
+                                }`}
+                                onPress={() =>
+                                    item.type === "navigation" &&
+                                    router.push(item.screen as any)
+                                }
+                                activeOpacity={item.type === "switch" ? 1 : 0.2}
+                            >
+                                <View className="flex-row items-center space-x-4">
+                                    <item.icon size={24} color="#4B5563" />
+                                    <Text className="text-base text-gray-700 ml-2">
+                                        {item.label}
+                                    </Text>
+                                </View>
+                                {item.type === "navigation" && (
+                                    <ArrowRight size={20} color="#9CA3AF" />
+                                )}
+                                {item.type === "switch" && (
+                                    <Switch
+                                        trackColor={{
+                                            false: "#767577",
+                                            true: "#1B8A52",
+                                        }}
+                                        thumbColor={
+                                            isBiometricsEnabled
+                                                ? "#f4f3f4"
+                                                : "#f4f3f4"
+                                        }
+                                        onValueChange={toggleBiometrics}
+                                        value={isBiometricsEnabled}
+                                    />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Support Section */}
+                    <Text className="text-sm font-semibold text-gray-500 uppercase mb-2 px-1">
+                        Support
+                    </Text>
+                    <View className="bg-white rounded-lg shadow-sm mb-8">
+                        {supportItems.map((item, index) => (
+                            <TouchableOpacity
+                                key={item.label}
+                                className={`flex-row items-center justify-between p-4 ${
+                                    index < supportItems.length - 1
+                                        ? "border-b border-gray-100"
+                                        : ""
+                                }`}
+                                onPress={() =>
+                                    item.type === "navigation" &&
+                                    router.push(item.screen as any)
+                                }
+                                activeOpacity={0.2}
+                            >
+                                <View className="flex-row items-center space-x-4">
+                                    <item.icon size={24} color="#4B5563" />
+                                    <Text className="text-base text-gray-700 ml-2">
+                                        {item.label}
+                                    </Text>
+                                </View>
+                                {item.type === "navigation" && (
+                                    <ArrowRight size={20} color="#9CA3AF" />
+                                )}
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Log Out Button */}
+                    <TouchableOpacity
+                        className="flex-row items-center space-x-4 p-4 bg-white rounded-lg shadow-sm"
+                        onPress={handleLogout}
+                    >
+                        <LogOut size={24} color="#EF4444" />
+                        <Text className="text-base text-red-500">Log Out</Text>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
+        </HomeScreenWrapper>
+    );
+}

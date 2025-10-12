@@ -1,3 +1,4 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -60,7 +61,7 @@ export default function LoginScreen() {
                 />
                 <Button
                     input={signinInput}
-                    onPress={handleSubmit}
+                    onPress={router.push("/home")}
                     color="text-white"
                     bg={signupBg}
                 />
