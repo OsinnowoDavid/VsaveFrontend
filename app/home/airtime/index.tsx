@@ -10,14 +10,19 @@ const Index = () => {
     const [phone, setPhone] = useState("");
 
     return (
-        <View>
-            <View className="mt-2">
+        <View className="w-[90%] mx-auto mt-2">
+            <View className="mt-3 w-full mx-auto bg-[#f5f5f5] flex gap-3">
                 <Balance />
+                <Button
+                    input="Topup my number"
+                    onPress={() => {}}
+                    variant="outline"
+                />
             </View>
 
-            <View className="absolute top-[200px] self-center w-[300px] bg-white rounded-xl p-4">
+            <View className="self-center bg-white rounded-xl p-4 w-full mt-8">
                 {/* Title */}
-                <Text className="text-[10px] font-medium text-[#212121] mb-2">
+                <Text className="text-sm font-medium text-[#212121] mb-2">
                     Choose Network
                 </Text>
 
@@ -43,7 +48,7 @@ const Index = () => {
                 </View>
 
                 {/* Fake Dropdown */}
-                <View className="w-[260px] h-[40px] bg-[#F9FAFB] border border-[#E5E7EA] rounded-lg px-3 justify-center mb-6">
+                <View className="h-[40px] bg-[#F9FAFB] border border-[#E5E7EA] rounded-lg px-3 justify-center mb-6">
                     <Text className="text-[#9EA2AE] text-[14px]">
                         {selectedNetwork
                             ? selectedNetwork.toUpperCase()
@@ -52,10 +57,10 @@ const Index = () => {
                 </View>
 
                 {/* Quick Amount Buttons */}
-                <View className="w-[260px] flex-col gap-3 mb-4">
+                <View className="flex-col gap-3 mb-4">
                     {/* First row */}
-                    <View className="flex-row justify-between">
-                        {quickAmounts.slice(0, 4).map((amt) => (
+                    <View className="flex-row flex-wrap justify-between gap-3">
+                        {quickAmounts.map((amt) => (
                             <TouchableOpacity
                                 key={amt}
                                 onPress={() => setAmount(String(amt))}
@@ -72,32 +77,7 @@ const Index = () => {
                                             : "text-[#1B8A52]"
                                     }`}
                                 >
-                                    N{amt}
-                                </Text>
-                            </TouchableOpacity>
-                        ))}
-                    </View>
-
-                    {/* Second row */}
-                    <View className="flex-row justify-between">
-                        {quickAmounts.slice(4, 8).map((amt) => (
-                            <TouchableOpacity
-                                key={amt}
-                                onPress={() => setAmount(String(amt))}
-                                className={`w-[60px] h-[39px] rounded-md items-center justify-center ${
-                                    amount === String(amt)
-                                        ? "bg-[#1B8A52]"
-                                        : "bg-[#FAFAFA]"
-                                }`}
-                            >
-                                <Text
-                                    className={`text-[12px] font-medium ${
-                                        amount === String(amt)
-                                            ? "text-white"
-                                            : "text-[#1B8A52]"
-                                    }`}
-                                >
-                                    N{amt}
+                                    ₦{amt}
                                 </Text>
                             </TouchableOpacity>
                         ))}
@@ -105,7 +85,7 @@ const Index = () => {
                 </View>
 
                 {/* Amount Input */}
-                <View className="w-[260px] mb-6">
+                <View className="mb-6">
                     <Text className="text-[12px] font-medium text-[#131927] mb-1">
                         Enter Amount
                     </Text>
@@ -119,8 +99,8 @@ const Index = () => {
                 </View>
 
                 {/* Phone Number Input */}
-                <View className="w-[260px]">
-                    <Text className="text-[12px] font-medium text-[#131927] mb-1">
+                <View>
+                    <Text className="text-sm font-medium text-[#131927] mb-1">
                         Phone Number
                     </Text>
                     <TextInput
@@ -135,7 +115,7 @@ const Index = () => {
                     <Button
                         input="Proceed"
                         onPress={() => {}}
-                        color="text-white"
+                        variant="classic"
                     />
                 </View>
             </View>

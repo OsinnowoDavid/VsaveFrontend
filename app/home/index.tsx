@@ -43,7 +43,9 @@ export default function Home() {
         {
             label: "Data",
             icon: <Wifi color="#1B8A52" size={28} />,
-            onPress: () => {},
+            onPress: () => {
+                router.push("/home/data");
+            },
         },
         {
             label: "Quick Loan",
