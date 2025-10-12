@@ -9,7 +9,7 @@ export default function FormWrapper({
     children: React.ReactNode;
 }) {
     return (
-        <KeyboardAvoidingWrapper>
+        <KeyboardAvoidingWrapper modal={true}>
             <View className="px-6 py-8 bg-white w-full rounded-t-3xl">
                 <Text className="text-2xl font-bold pb-4 mb-10 text-center border-b-[0.3px] border-gray-500">
                     {heading}

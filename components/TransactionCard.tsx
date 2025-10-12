@@ -51,9 +51,9 @@ export default function TransactionCard({
                 </View>
             </View>
             <View className="items-end">
-                <Text
-                    className={`text-base font-bold ${amountColor}`}
-                >{`${isCredit ? "+" : "-"}₦${amount}`}</Text>
+                <Text className={`text-base font-bold ${amountColor}`}>{`${
+                    isCredit ? "+" : "-"
+                }₦${amount}`}</Text>
                 <Text className={`text-xs ${statusColors[status]}`}>
                     {status}
                 </Text>

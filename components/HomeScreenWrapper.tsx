@@ -61,6 +61,7 @@ export default function HomeScreenWrapper({
                                 input={item.input}
                                 onPress={() =>
                                     item.href !== "/reward" &&
+                                    !isActive &&
                                     router.push(item.href as any)
                                 }
                             />

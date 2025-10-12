@@ -5,6 +5,7 @@ interface ButtonProps {
     input?: string;
     variant?: "classic" | "outline" | "glass";
     // Allow overriding for specific cases
+    children?: React.ReactNode;
     bg?: string;
     border?: string;
     color?: string;
@@ -14,6 +15,7 @@ export default function Button({
     onPress,
     input = "",
     variant = "classic",
+    children,
     bg,
     border,
     color,
@@ -42,11 +44,21 @@ export default function Button({
             }`}
             onPress={onPress}
         >
-            <Text
-                className={`text-center font-semibold ${color ? color : variantStyle.split(" ").find((s) => s.startsWith("text-"))}`}
-            >
-                {input}
-            </Text>
+            {children ? (
+                children
+            ) : (
+                <Text
+                    className={`text-center font-semibold ${
+                        color
+                            ? color
+                            : variantStyle
+                                  .split(" ")
+                                  .find((s) => s.startsWith("text-"))
+                    }`}
+                >
+                    {input}
+                </Text>
+            )}
         </Pressable>
     );
 }
