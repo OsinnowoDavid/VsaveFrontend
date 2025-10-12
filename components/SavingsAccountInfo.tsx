@@ -22,7 +22,7 @@ export default function SavingsAccountInfo() {
                     15:00
                 </Text>
             </View>
-            <Button input="continue" onPress={() => {}} />
+            <Button input="Continue" onPress={() => {}} />
         </View>
     );
 }

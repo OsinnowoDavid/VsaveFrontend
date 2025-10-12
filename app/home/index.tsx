@@ -1,12 +1,59 @@
 import { useRouter } from "expo-router";
-import { Bell, Send, UserCircleIcon } from "lucide-react-native";
-import { StatusBar, Text, View } from "react-native";
+import {
+    ArrowUpRight,
+    Banknote,
+    Bell,
+    Landmark,
+    PlusCircle,
+    Smartphone,
+    UserCircleIcon,
+    Wifi,
+} from "lucide-react-native";
+import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 import Balance from "../../components/Balance";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import NavButton from "../../components/NavButton";
+import TransactionCard from "../../components/TransactionCard";
+import { recentTransactions } from "../../constants/transactions";
 
 export default function Home() {
     const router = useRouter();
+
+    const quickActions = [
+        {
+            label: "Send",
+            icon: <ArrowUpRight color="#1B8A52" size={28} />,
+            onPress: () => {},
+        },
+        {
+            label: "Add Money",
+            icon: <PlusCircle color="#1B8A52" size={28} />,
+            onPress: () => router.push("/home/addMoney"),
+        },
+        {
+            label: "Terminal",
+            icon: <Landmark color="#1B8A52" size={28} />,
+            onPress: () => {},
+        },
+        {
+            label: "Airtime",
+            icon: <Smartphone color="#1B8A52" size={28} />,
+            onPress: () => router.push("/home/airtime"),
+        },
+        {
+            label: "Data",
+            icon: <Wifi color="#1B8A52" size={28} />,
+            onPress: () => {
+                router.push("/home/data");
+            },
+        },
+        {
+            label: "Quick Loan",
+            icon: <Banknote color="#1B8A52" size={28} />,
+            onPress: () => {},
+        },
+    ];
+
     return (
         <HomeScreenWrapper bgColor="bg-[#f5f5f5]">
             <StatusBar barStyle="dark-content" />
@@ -22,74 +69,21 @@ export default function Home() {
                 </View>
                 <Balance />
                 <View className="mt-8">
-                    <Text className="text-2xl font-semibold mb-4">
+                    <Text className="text-xl font-semibold mb-4">
                         Quick Actions
                     </Text>
                     <View className="flex flex-row flex-wrap justify-between gap-y-4">
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Send"
-                            onPress={() => {}}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send color="#1B8A52" />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Add Money"
-                            onPress={() => {}}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send color="#1B8A52" />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Terminal"
-                            onPress={() => {
-                                router.push("/home/addMoney");
-                            }}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Airtime"
-                            onPress={() => {
-                                router.push("/home/airtime");
-                            }}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Data"
-                            onPress={() => {}}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send />}
-                            width="w-[30%]"
-                        />
-                        <NavButton
-                            border="border-[0.01px]"
-                            bg="bg-[rgba(27,138,82,0.2)]"
-                            input="Quick Loan"
-                            onPress={() => {}}
-                            icon
-                            iconType="component"
-                            iconComponent={<Send />}
-                            width="w-[30%]"
-                        />
+                        {quickActions.map((action) => (
+                            <NavButton
+                                key={action.label}
+                                bg="bg-white"
+                                input={action.label}
+                                onPress={action.onPress}
+                                icon
+                                iconComponent={action.icon}
+                                width="w-[30%]"
+                            />
+                        ))}
                     </View>
                 </View>
                 <View className="mt-8">
@@ -97,11 +91,19 @@ export default function Home() {
                         <Text className="text-xl font-semibold">
                             Recent transactions
                         </Text>
-                        <Text className="text-[#1B8A52] text-[16px]">
-                            See all
-                        </Text>
+                        <TouchableOpacity
+                            onPress={() => router.push("/home/transactions")}
+                        >
+                            <Text className="text-[#1B8A52] text-base font-medium">
+                                See all
+                            </Text>
+                        </TouchableOpacity>
                     </View>
-                    <View className="bg-white h-44 rounded-xl"></View>
+                    <View className="bg-white rounded-xl p-2">
+                        {recentTransactions.map((tx, index) => (
+                            <TransactionCard key={index} {...tx} />
+                        ))}
+                    </View>
                 </View>
             </View>
         </HomeScreenWrapper>
