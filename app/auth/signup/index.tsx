@@ -2,14 +2,19 @@ import React, { useEffect, useState } from "react";
 import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
+import DatePickerField from "../../../components/DatePickerField";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
+import PhoneInput from "../../../components/PhoneInput";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
 import {
     confirmPasswordSchema,
+    dateOfBirthSchema,
     emailSchema,
     fullNameSchema,
+    genderSchema,
     passwordSchema,
+    phoneNumberSchema,
     signupSchema,
 } from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
@@ -19,6 +24,10 @@ export default function SignUpScreen() {
     const [form, setForm] = useState({
         fullName: "",
         email: "",
+        countryCode: "+234", // Default to Nigeria
+        phoneNumber: 9012345678,
+        gender: "", // Default to an empty string or a placeholder value
+        dateOfBirth: new Date(),
         password: "",
         confirmPassword: "",
     });
@@ -38,15 +47,30 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
+        // Strip leading zero from phone number if present
+        const formattedPhoneNumber = form.phoneNumber.toString().startsWith("0")
+            ? Number(form.phoneNumber.toString().substring(1))
+            : form.phoneNumber;
         const formObject = {
             fullName: form.fullName,
             email: form.email,
+            phoneNumber: Number(
+                `${form.countryCode.replace("+", "")}${formattedPhoneNumber}`,
+            ),
+            gender: form.gender, // Make sure your backend can handle this
+            dateOfBirth: form.dateOfBirth.toISOString().split("T")[0], // YYYY-MM-DD
             password: form.password,
         };
         setSignBg("bg-green-700");
-        const { isValid } = validateFormField(signupSchema, formObject);
+        const { isValid, errorMessage } = validateFormField(
+            signupSchema,
+            formObject,
+        );
+
         if (!isValid) {
-            alert("Some fields are incorrect. Please review the form.");
+            alert(
+                "Some fields are incorrect. Please review the form and correct the errors.",
+            );
         } else if (form.password !== form.confirmPassword) {
             alert("Passwords don't match.");
         } else {
@@ -94,6 +118,47 @@ export default function SignUpScreen() {
                         validate
                         schema={emailSchema}
                         field={form.email}
+                    />
+                    <PhoneInput
+                        label="Phone Number"
+                        phone={form.phoneNumber.toString()}
+                        countryCode={form.countryCode}
+                        onPhoneChange={(phoneNumber) => {
+                            const phone = Number(phoneNumber);
+                            setForm({ ...form, phoneNumber: phone });
+                            console.log(phoneNumber);
+                        }}
+                        onCountryChange={(countryCode) =>
+                            setForm({ ...form, countryCode })
+                        }
+                        placeholder="08012345678"
+                        validate
+                        schema={phoneNumberSchema}
+                        field={form.phoneNumber.toString()}
+                    />
+                    <FormField
+                        label="Gender"
+                        value={form.gender}
+                        onChangeText={(gender) => setForm({ ...form, gender })}
+                        type="select"
+                        options={[
+                            { label: "Select Gender", value: "" },
+                            { label: "Male", value: "male" },
+                            { label: "Female", value: "female" },
+                        ]}
+                        validate
+                        schema={genderSchema}
+                        field={form.gender}
+                    />
+                    <DatePickerField
+                        label="Date of Birth"
+                        value={form.dateOfBirth} // Pass the Date object
+                        onChange={(dateOfBirth) =>
+                            setForm({ ...form, dateOfBirth })
+                        }
+                        validate
+                        schema={dateOfBirthSchema}
+                        field={form.dateOfBirth}
                     />
                     <FormField
                         label="Password"

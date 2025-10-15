@@ -27,7 +27,7 @@ export default function FormField({
     type = "text",
     options = [],
     keyboardType,
-    validate,
+    validate = false,
     schema,
     field,
 }: FormFieldProps) {
@@ -45,12 +45,12 @@ export default function FormField({
 
     const inputContainerStyle =
         "w-full h-12 px-3 rounded-lg bg-gray-100 border border-gray-200 justify-center";
-    const textStyle = "text-sm text-gray-800";
+    const textStyle = "text-lg text-gray-800";
 
     return (
         <View className="mb-6">
             {label && (
-                <Text className="text-sm font-medium text-gray-800 mb-1">
+                <Text className="text-lg font-medium text-gray-800 mb-1">
                     {label}
                 </Text>
             )}
@@ -58,6 +58,8 @@ export default function FormField({
                 {type === "select" ? (
                     <Picker
                         selectedValue={value}
+                        onBlur={handleBlur}
+                        onFocus={handleFocus}
                         onValueChange={(itemValue) => onChangeText(itemValue)}
                     >
                         {options.map((option) => (
@@ -80,11 +82,10 @@ export default function FormField({
                             onBlur={handleBlur}
                             onFocus={handleFocus}
                         />
-                        {validate && <FormFieldError error={fieldError} />}
                     </>
                 )}
             </View>
-            <FormFieldError error={error} />
+            {validate && <FormFieldError error={fieldError} />}
         </View>
     );
 }
