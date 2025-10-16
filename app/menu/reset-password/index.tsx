@@ -130,7 +130,6 @@ export default function ResetPasswordScreen() {
         }
 
         // TODO: Add logic to save the new password
-        console.log("Resetting password with:", passwords.newPassword);
         Alert.alert("Success", "Password has been reset successfully!", [
             { text: "OK", onPress: () => router.push("/menu") },
         ]);
