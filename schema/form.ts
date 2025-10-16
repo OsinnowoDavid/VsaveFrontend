@@ -58,8 +58,39 @@ export const signinSchema = z.object({
     password: passwordSchema,
 });
 
+export const phoneNumberSchema = z
+    .string()
+    .trim()
+    .regex(/^\d+$/, "Phone number must contain only digits")
+    .refine(
+        (val) => {
+            if (val.startsWith("0")) {
+                return val.length === 11;
+            }
+            return val.length === 10;
+        },
+        { message: "Please enter a valid 10 or 11-digit phone number." },
+    );
+
+export const genderSchema = z
+    .string()
+    .min(1, "Gender is required")
+    .refine((val) => val === "male" || val === "female", {
+        message: "Please select a valid gender.",
+    });
+
+export const dateOfBirthSchema = z
+    .string()
+    .min(1, "Date of birth is required")
+    .refine((val) => new Date(val) <= new Date(), {
+        message: "Date of birth cannot be in the future.",
+    });
+
 export const signupSchema = z.object({
     fullName: fullNameSchema,
     email: emailSchema,
+    phoneNumber: phoneNumberSchema,
+    gender: genderSchema,
+    dateOfBirth: dateOfBirthSchema,
     password: passwordSchema,
 });

@@ -1,18 +1,13 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
-import { ArrowRight, LogOut } from "lucide-react-native";
+import { LogOut } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
-import {
-    Alert,
-    ScrollView,
-    Switch,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
-import { accountItems, supportItems } from "../../constants/menu";
+import MenuListItem from "../../components/MenuListItem";
+import { accountItems, supportItems } from "../../constants/menuItems";
+import useAuthStore from "../../store/useAuthStore";
 
 export default function MenuScreen() {
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
@@ -74,6 +69,7 @@ export default function MenuScreen() {
     };
 
     const handleLogout = () => {
+        const logout = useAuthStore.getState().logout;
         Alert.alert(
             "Log Out",
             "Are you sure you want to log out?",
@@ -84,7 +80,10 @@ export default function MenuScreen() {
                 },
                 {
                     text: "Log Out",
-                    onPress: () => router.replace("/auth/login"),
+                    onPress: () => {
+                        logout();
+                        router.replace("/auth/login");
+                    },
                     style: "destructive",
                 },
             ],
@@ -102,44 +101,13 @@ export default function MenuScreen() {
                     </Text>
                     <View className="bg-white rounded-lg shadow-sm mb-8">
                         {accountItems.map((item, index) => (
-                            <TouchableOpacity
+                            <MenuListItem
                                 key={item.label}
-                                className={`flex-row items-center justify-between p-4 ${
-                                    index < accountItems.length - 1
-                                        ? "border-b border-gray-100"
-                                        : ""
-                                }`}
-                                onPress={() =>
-                                    item.type === "navigation" &&
-                                    router.push(item.screen as any)
-                                }
-                                activeOpacity={item.type === "switch" ? 1 : 0.2}
-                            >
-                                <View className="flex-row items-center space-x-4">
-                                    <item.icon size={24} color="#4B5563" />
-                                    <Text className="text-base text-gray-700 ml-2">
-                                        {item.label}
-                                    </Text>
-                                </View>
-                                {item.type === "navigation" && (
-                                    <ArrowRight size={20} color="#9CA3AF" />
-                                )}
-                                {item.type === "switch" && (
-                                    <Switch
-                                        trackColor={{
-                                            false: "#767577",
-                                            true: "#1B8A52",
-                                        }}
-                                        thumbColor={
-                                            isBiometricsEnabled
-                                                ? "#f4f3f4"
-                                                : "#f4f3f4"
-                                        }
-                                        onValueChange={handleBiometricsToggle}
-                                        value={isBiometricsEnabled}
-                                    />
-                                )}
-                            </TouchableOpacity>
+                                item={item}
+                                isLastItem={index === accountItems.length - 1}
+                                switchValue={isBiometricsEnabled}
+                                onSwitchChange={handleBiometricsToggle}
+                            />
                         ))}
                     </View>
 
@@ -149,29 +117,11 @@ export default function MenuScreen() {
                     </Text>
                     <View className="bg-white rounded-lg shadow-sm mb-8">
                         {supportItems.map((item, index) => (
-                            <TouchableOpacity
+                            <MenuListItem
                                 key={item.label}
-                                className={`flex-row items-center justify-between p-4 ${
-                                    index < supportItems.length - 1
-                                        ? "border-b border-gray-100"
-                                        : ""
-                                }`}
-                                onPress={() =>
-                                    item.type === "navigation" &&
-                                    router.push(item.screen as any)
-                                }
-                                activeOpacity={0.2}
-                            >
-                                <View className="flex-row items-center space-x-4">
-                                    <item.icon size={24} color="#4B5563" />
-                                    <Text className="text-base text-gray-700 ml-2">
-                                        {item.label}
-                                    </Text>
-                                </View>
-                                {item.type === "navigation" && (
-                                    <ArrowRight size={20} color="#9CA3AF" />
-                                )}
-                            </TouchableOpacity>
+                                item={item}
+                                isLastItem={index === supportItems.length - 1}
+                            />
                         ))}
                     </View>
 
@@ -181,7 +131,9 @@ export default function MenuScreen() {
                         onPress={handleLogout}
                     >
                         <LogOut size={24} color="#EF4444" />
-                        <Text className="text-base text-red-500">Log Out</Text>
+                        <Text className="text-lg text-red-500 ml-2">
+                            Log Out
+                        </Text>
                     </TouchableOpacity>
                 </View>
             </ScrollView>

@@ -1,19 +1,27 @@
-# Vsave
+# Vsave Frontend Repository
 
-![Vsave Logo](./assets/images/favicon/web-app-manifest-192x192.png)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend)
+[![GitHub Issues](https://img.shields.io/github/issues/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend/issues)
+[![License](https://img.shields.io/github/license/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend/blob/main/LICENSE)
+[![Typescript](https://img.shields.io/badge/TypeScript-4.9.5-blue?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React_Native-0.71.8-blue?style=flat-square&logo=react&logoColor=white)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-48.0.18-green?style=flat-square&logo=expo&logoColor=white)](https://expo.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.2-blue?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Zod](https://img.shields.io/badge/Zod-3.21.4-yellow?style=flat-square)]
 
-Vsave is a digital savings and wallet platform designed to help lottery (lotto) agents manage money seamlessly. The system features a tiered hierarchy for team management, robust saving and wallet functionalities, and a comprehensive admin console for managing all aspects of the platform.
+![Vsave Logo](./assets/images/web-app-manifest-192x192.png)
+
+This repository contains the official frontend application for **Vsave**, a digital savings and wallet platform. It is built with React Native and Expo, providing a seamless mobile experience for users to manage their finances.
 
 ---
 
-## Features
+## Implemented Features
 
--   **Team & User Management:** The platform provides a clear, competitive, and trackable hierarchy for team management, from General Admin down to individual Marketers. Marketers can onboard new users, and admins can set savings targets and monitor performance via leaderboards.
--   **Saving Management:** Users can set up daily, weekly, or monthly savings plans, as well as fixed savings products. The system includes a configurable admin fee structure and rules for handling insufficient funds and early withdrawals.
--   **Wallet & Overdraft Management:** Users are assigned a unique virtual account for instant deposits and can withdraw funds to any Nigerian bank account or another Vsave user. The platform also features an overdraft system with configurable eligibility rules, limits, and repayment plans.
--   **Bonus & Fraud Prevention:** A separate bonus wallet rewards users for manual cash deposits, referrals, and transfers. The system includes controls to prevent fraud, such as flagging double transfers and limiting daily bonus transfers.
--   **Accounting & Reporting:** A double-entry general ledger and automated journal posting engine ensure accurate financial records. The system provides real-time dashboards and downloadable reports for key metrics, including deposits, withdrawals, fees, and marketer performance.
--   **Risk Management:** A risk management framework is in place to ensure solvency, with features like liquidity pools, overdraft risk controls, and a user credit scoring algorithm to assess risk dynamically.
+- **User Authentication:** Secure sign-up flow with robust, real-time form validation.
+- **Custom Form Components:** Reusable and validated components for various inputs:
+  - **Phone Input:** A custom-built, searchable country code picker.
+  - **Date Picker:** Native date picker for a smooth user experience.
+  - **Standard Fields:** Consistently styled and validated fields for text, email, and passwords.
 
 ---
 
@@ -21,18 +29,29 @@ Vsave is a digital savings and wallet platform designed to help lottery (lotto) 
 
 This project is built using the following technologies:
 
--   **React Native** - The framework for building native apps.
--   **Expo** - The toolchain for building and deploying React Native apps.
--   **TypeScript** - A typed superset of JavaScript for enhanced code quality.
--   **Node.js** - For backend services and development tools.
+- **Framework:** React Native with Expo SDK.
+- **Language:** TypeScript.
+- **Styling:** Tailwind CSS (via `nativewind`).
+- **State Management:** React Hooks (`useState`, `useEffect`).
+- **Form Validation:** Zod for schema-based validation.
+- **UI Components:**
+  - `@react-native-picker/picker`
+  - `@react-native-community/datetimepicker`
+- **Icons:** `lucide-react-native`.
+- **Utilities:** `country-state-city` for country and phone code data.
 
-### Service Integrations
+---
 
-The Vsave platform integrates with several third-party services to ensure functionality, security, and compliance:
+## Project Structure
 
--   **Banking & Payments:** Wema Bank (ALAT APIs), Sterling Bank (PaywithSpecta), and GTBank (Squad) for virtual accounts, real-time payments, and transfers.
--   **KYC & Compliance:** SmileID for ID verification, face match, and sanctions screening to comply with CBN AML/CFT regulations.
--   **Communication:** A dual SMS provider strategy with Termii for OTP verification and SmartSMS for alerts and bulk messaging.
+The project follows a standard Expo application structure:
+
+- `app/`: Contains all the screens and navigation logic (using Expo Router).
+- `components/`: Houses reusable components used across the application (e.g., `Button`, `FormField`, `PhoneInput`).
+- `hooks/`: For custom React hooks (e.g., `useKeyboardVisible`).
+- `schema/`: Zod schemas for form and data validation.
+- `services/`: Functions for interacting with the backend API.
+- `utils/`: Helper functions and utilities.
 
 ---
 
@@ -43,7 +62,7 @@ Follow these steps to get the project up and running on your local machine.
 1. **Clone the repository**
 
     ```bash
-    git clone [https://github.com/OsinnowoDavid/VsaveFrontend.git](https://github.com/OsinnowoDavid/VsaveFrontend.git)
+    git clone https://github.com/OsinnowoDavid/VsaveFrontend.git
     ```
 
 2. **Navigate to the project directory**
@@ -70,7 +89,7 @@ Follow these steps to get the project up and running on your local machine.
 
 After installation, you can run the app in different ways:
 
--   **Run on a local development server**
+- **Run on a local development server**
 
     ```bash
     npm start

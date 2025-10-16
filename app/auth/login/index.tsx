@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { Alert } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
@@ -17,29 +18,36 @@ export default function LoginScreen() {
         email: "",
         password: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
     const [signinInput, setSigninInput] = useState("Login");
 
     const [signupBg, setSignBg] = useState("bg-green-700");
-    const inProd = false;
 
     const handleSubmit = async () => {
+        if (isLoading) return;
+
         const { isValid } = validateFormField(signinSchema, form);
         setSignBg("bg-green-700");
         if (!isValid) {
-            alert("Some fields are incorrect. Please review the form.");
+            Alert.alert(
+                "Invalid Input",
+                "Some fields are incorrect. Please review the form.",
+            );
         } else {
+            setIsLoading(true);
             setSigninInput("Logging you in...");
             const response = await handleSignin(form);
-            if (response === true) setSigninInput("Login Success!");
-            else {
+            setIsLoading(false);
+            if (response.success) {
+                setSigninInput("Login Success!");
+                router.replace("/home"); // Navigate to home on success
+            } else {
                 setSigninInput("Login failed! Please try again");
                 setSignBg("bg-red-600");
+                Alert.alert("Login Failed", response.message);
             }
         }
     };
-    if (inProd) {
-        handleSubmit();
-    }
 
     return (
         <ScreenWrapper>
@@ -65,9 +73,10 @@ export default function LoginScreen() {
                 />
                 <Button
                     input={signinInput}
-                    onPress={() => router.push("/home")}
+                    onPress={handleSubmit}
                     color="text-white"
                     bg={signupBg}
+                    disabled={isLoading}
                 />
             </FormWrapper>
         </ScreenWrapper>

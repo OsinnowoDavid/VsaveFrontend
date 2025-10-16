@@ -7,50 +7,51 @@ import {
     Shield,
     User,
 } from "lucide-react-native";
+import { MenuItem } from "../components/MenuListItem";
 
-export const accountItems = [
+export const accountItems: MenuItem[] = [
     {
-        icon: User,
         label: "Account",
+        icon: User,
+        type: "navigation",
         screen: "/menu/account",
-        type: "navigation",
     },
     {
-        icon: Lock,
         label: "Reset Password",
-        screen: "/menu/reset-password",
+        icon: Lock,
         type: "navigation",
+        screen: "/menu/reset-password",
     },
     {
-        icon: Fingerprint,
         label: "Biometrics",
+        icon: Fingerprint,
         type: "switch",
     },
     {
-        icon: Bell,
         label: "Notifications",
-        screen: "/menu/notifications",
+        icon: Bell,
         type: "navigation",
+        screen: "/menu/notifications",
     },
 ];
 
-export const supportItems = [
+export const supportItems: MenuItem[] = [
     {
-        icon: Shield,
         label: "Privacy",
+        icon: Shield,
+        type: "navigation",
         screen: "/menu/privacy",
-        type: "navigation",
     },
     {
-        icon: HelpCircle,
         label: "Help & Support",
-        screen: "/menu",
+        icon: HelpCircle,
         type: "navigation",
+        screen: "/menu",
     },
     {
-        icon: FileText,
         label: "Terms and Policies",
-        screen: "/menu/terms&policies",
+        icon: FileText,
         type: "navigation",
+        screen: "/menu/terms&policies",
     },
 ];
