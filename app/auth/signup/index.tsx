@@ -1,5 +1,12 @@
+import { RelativePathString, router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
+import {
+    Alert,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StatusBarStyle,
+} from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import DatePickerField from "../../../components/DatePickerField";
@@ -24,8 +31,8 @@ export default function SignUpScreen() {
     const [form, setForm] = useState({
         fullName: "",
         email: "",
-        countryCode: "+234", // Default to Nigeria
-        phoneNumber: 9012345678,
+        countryCode: "234",
+        phoneNumber: "", // Store as string
         gender: "", // Default to an empty string or a placeholder value
         dateOfBirth: new Date(),
         password: "",
@@ -40,6 +47,8 @@ export default function SignUpScreen() {
 
     const [signupBg, setSignBg] = useState("bg-green-700");
 
+    const [isLoading, setIsLoading] = useState(false);
+
     function handleKeyboardVisible() {
         setBarStyle(keyboardVisible ? "dark-content" : "light-content");
     }
@@ -47,40 +56,70 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
-        // Strip leading zero from phone number if present
-        const formattedPhoneNumber = form.phoneNumber.toString().startsWith("0")
-            ? Number(form.phoneNumber.toString().substring(1))
-            : form.phoneNumber;
-        const formObject = {
+        if (isLoading) return;
+
+        // 1. Validate the form data first
+        const validationData = {
             fullName: form.fullName,
             email: form.email,
-            phoneNumber: Number(
-                `${form.countryCode.replace("+", "")}${formattedPhoneNumber}`,
-            ),
-            gender: form.gender, // Make sure your backend can handle this
-            dateOfBirth: form.dateOfBirth.toISOString().split("T")[0], // YYYY-MM-DD
+            phoneNumber: form.phoneNumber,
+            gender: form.gender,
+            dateOfBirth: form.dateOfBirth.toISOString(), // Use ISO string for validation
             password: form.password,
         };
-        setSignBg("bg-green-700");
-        const { isValid, errorMessage } = validateFormField(
-            signupSchema,
-            formObject,
-        );
+
+        const { isValid } = validateFormField(signupSchema, validationData);
 
         if (!isValid) {
-            alert(
-                "Some fields are incorrect. Please review the form and correct the errors.",
+            Alert.alert(
+                "Validation Error",
+                "Some fields are incorrect. Please review the form.",
             );
-        } else if (form.password !== form.confirmPassword) {
-            alert("Passwords don't match.");
+            return;
+        }
+
+        if (form.password !== form.confirmPassword) {
+            Alert.alert("Validation Error", "Passwords don't match.");
+            return;
+        }
+
+        // 2. Format the payload for the API
+        const nameParts = form.fullName.trim().split(" ");
+        const apiPayload = {
+            firstName: nameParts[0],
+            lastName: nameParts.slice(1).join(" ") || nameParts[0], // Handle single name case
+            email: form.email,
+            password: form.password,
+            gender: form.gender.charAt(0).toUpperCase() + form.gender.slice(1), // Capitalize (e.g., "male" -> "Male")
+            dateOfBirth: form.dateOfBirth.toISOString().split("T")[0], // Format as YYYY-MM-DD
+            phoneNumber: form.phoneNumber, // Send local number as is
+        };
+
+        // 3. Submit to the backend
+        setIsLoading(true);
+        setSignupInput("Submitting...");
+        setSignBg("bg-green-700");
+        const response = await handleSignup(apiPayload);
+        setIsLoading(false);
+
+        if (response.success) {
+            setSignupInput("Success! Account Created");
+            Alert.alert("Registration Successful", response.data?.message, [
+                {
+                    text: "OK",
+                    // TODO: Navigate to email verification screen
+                    onPress: () =>
+                        router.push({
+                            pathname:
+                                "/auth/verify-email" as RelativePathString,
+                            params: { email: apiPayload.email },
+                        }),
+                },
+            ]);
         } else {
-            setSignupInput("Submiting...");
-            const response = await handleSignup(formObject);
-            if (response === true) setSignupInput("Success! Account Created");
-            else {
-                setSignupInput("An error occured! Please try again");
-                setSignBg("bg-red-600");
-            }
+            setSignupInput("An error occurred!");
+            setSignBg("bg-red-600");
+            Alert.alert("Registration Failed", response.message);
         }
     };
 
@@ -121,20 +160,18 @@ export default function SignUpScreen() {
                     />
                     <PhoneInput
                         label="Phone Number"
-                        phone={form.phoneNumber.toString()}
+                        phone={form.phoneNumber}
                         countryCode={form.countryCode}
-                        onPhoneChange={(phoneNumber) => {
-                            const phone = Number(phoneNumber);
-                            setForm({ ...form, phoneNumber: phone });
-                            console.log(phoneNumber);
-                        }}
+                        onPhoneChange={(phoneNumber) =>
+                            setForm({ ...form, phoneNumber })
+                        }
                         onCountryChange={(countryCode) =>
                             setForm({ ...form, countryCode })
                         }
                         placeholder="08012345678"
                         validate
                         schema={phoneNumberSchema}
-                        field={form.phoneNumber.toString()}
+                        field={form.phoneNumber} // Pass as string
                     />
                     <FormField
                         label="Gender"
@@ -158,7 +195,7 @@ export default function SignUpScreen() {
                         }
                         validate
                         schema={dateOfBirthSchema}
-                        field={form.dateOfBirth}
+                        field={form.dateOfBirth.toISOString()}
                     />
                     <FormField
                         label="Password"
@@ -193,6 +230,7 @@ export default function SignUpScreen() {
                         onPress={handleSubmit}
                         color="text-white"
                         bg={signupBg}
+                        disabled={isLoading}
                     />
                 </ScrollView>
             </FormWrapper>

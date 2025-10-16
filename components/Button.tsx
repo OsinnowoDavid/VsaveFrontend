@@ -9,6 +9,7 @@ interface ButtonProps {
     bg?: string;
     border?: string;
     color?: string;
+    disabled?: boolean;
 }
 
 export default function Button({
@@ -19,6 +20,7 @@ export default function Button({
     bg,
     border,
     color,
+    disabled = false,
 }: ButtonProps) {
     const variants = {
         classic: "bg-green-700 text-white",
@@ -43,6 +45,7 @@ export default function Button({
                     : `${bg} ${border}`
             }`}
             onPress={onPress}
+            disabled={disabled}
         >
             {children ? (
                 children

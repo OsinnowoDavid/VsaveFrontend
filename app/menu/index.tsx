@@ -7,6 +7,7 @@ import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import MenuListItem from "../../components/MenuListItem";
 import { accountItems, supportItems } from "../../constants/menuItems";
+import useAuthStore from "../../store/useAuthStore";
 
 export default function MenuScreen() {
     const [isBiometricsEnabled, setIsBiometricsEnabled] = useState(false);
@@ -68,6 +69,7 @@ export default function MenuScreen() {
     };
 
     const handleLogout = () => {
+        const logout = useAuthStore.getState().logout;
         Alert.alert(
             "Log Out",
             "Are you sure you want to log out?",
@@ -78,7 +80,10 @@ export default function MenuScreen() {
                 },
                 {
                     text: "Log Out",
-                    onPress: () => router.replace("/auth/login"),
+                    onPress: () => {
+                        logout();
+                        router.replace("/auth/login");
+                    },
                     style: "destructive",
                 },
             ],

@@ -1,37 +1,41 @@
-import * as SecureStore from "expo-secure-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
 
 interface AuthState {
     token: string | null;
-    isAuthenticated: boolean;
-    login: (userToken: string) => Promise<void>;
-    logout: () => Promise<void>;
-    initialize: () => Promise<void>;
+    isAuthLoading: boolean;
+    login: (token: string) => void;
+    logout: () => void;
+    hydrate: () => void;
 }
 
 const useAuthStore = create<AuthState>((set) => ({
     token: null,
-    isAuthenticated: false,
-
-    // Action to set the token on login
-    login: async (userToken: string) => {
-        set({ token: userToken, isAuthenticated: true });
-        await SecureStore.setItemAsync("userToken", userToken);
+    isAuthLoading: true, // Start in a loading state
+    login: (token: string) => {
+        set({ token, isAuthLoading: false });
+        AsyncStorage.setItem("authToken", token);
     },
-
-    // Action to clear the token and log out
-    logout: async () => {
-        set({ token: null, isAuthenticated: false });
-        await SecureStore.deleteItemAsync("userToken");
+    logout: () => {
+        set({ token: null, isAuthLoading: false });
+        AsyncStorage.removeItem("authToken");
     },
-
-    // Action to initialize the state from secure storage
-    initialize: async () => {
-        const userToken = await SecureStore.getItemAsync("userToken");
-        if (userToken) {
-            set({ token: userToken, isAuthenticated: true });
+    // Function to load the token from storage on app startup
+    hydrate: async () => {
+        try {
+            const token = await AsyncStorage.getItem("authToken");
+            if (token) {
+                set({ token });
+            }
+        } catch (e) {
+            console.error("Failed to load auth token from storage", e);
+        } finally {
+            set({ isAuthLoading: false }); // Hydration is complete
         }
     },
 }));
+
+// Immediately attempt to hydrate the store when the app loads
+useAuthStore.getState().hydrate();
 
 export default useAuthStore;

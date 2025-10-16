@@ -1,6 +1,15 @@
-# Vsave Frontend
+# Vsave Frontend Repository
 
-![Vsave Logo](./assets/images/favicon/web-app-manifest-192x192.png)
+[![GitHub Repo Size](https://img.shields.io/github/repo-size/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend)
+[![GitHub Issues](https://img.shields.io/github/issues/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend/issues)
+[![License](https://img.shields.io/github/license/OsinnowoDavid/VsaveFrontend?style=flat-square)](https://github.com/OsinnowoDavid/VsaveFrontend/blob/main/LICENSE)
+[![Typescript](https://img.shields.io/badge/TypeScript-4.9.5-blue?style=flat-square&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![React Native](https://img.shields.io/badge/React_Native-0.71.8-blue?style=flat-square&logo=react&logoColor=white)](https://reactnative.dev/)
+[![Expo](https://img.shields.io/badge/Expo-48.0.18-green?style=flat-square&logo=expo&logoColor=white)](https://expo.dev/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-3.3.2-blue?style=flat-square&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Zod](https://img.shields.io/badge/Zod-3.21.4-yellow?style=flat-square)]
+
+![Vsave Logo](./assets/images/web-app-manifest-192x192.png)
 
 This repository contains the official frontend application for **Vsave**, a digital savings and wallet platform. It is built with React Native and Expo, providing a seamless mobile experience for users to manage their finances.
 
