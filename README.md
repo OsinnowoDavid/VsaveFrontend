@@ -17,11 +17,11 @@ This repository contains the official frontend application for **Vsave**, a digi
 
 ## Implemented Features
 
--   **User Authentication:** Secure sign-up flow with robust, real-time form validation.
--   **Custom Form Components:** Reusable and validated components for various inputs:
-    -   **Phone Input:** A custom-built, searchable country code picker.
-    -   **Date Picker:** Native date picker for a smooth user experience.
-    -   **Standard Fields:** Consistently styled and validated fields for text, email, and passwords.
+- **User Authentication:** Secure sign-up flow with robust, real-time form validation.
+- **Custom Form Components:** Reusable and validated components for various inputs:
+  - **Phone Input:** A custom-built, searchable country code picker.
+  - **Date Picker:** Native date picker for a smooth user experience.
+  - **Standard Fields:** Consistently styled and validated fields for text, email, and passwords.
 
 ---
 
@@ -29,16 +29,16 @@ This repository contains the official frontend application for **Vsave**, a digi
 
 This project is built using the following technologies:
 
--   **Framework:** React Native with Expo SDK.
--   **Language:** TypeScript.
--   **Styling:** Tailwind CSS (via `nativewind`).
--   **State Management:** React Hooks (`useState`, `useEffect`).
--   **Form Validation:** Zod for schema-based validation.
--   **UI Components:**
-    -   `@react-native-picker/picker`
-    -   `@react-native-community/datetimepicker`
--   **Icons:** `lucide-react-native`.
--   **Utilities:** `country-state-city` for country and phone code data.
+- **Framework:** React Native with Expo SDK.
+- **Language:** TypeScript.
+- **Styling:** Tailwind CSS (via `nativewind`).
+- **State Management:** React Hooks (`useState`, `useEffect`).
+- **Form Validation:** Zod for schema-based validation.
+- **UI Components:**
+  - `@react-native-picker/picker`
+  - `@react-native-community/datetimepicker`
+- **Icons:** `lucide-react-native`.
+- **Utilities:** `country-state-city` for country and phone code data.
 
 ---
 
@@ -46,12 +46,12 @@ This project is built using the following technologies:
 
 The project follows a standard Expo application structure:
 
--   `app/`: Contains all the screens and navigation logic (using Expo Router).
--   `components/`: Houses reusable components used across the application (e.g., `Button`, `FormField`, `PhoneInput`).
--   `hooks/`: For custom React hooks (e.g., `useKeyboardVisible`).
--   `schema/`: Zod schemas for form and data validation.
--   `services/`: Functions for interacting with the backend API.
--   `utils/`: Helper functions and utilities.
+- `app/`: Contains all the screens and navigation logic (using Expo Router).
+- `components/`: Houses reusable components used across the application (e.g., `Button`, `FormField`, `PhoneInput`).
+- `hooks/`: For custom React hooks (e.g., `useKeyboardVisible`).
+- `schema/`: Zod schemas for form and data validation.
+- `services/`: Functions for interacting with the backend API.
+- `utils/`: Helper functions and utilities.
 
 ---
 
@@ -89,7 +89,7 @@ Follow these steps to get the project up and running on your local machine.
 
 After installation, you can run the app in different ways:
 
--   **Run on a local development server**
+- **Run on a local development server**
 
     ```bash
     npm start

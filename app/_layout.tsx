@@ -1,6 +1,5 @@
 import { Slot, useRouter, useSegments } from "expo-router";
 import React, { useEffect } from "react";
-import SplashScreen from "../components/SplashScreen";
 import useAuthStore from "../store/useAuthStore";
 
 const useProtectedRoute = () => {
@@ -36,8 +35,7 @@ export default function RootLayout() {
     // while the auth state is being determined.
     const { isAuthLoading } = useAuthStore();
     if (isAuthLoading) {
-        return <SplashScreen />;
+        // return <SplashScreen />;
     }
-
     return <Slot />;
 }

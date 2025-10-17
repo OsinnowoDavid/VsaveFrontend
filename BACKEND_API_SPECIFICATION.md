@@ -20,10 +20,10 @@ This document provides a comprehensive list of all exposed RESTful API endpoints
 
 ## 1. General Information
 
--   **Protocol:** All API communication must be over **HTTPS**.
--   **Data Format:** All request and response bodies must be in **JSON** format.
--   **Content-Type:** The `Content-Type: application/json` header is required for all `POST`, `PUT`, and `PATCH` requests.
--   **Password Hashing:** Passwords are never returned in responses. They are securely hashed using **Argon2**.
+- **Protocol:** All API communication must be over **HTTPS**.
+- **Data Format:** All request and response bodies must be in **JSON** format.
+- **Content-Type:** The `Content-Type: application/json` header is required for all `POST`, `PUT`, and `PATCH` requests.
+- **Password Hashing:** Passwords are never returned in responses. They are securely hashed using **Argon2**.
 
 ---
 
@@ -82,8 +82,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /user/register`
 
--   **Description:** Registers a new user account.
--   **Access:** Public
+- **Description:** Registers a new user account.
+- **Access:** Public
 
 **Request Body:**
 
@@ -113,8 +113,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /user/login`
 
--   **Description:** Authenticates a user and returns a JWT.
--   **Access:** Public
+- **Description:** Authenticates a user and returns a JWT.
+- **Access:** Public
 
 **Request Body:**
 
@@ -137,8 +137,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /user/verify-email`
 
--   **Description:** Verifies a user's email with a token.
--   **Access:** Public
+- **Description:** Verifies a user's email with a token.
+- **Access:** Public
 
 **Request Body:**
 
@@ -160,8 +160,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /user/resend-verification-token`
 
--   **Description:** Requests a new email verification token.
--   **Access:** Public
+- **Description:** Requests a new email verification token.
+- **Access:** Public
 
 **Request Body:**
 
@@ -238,8 +238,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `GET /banks`
 
--   **Description:** Retrieves a list of all available banks and their codes (from Flutterwave).
--   **Access:** Auth Required (User)
+- **Description:** Retrieves a list of all available banks and their codes (from Flutterwave).
+- **Access:** Auth Required (User)
 
 **Success Response (200 OK):**
 
@@ -264,8 +264,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /accounts/resolve`
 
--   **Description:** Verifies bank account details.
--   **Access:** Auth Required (User)
+- **Description:** Verifies bank account details.
+- **Access:** Auth Required (User)
 
 **Request Body:**
 
@@ -291,8 +291,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /account/virtual`
 
--   **Description:** Creates a virtual bank account for the authenticated user (via SquadCo).
--   **Access:** Auth Required (User)
+- **Description:** Creates a virtual bank account for the authenticated user (via SquadCo).
+- **Access:** Auth Required (User)
 
 **Request Body:**
 
@@ -323,8 +323,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /vending/airtime`
 
--   **Description:** Purchases airtime for a specified phone number.
--   **Access:** Auth Required (User)
+- **Description:** Purchases airtime for a specified phone number.
+- **Access:** Auth Required (User)
 
 **Request Body:**
 
@@ -349,9 +349,9 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `GET /vending/data-plans/:network`
 
--   **Description:** Retrieves available data plans for a specified network.
--   **Access:** Auth Required (User)
--   **URL Params:** `network` (e.g., `MTN`, `GLO`, `AIRTEL`)
+- **Description:** Retrieves available data plans for a specified network.
+- **Access:** Auth Required (User)
+- **URL Params:** `network` (e.g., `MTN`, `GLO`, `AIRTEL`)
 
 **Example URL:** `/api/v1/vending/data-plans/MTN`
 
@@ -374,8 +374,8 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 
 ### `POST /vending/data`
 
--   **Description:** Purchases a data plan for a specified phone number.
--   **Access:** Auth Required (User)
+- **Description:** Purchases a data plan for a specified phone number.
+- **Access:** Auth Required (User)
 
 **Request Body:**
 

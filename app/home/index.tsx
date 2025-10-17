@@ -30,7 +30,7 @@ export default function Home() {
         {
             label: "Add Money",
             icon: <PlusCircle color="#1B8A52" size={28} />,
-            onPress: () => router.push("/home/addMoney"),
+            onPress: () => router.push("/home/add-money"),
         },
         {
             label: "Terminal",
@@ -65,8 +65,14 @@ export default function Home() {
                         Welcome, David
                     </Text>
                     <View className="flex flex-row gap-5">
-                        <UserCircleIcon color={"#1B8A52"} />
-                        <Bell color={"#1B8A52"} />
+                        <UserCircleIcon
+                            color={"#1B8A52"}
+                            onPress={() => router.push("/menu/account")}
+                        />
+                        <Bell
+                            color={"#1B8A52"}
+                            onPress={() => router.push("/menu/notifications")}
+                        />
                     </View>
                 </View>
                 <Balance />
