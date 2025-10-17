@@ -1,17 +1,11 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
-import {
-    emailSchema,
-    passwordSchema,
-    signinSchema,
-} from "../../../schema/form";
-import { handleSignin } from "../../../services/authService";
-import { validateFormField } from "../../../utils";
+import { emailSchema, passwordSchema } from "../../../schema/form";
+import useAuthStore from "../../../store/useAuthStore";
 
 export default function LoginScreen() {
     const [form, setForm] = useState({
@@ -24,29 +18,12 @@ export default function LoginScreen() {
     const [signupBg, setSignBg] = useState("bg-green-700");
 
     const handleSubmit = async () => {
-        if (isLoading) return;
-
-        const { isValid } = validateFormField(signinSchema, form);
-        setSignBg("bg-green-700");
-        if (!isValid) {
-            Alert.alert(
-                "Invalid Input",
-                "Some fields are incorrect. Please review the form.",
-            );
-        } else {
-            setIsLoading(true);
-            setSigninInput("Logging you in...");
-            const response = await handleSignin(form);
-            setIsLoading(false);
-            if (response.success) {
-                setSigninInput("Login Success!");
-                router.replace("/home"); // Navigate to home on success
-            } else {
-                setSigninInput("Login failed! Please try again");
-                setSignBg("bg-red-600");
-                Alert.alert("Login Failed", response.message);
-            }
-        }
+        // --- Development Shortcut ---
+        // This will simulate a login and redirect to the home screen.
+        const login = useAuthStore.getState().login;
+        login("fake-dev-token"); // Use a fake token for the session
+        router.replace("/home");
+        // --------------------------
     };
 
     return (

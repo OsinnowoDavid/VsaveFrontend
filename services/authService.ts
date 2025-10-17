@@ -5,7 +5,7 @@ export const handleSignup = async (registrationData: any) => {
     try {
         const response = await apiClient.post(
             "/user/register",
-            registrationData,
+            registrationData
         );
 
         if (response.data.status === "success") {
@@ -41,7 +41,7 @@ export const verifyEmail = async (data: { email: string; token: string }) => {
     } catch (error: any) {
         console.error(
             "Email verification error:",
-            error.response?.data || error.message,
+            error.response?.data || error.message
         );
         const errorMessage =
             error.response?.data?.message ||
@@ -54,7 +54,7 @@ export const resendVerificationToken = async (data: { email: string }) => {
     try {
         const response = await apiClient.post(
             "/user/resend-verification-token",
-            data,
+            data
         );
 
         if (response.data.status === "success") {
@@ -65,7 +65,7 @@ export const resendVerificationToken = async (data: { email: string }) => {
     } catch (error: any) {
         console.error(
             "Resend token error:",
-            error.response?.data || error.message,
+            error.response?.data || error.message
         );
         const errorMessage =
             error.response?.data?.message ||

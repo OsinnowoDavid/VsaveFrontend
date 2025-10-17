@@ -30,7 +30,7 @@ export default function MenuScreen() {
             setIsBiometricsEnabled(false);
             Alert.alert(
                 "Biometrics Disabled",
-                "You have disabled biometric authentication.",
+                "You have disabled biometric authentication."
             );
             return;
         }
@@ -40,7 +40,7 @@ export default function MenuScreen() {
         if (!hasHardware) {
             Alert.alert(
                 "Unsupported Device",
-                "Your device does not support biometric authentication.",
+                "Your device does not support biometric authentication."
             );
             return;
         }
@@ -49,7 +49,7 @@ export default function MenuScreen() {
         if (!isEnrolled) {
             Alert.alert(
                 "No Biometrics Enrolled",
-                "You have not set up any biometrics on this device. Please go to your device settings to add a fingerprint or Face ID.",
+                "You have not set up any biometrics on this device. Please go to your device settings to add a fingerprint or Face ID."
             );
             return;
         }
@@ -63,7 +63,7 @@ export default function MenuScreen() {
             setIsBiometricsEnabled(true);
             Alert.alert(
                 "Biometrics Enabled",
-                "You can now log in using biometrics.",
+                "You can now log in using biometrics."
             );
         }
     };
@@ -87,7 +87,7 @@ export default function MenuScreen() {
                     style: "destructive",
                 },
             ],
-            { cancelable: true },
+            { cancelable: true }
         );
     };
 

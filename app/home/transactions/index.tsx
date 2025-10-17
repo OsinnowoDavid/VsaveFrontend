@@ -48,7 +48,7 @@ export default function TransactionHistoryScreen() {
                     style: "cancel",
                 },
             ],
-            { cancelable: true },
+            { cancelable: true }
         );
     };
 
@@ -59,7 +59,7 @@ export default function TransactionHistoryScreen() {
         switch (activeFilter) {
             case "Credit Only":
                 transactions = transactions.filter(
-                    (tx) => tx.type === "credit",
+                    (tx) => tx.type === "credit"
                 );
                 break;
             case "Debit Only":
@@ -77,7 +77,7 @@ export default function TransactionHistoryScreen() {
                 const oneWeekAgo = new Date();
                 oneWeekAgo.setDate(today.getDate() - 7);
                 transactions = transactions.filter(
-                    (tx) => new Date(tx.date) >= oneWeekAgo,
+                    (tx) => new Date(tx.date) >= oneWeekAgo
                 );
                 break;
             case "This Month":
@@ -95,7 +95,7 @@ export default function TransactionHistoryScreen() {
 
         if (searchQuery) {
             return transactions.filter((tx) =>
-                tx.title.toLowerCase().includes(searchQuery.toLowerCase()),
+                tx.title.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 

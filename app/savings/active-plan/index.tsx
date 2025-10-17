@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-    FlatList,
-    Modal,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { FlatList, Modal, Text, TextInput, View } from "react-native";
 import Button from "../../../components/Button";
 import HomeScreenWrapper from "../../../components/HomeScreenWrapper";
 import { PlanCard } from "../../../components/PlanCard";
@@ -59,26 +52,22 @@ export default function PlansList() {
                         <TextInput
                             placeholder="Enter Amount"
                             placeholderTextColor="#5C5A5A"
-                            className="px-2 text-[12px] font-semibold h-12 border border-gray-300 rounded mb-4"
+                            className="px-2 text-base font-semibold h-12 border border-gray-300 rounded mb-4"
                             keyboardType="numeric"
                         />
                         <Text className="mb-2">Amount</Text>
                         <TextInput
                             placeholder="Enter Amount"
                             placeholderTextColor="#5C5A5A"
-                            className="px-2 text-[12px] font-semibold h-12 border border-gray-300 rounded mb-4"
+                            className="px-2 text-base font-semibold h-12 border border-gray-300 rounded mb-4"
                             keyboardType="numeric"
                         />
 
                         {/* Close Button */}
-                        <TouchableOpacity
+                        <Button
+                            input="Close"
                             onPress={() => setVisible(false)}
-                            className="bg-[#1B8A52] px-4 py-2 rounded-lg"
-                        >
-                            <Text className="text-white text-center">
-                                Close
-                            </Text>
-                        </TouchableOpacity>
+                        />
                     </View>
                 </View>
             </Modal>

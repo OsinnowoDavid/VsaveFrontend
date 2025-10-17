@@ -28,7 +28,7 @@ export default function VerifyEmailScreen() {
         if (!email || !token || token.length !== 6) {
             Alert.alert(
                 "Invalid Token",
-                "Please enter the 6-digit code from your email.",
+                "Please enter the 6-digit code from your email."
             );
             return;
         }
@@ -40,7 +40,7 @@ export default function VerifyEmailScreen() {
             Alert.alert(
                 "Verification Successful",
                 "Your email has been verified. You can now log in.",
-                [{ text: "OK", onPress: () => router.replace("/auth/login") }],
+                [{ text: "OK", onPress: () => router.replace("/auth/login") }]
             );
         } else {
             Alert.alert("Verification Failed", response.message);

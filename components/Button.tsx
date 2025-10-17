@@ -39,7 +39,7 @@ export default function Button({
                           .split(" ")
                           .filter(
                               (s) =>
-                                  s.startsWith("bg-") || s.startsWith("border"),
+                                  s.startsWith("bg-") || s.startsWith("border")
                           )
                           .join(" ")
                     : `${bg} ${border}`

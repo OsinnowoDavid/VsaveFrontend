@@ -51,7 +51,7 @@ export default function ConfirmTransactionModal({
                                 <Text className="text-sm text-gray-500">
                                     {item.label}
                                 </Text>
-                                <Text className="text-sm font-semibold text-gray-800 text-right">
+                                <Text className="text-sm font-semibold text-gray-800 text-right text-nowrap w-[50%]">
                                     {item.value}
                                 </Text>
                             </View>

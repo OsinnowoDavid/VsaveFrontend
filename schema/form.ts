@@ -8,22 +8,22 @@ export const fullNameSchema = z
     .max(100, { message: "Full name cannot exceed 100 characters." })
     .refine(
         (value) => value.split(" ").length > 1,
-        "Please enter your first and last name.",
+        "Please enter your first and last name."
     )
     .refine(
         (value) =>
             value.split(" ").length === 2 &&
             value.split(" ")[0].length >= 3 &&
             value.split(" ")[1].length >= 3,
-        "First and last name must have at least 3 characters",
+        "First and last name must have at least 3 characters"
     )
     .refine(
         (value) => !/\s\s/.test(value), // Checks for two or more consecutive spaces
-        "Full name cannot have multiple spaces between words.",
+        "Full name cannot have multiple spaces between words."
     )
     .refine(
         (value) => /^[a-zA-Z\s]+$/.test(value),
-        "Full name can only contain letters and spaces.",
+        "Full name can only contain letters and spaces."
     );
 
 export const emailSchema = z.email({ message: "Invalid email address." });
@@ -69,7 +69,7 @@ export const phoneNumberSchema = z
             }
             return val.length === 10;
         },
-        { message: "Please enter a valid 10 or 11-digit phone number." },
+        { message: "Please enter a valid 10 or 11-digit phone number." }
     );
 
 export const genderSchema = z

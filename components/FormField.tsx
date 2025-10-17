@@ -13,6 +13,7 @@ interface FormFieldProps {
     type?: "text" | "select";
     options?: { label: string; value: string }[];
     keyboardType?: KeyboardTypeOptions;
+    maxLength?: number;
     validate?: boolean;
     schema?: any;
     field?: any;
@@ -27,18 +28,20 @@ export default function FormField({
     type = "text",
     options = [],
     keyboardType,
+    maxLength,
     validate = false,
     schema,
     field,
 }: FormFieldProps) {
-    const [error, setError] = useState<string | null>(null);
     const [fieldError, setFieldError] = useState("");
 
     const handleFocus = () => {
+        if (!validate) return;
         setFieldError("");
     };
 
     const handleBlur = () => {
+        if (!validate) return;
         const error = validateFormField(schema, field).errorMessage;
         if (!!error) setFieldError(error);
     };
@@ -78,6 +81,7 @@ export default function FormField({
                             placeholder={placeholder}
                             secureTextEntry={secureTextEntry}
                             keyboardType={keyboardType}
+                            maxLength={maxLength}
                             className={textStyle}
                             onBlur={handleBlur}
                             onFocus={handleFocus}

@@ -11,7 +11,7 @@ export default function Savings() {
             <SavingsCard />
             <View className="p-4 flex-col space-y-2 mt-2 justify-center">
                 {/* Inner Card */}
-                <View className="w-[330px] h-[44px] flex-row items-center justify-between px-4 py-1.5 bg-white rounded shadow">
+                <View className="flex-row items-center justify-between px-4 py-2 bg-white rounded shadow">
                     {/* Left Section */}
                     <View className="flex-row items-center space-x-2">
                         {/* Icon Placeholder */}
@@ -22,10 +22,10 @@ export default function Savings() {
 
                         {/* Texts */}
                         <View>
-                            <Text className="text-[12px] font-medium text-[#212121]">
+                            <Text className="text-base font-medium text-[#212121]">
                                 Active Plan
                             </Text>
-                            <Text className="text-[10px] text-[#5C5A5A]">
+                            <Text className="text-sm text-[#5C5A5A]">
                                 6 Ongoing plans
                             </Text>
                         </View>
@@ -36,9 +36,7 @@ export default function Savings() {
                         className="flex-row items-center space-x-1"
                         onPress={() => router.push("/savings/active-plan")}
                     >
-                        <Text className="text-[10px] text-[#1B8A52]">
-                            View all
-                        </Text>
+                        <Text className="text-sm text-[#1B8A52]">View all</Text>
                         <ArrowRight
                             size={16}
                             color="#1B8A52"

@@ -23,7 +23,9 @@ export default function Home() {
         {
             label: "Send",
             icon: <ArrowUpRight color="#1B8A52" size={28} />,
-            onPress: () => {},
+            onPress: () => {
+                router.push("/home/send-money");
+            },
         },
         {
             label: "Add Money",
@@ -68,7 +70,7 @@ export default function Home() {
                     </View>
                 </View>
                 <Balance />
-                <View className="mt-8">
+                <View className="mt-7">
                     <Text className="text-xl font-semibold mb-4">
                         Quick Actions
                     </Text>
