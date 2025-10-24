@@ -1,25 +1,40 @@
+import { RelativePathString, router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
+import {
+    Alert,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StatusBarStyle,
+} from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
+import DatePickerField from "../../../components/DatePickerField";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
+import PhoneInput from "../../../components/PhoneInput";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
 import {
     confirmPasswordSchema,
+    dateOfBirthSchema,
     emailSchema,
     fullNameSchema,
+    genderSchema,
     passwordSchema,
+    phoneNumberSchema,
     signupSchema,
 } from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
-import { validateFormField } from "../../../utils";
-import { router } from "expo-router";
+import { SignUpData } from "../../../types/data";
 
 export default function SignUpScreen() {
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<SignUpData>({
         fullName: "",
         email: "",
+        countryCode: "234",
+        phoneNumber: "", // Store as string
+        gender: "", // Default to an empty string or a placeholder value
+        dateOfBirth: new Date(),
         password: "",
         confirmPassword: "",
     });
@@ -30,42 +45,52 @@ export default function SignUpScreen() {
 
     const [signupInput, setSignupInput] = useState("Sign Up");
 
-  const handleSubmit = () => {
-    const formObject = {
-      fullName: form.fullName,
-      email: form.email,
-      password: form.password,
-    };
-    // const { isValid } = validateFormField(signupSchema, formObject);
-    // if (!isValid) {
-    //   alert("Some fields are incorrect. Please review the form.");
-    // } else if (form.password !== form.confirmPassword) {
-    //   alert("Passwords don't match.");
-    // }
-  };
+    const [signupBg, setSignBg] = useState("bg-green-700");
+
+    const [isLoading, setIsLoading] = useState(false);
+
+    function handleKeyboardVisible() {
+        setBarStyle(keyboardVisible ? "dark-content" : "light-content");
+    }
 
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
-        const formObject = {
-            fullName: form.fullName,
-            email: form.email,
-            password: form.password,
-        };
-        setSignBg("bg-green-700");
-        const { isValid } = validateFormField(signupSchema, formObject);
-        if (!isValid) {
-            alert("Some fields are incorrect. Please review the form.");
-        } else if (form.password !== form.confirmPassword) {
-            alert("Passwords don't match.");
-        } else {
-            setSignupInput("Submiting...");
-            const response = await handleSignup(formObject);
-            if (response === true) setSignupInput("Success! Account Created");
-            else {
-                setSignupInput("An error occured! Please try again");
-                setSignBg("bg-red-600");
+        const validationResult = signupSchema.safeParse(form);
+        if (!validationResult.success) {
+            const firstError = validationResult.error;
+            Alert.alert("Invalid Input", firstError.issues[0].message);
+            return;
+        }
+
+        setIsLoading(true);
+        setSignupInput("Creating account...");
+        setSignBg("bg-green-900");
+
+        try {
+            const result = await handleSignup(form);
+            if (result.success) {
+                Alert.alert(
+                    "Signup Successful",
+                    "Please check your email to verify your account."
+                );
+                // Navigate to a verification screen, passing the email
+                router.push({
+                    pathname: "/auth/verify-email" as RelativePathString,
+                    params: { email: form.email },
+                });
+            } else {
+                Alert.alert("Signup Failed", result.message);
             }
+        } catch (error: any) {
+            Alert.alert(
+                "Signup Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setIsLoading(false);
+            setSignupInput("Sign Up");
+            setSignBg("bg-green-700");
         }
     };
 
@@ -104,6 +129,45 @@ export default function SignUpScreen() {
                         schema={emailSchema}
                         field={form.email}
                     />
+                    <PhoneInput
+                        label="Phone Number"
+                        phone={form.phoneNumber}
+                        countryCode={form.countryCode}
+                        onPhoneChange={(phoneNumber) =>
+                            setForm({ ...form, phoneNumber })
+                        }
+                        onCountryChange={(countryCode) =>
+                            setForm({ ...form, countryCode })
+                        }
+                        placeholder="08012345678"
+                        validate
+                        schema={phoneNumberSchema}
+                        field={form.phoneNumber} // Pass as string
+                    />
+                    <FormField
+                        label="Gender"
+                        value={form.gender}
+                        onChangeText={(gender) => setForm({ ...form, gender })}
+                        type="select"
+                        options={[
+                            { label: "Select Gender", value: "" },
+                            { label: "Male", value: "Male" },
+                            { label: "Female", value: "Female" },
+                        ]}
+                        validate
+                        schema={genderSchema}
+                        field={form.gender}
+                    />
+                    <DatePickerField
+                        label="Date of Birth"
+                        value={form.dateOfBirth as Date} // Pass the Date object
+                        onChange={(dateOfBirth) =>
+                            setForm({ ...form, dateOfBirth })
+                        }
+                        validate
+                        schema={dateOfBirthSchema}
+                        field={form.dateOfBirth}
+                    />
                     <FormField
                         label="Password"
                         value={form.password}
@@ -132,9 +196,15 @@ export default function SignUpScreen() {
                         }}
                     />
 
-          <Button input="Sign Up" onPress={()=> router.push("/home")} color="text-white" />
-        </ScrollView>
-      </FormWrapper>
-    </ScreenWrapper>
-  );
+                    <Button
+                        input={signupInput}
+                        onPress={handleSubmit}
+                        color="text-white"
+                        bg={signupBg}
+                        disabled={isLoading}
+                    />
+                </ScrollView>
+            </FormWrapper>
+        </ScreenWrapper>
+    );
 }

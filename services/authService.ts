@@ -1,103 +1,110 @@
-import { ToastAndroid } from "react-native";
 import useAuthStore from "../store/useAuthStore";
+import { SignUpData } from "../types/data";
+import apiClient from "./apiClient";
 
-interface HandleSignupProp {
-    fullName: string;
-    email: string;
-    password: string;
-}
-
-export const handleSignup = async (
-    form: HandleSignupProp,
-): Promise<boolean> => {
-    const names = form.fullName.trim().split(" ");
-    const firstName = names[0];
-    const lastName = names[names.length - 1];
-
-    // 2. API Call
+export const handleSignup = async (registrationData: SignUpData) => {
+    const names = registrationData.fullName.split(" ");
+    const form = {
+        firstName: names[0],
+        lastName: names[names.length - 1],
+        email: registrationData.email,
+        phoneNumber: registrationData.phoneNumber,
+        gender: registrationData.gender,
+        dateOfBirth: registrationData.dateOfBirth,
+        password: registrationData.password,
+    };
     try {
-        const response = await fetch(
-            "https://vsavebackend-31d8.onrender.com/user/register",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    firstName,
-                    lastName,
-                    email: form.email,
-                    password: form.password,
-                }),
-            },
+        const response = await apiClient.post("/user/register", form);
+
+        if (response.data.status === "success") {
+            console.log("Signup successful:", response.data.message);
+            return { success: true, data: response.data };
+        } else {
+            // This case might occur if the server returns 2xx but with an error status
+            return {
+                success: false,
+                message: response.data.message || "An unknown error occurred.",
+            };
+        }
+    } catch (error: any) {
+        console.error("Signup error:", error.response?.data || error.message);
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred during registration. Please try again.";
+        return { success: false, message: errorMessage };
+    }
+};
+
+export const verifyEmail = async (data: { email: string; token: string }) => {
+    try {
+        const response = await apiClient.post("/user/verify-email", data);
+        if (response.data.status === "success") {
+            return { success: true, message: response.data.message };
+        } else {
+            return {
+                success: false,
+                message: response.data.message || "An unknown error occurred.",
+            };
+        }
+    } catch (error: any) {
+        console.error(
+            "Email verification error:",
+            error.response?.data || error.message
+        );
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred during verification. Please try again.";
+        return { success: false, message: errorMessage };
+    }
+};
+
+export const resendVerificationToken = async (data: { email: string }) => {
+    try {
+        const response = await apiClient.post(
+            "/user/resend-verification-token",
+            data
         );
 
-        const data = await response.json();
-
-        if (response.ok && data && data.status === "Success") {
-            alert("Signup successful!");
-            console.log("Signup successful!");
-            return true;
-        } else if (
-            response.ok &&
-            data &&
-            data.status === "Failed" &&
-            data.message.includes("already exists")
-        ) {
-            const toast = ToastAndroid;
-            toast.show(
-                "you already have an account with this email address.",
-                ToastAndroid.LONG,
-            );
+        if (response.data.status === "success") {
+            console.log("Resend token successful:", response.data.message);
+            return { success: true, message: response.data.message };
         } else {
-            // Handle server-side errors
-            alert(data.message || "Signup failed. Please try again.");
-            console.log("Signup failed. Please try again.");
-            return false;
         }
-    } catch (error) {
-        // Handle network errors
-        console.error("Signup error:", error);
-        alert("Error Signing up please try again later.");
-        return false;
+    } catch (error: any) {
+        console.error(
+            "Resend token error:",
+            error.response?.data || error.message
+        );
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred while resending the token.";
+        return { success: false, message: errorMessage };
     }
 };
 
 export const handleSignin = async (form: {
     email: string;
     password: string;
-}): Promise<boolean> => {
+}): Promise<{ success: boolean; message?: string }> => {
     const login = useAuthStore.getState().login;
     try {
-        const response = await fetch(
-            "https://vsavebackend-31d8.onrender.com/user/login",
-            {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify(form),
-            },
-        );
+        const response = await apiClient.post("/user/login", form);
 
-        const data = await response.json();
-
-        if (data && data.status === "success") {
-            login(data.token);
-            alert("You have been logged in successfully!");
-            return true;
-        } else if (data && data.status === "failed") {
-            alert(`an error occurred: ${data.message}`);
-            return false;
+        if (response.data && response.data.status === "success") {
+            login(response.data.token); // Save token to Zustand store
+            return { success: true };
         } else {
-            data && "message" in data && data.message === "User not found"
-                ? alert(
-                      "You don't have an account please, create one to continue",
-                  )
-                : alert("an error occurred while logging in please try again");
-            return false;
+            return {
+                success: false,
+                message:
+                    response.data.message || "Login failed. Please try again.",
+            };
         }
-    } catch (error) {
-        alert("something went wrong, please try again later");
+    } catch (error: any) {
+        console.error("Signin error:", error.response?.data || error.message);
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred during login. Please try again.";
+        return { success: false, message: errorMessage };
     }
 };

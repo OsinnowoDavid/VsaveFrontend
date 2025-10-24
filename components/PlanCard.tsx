@@ -17,11 +17,13 @@ export const PlanCard: React.FC<PlanCardProps> = ({
     progress,
 }) => {
     return (
-        <View className="w-[330px] h-[60px] bg-white rounded border border-green-800 mb-2 px-2 py-3">
+        <View className="bg-white rounded border border-green-800 mb-2 px-2 py-3">
             {/* Top row */}
             <View className="flex-row justify-between items-center px-2">
-                <Text className="text-[10px] text-[#212121]">{title}</Text>
-                <Text className="text-[12px] font-medium text-[#212121]">
+                <Text className="text-lg font-medium text-[#212121]">
+                    {title}
+                </Text>
+                <Text className="text-base font-medium text-[#212121]">
                     {amount}
                 </Text>
             </View>
@@ -35,11 +37,11 @@ export const PlanCard: React.FC<PlanCardProps> = ({
             </View>
 
             {/* Bottom row */}
-            <View className="flex-row justify-between items-center px-2 mt-1">
-                <Text className="text-[10px] text-[#5C5A5A]">
+            <View className="flex-row justify-between items-center px-2 mt-2">
+                <Text className="text-sm text-[#5C5A5A]">
                     Start Date: {startDate}
                 </Text>
-                <Text className="text-[10px] text-[#5C5A5A]">
+                <Text className="text-sm text-[#5C5A5A]">
                     Maturity Date: {maturityDate}
                 </Text>
             </View>

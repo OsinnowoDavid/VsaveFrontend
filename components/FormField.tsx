@@ -1,8 +1,6 @@
 import { Picker } from "@react-native-picker/picker";
 import React, { useState } from "react";
-import { Platform, Text, TextInput, View } from "react-native";
-import { z } from "zod";
-import ScrollPicker from "../hooks/react-native-scroll-picker";
+import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
 import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";
 
@@ -14,9 +12,11 @@ interface FormFieldProps {
     secureTextEntry?: boolean;
     type?: "text" | "select";
     options?: { label: string; value: string }[];
+    keyboardType?: KeyboardTypeOptions;
+    maxLength?: number;
     validate?: boolean;
-    schema?: z.ZodType;
-    field?: string | object;
+    schema?: any;
+    field?: any;
 }
 
 export default function FormField({
@@ -24,82 +24,72 @@ export default function FormField({
     value,
     onChangeText,
     placeholder,
-    secureTextEntry = false,
+    secureTextEntry,
     type = "text",
     options = [],
-    validate,
+    keyboardType,
+    maxLength,
+    validate = false,
     schema,
     field,
 }: FormFieldProps) {
-    const [selectedValue, setSelectedValue] = useState(options[0]?.value ?? "");
     const [fieldError, setFieldError] = useState("");
 
     const handleFocus = () => {
+        if (!validate) return;
         setFieldError("");
     };
 
     const handleBlur = () => {
+        if (!validate) return;
         const error = validateFormField(schema, field).errorMessage;
         if (!!error) setFieldError(error);
     };
 
-    return (
-        <View className="mb-4">
-            <Text className="text-xl font-bold text-gray-700 mb-2">
-                {label}
-            </Text>
+    const inputContainerStyle =
+        "w-full h-12 px-3 rounded-lg bg-gray-100 border border-gray-200 justify-center";
+    const textStyle = "text-lg text-gray-800";
 
-            {type === "text" ? (
-                <>
-                    <TextInput
-                        className="border border-gray-300 rounded-md px-3 py-3 text-base"
-                        value={value}
-                        onChangeText={onChangeText}
-                        placeholder={placeholder}
-                        placeholderTextColor="#6B7280"
-                        secureTextEntry={secureTextEntry}
-                        onFocus={handleFocus}
-                        onBlur={handleBlur}
-                    />
-                    {validate && <FormFieldError error={fieldError} />}
-                </>
-            ) : (
-                <View
-                    pointerEvents="box-none"
-                    className="border border-gray-300 rounded-md px-1 w-full h-16"
-                >
-                    {Platform.OS === "android" ? (
-                        <ScrollPicker
-                            list={options}
-                            onItemPress={onChangeText}
-                            labelColor="#111"
-                            selectedColor="#000"
-                        />
-                    ) : (
-                        <Picker
-                            selectedValue={selectedValue}
-                            onValueChange={(value) => setSelectedValue(value)}
-                            style={{
-                                height: 53,
-                                justifyContent: "center",
-                            }}
-                            itemStyle={{
-                                color: "#111",
-                                fontSize: 17,
-                                fontWeight: "500",
-                            }}
-                        >
-                            {options.map((opt) => (
-                                <Picker.Item
-                                    key={opt.value}
-                                    label={opt.label ?? "Missing label"}
-                                    value={opt.value}
-                                />
-                            ))}
-                        </Picker>
-                    )}
-                </View>
+    return (
+        <View className="mb-6">
+            {label && (
+                <Text className="text-lg font-medium text-gray-800 mb-1">
+                    {label}
+                </Text>
             )}
+            <View className={inputContainerStyle}>
+                {type === "select" ? (
+                    <Picker
+                        selectedValue={value}
+                        onBlur={handleBlur}
+                        onFocus={handleFocus}
+                        onValueChange={(itemValue) => onChangeText(itemValue)}
+                    >
+                        {options.map((option) => (
+                            <Picker.Item
+                                key={option.value}
+                                label={option.label}
+                                value={option.value}
+                            />
+                        ))}
+                    </Picker>
+                ) : (
+                    <>
+                        <TextInput
+                            value={value}
+                            onChangeText={onChangeText}
+                            placeholder={placeholder}
+                            secureTextEntry={secureTextEntry}
+                            keyboardType={keyboardType}
+                            maxLength={maxLength}
+                            className={textStyle}
+                            onBlur={handleBlur}
+                            onFocus={handleFocus}
+                        />
+                    </>
+                )}
+            </View>
+            {validate && <FormFieldError error={fieldError} />}
         </View>
     );
 }

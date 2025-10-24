@@ -30,7 +30,7 @@ const initialCountry =
 export default function KYCScreen() {
     const [selectedCountry, setSelectedCountry] = useState(initialCountry);
     const [selectedStateList, setSelectedStateList] = useState(
-        stateOptionsAndIndexing(initialCountryIsoCode)[0],
+        stateOptionsAndIndexing(initialCountryIsoCode)[0]
     );
     useEffect(() => {
         setSelectedStateList(stateOptionsAndIndexing(selectedCountry.value)[0]);
@@ -68,7 +68,7 @@ export default function KYCScreen() {
                     label="Country"
                     onChangeText={(value) => {
                         setSelectedCountry(
-                            countryOptions[countryIndexToCodeMap[value]],
+                            countryOptions[countryIndexToCodeMap[value]]
                         );
                     }}
                     type="select"

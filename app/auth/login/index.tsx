@@ -1,43 +1,91 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
+import { Alert } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
-import PinInput from "../../../components/PinInput";
-import { emailSchema } from "../../../schema/form";
-import { View,Text } from "lucide-react-native";
+import FormWrapper from "../../../components/FormWrapper";
+import {
+    emailSchema,
+    passwordSchema,
+    signinSchema,
+} from "../../../schema/form";
+import { handleSignin } from "../../../services/authService";
+
 export default function LoginScreen() {
     const [form, setForm] = useState({
         email: "",
         password: "",
     });
+    const [isLoading, setIsLoading] = useState(false);
     const [signinInput, setSigninInput] = useState("Login");
 
     const [signupBg, setSignBg] = useState("bg-green-700");
 
-  return (
-    <ScreenWrapper>
-      <View className="px-6 py-8 bg-white w-full rounded-t-3xl">
-          <Text className="text-2xl font-bold pb-4 mb-8 text-center border-b-[0.3px] border-gray-500">
-            Login
-          </Text>
-        <FormField
-          label="Email"
-          value={form.email}
-          onChangeText={(email) => setForm({ ...form, email })}
-          placeholder="you@example.com"
-          validate
-          schema={emailSchema}
-          field={form.email}
-        />
-        <PinInput />
-        <Button
-          input="Login"
-          onPress={() => {
-            handleSubmit;
-          }}
-          color="text-white"
-        />
-      </View>
-    </ScreenWrapper>
-  );
+    const handleSubmit = async () => {
+        const formValidation = signinSchema.safeParse(form);
+
+        if (!formValidation.success) {
+            Alert.alert(
+                "Invalid Input",
+                "Please check your email and password."
+            );
+            return;
+        }
+
+        setIsLoading(true);
+        setSigninInput("Logging in...");
+        setSignBg("bg-green-900");
+
+        try {
+            const result = await handleSignin(form);
+            if (result.success) {
+                router.replace("/home");
+            } else {
+                Alert.alert("Login Failed", result.message);
+            }
+        } catch (error: any) {
+            Alert.alert(
+                "Login Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setSigninInput("Login");
+            setSignBg("bg-green-700");
+            setIsLoading(false);
+        }
+    };
+
+    return (
+        <ScreenWrapper>
+            <FormWrapper heading="Login">
+                <FormField
+                    label="Email"
+                    value={form.email}
+                    onChangeText={(email) => setForm({ ...form, email })}
+                    placeholder="you@example.com"
+                    validate
+                    schema={emailSchema}
+                    field={form.email}
+                />
+                <FormField
+                    label="Password"
+                    value={form.password}
+                    onChangeText={(password) => setForm({ ...form, password })}
+                    placeholder="............."
+                    validate
+                    schema={passwordSchema}
+                    field={form.password}
+                    secureTextEntry
+                />
+                <Button
+                    input={signinInput}
+                    onPress={handleSubmit}
+                    color="text-white"
+                    bg={signupBg}
+                    disabled={isLoading}
+                />
+            </FormWrapper>
+        </ScreenWrapper>
+    );
 }

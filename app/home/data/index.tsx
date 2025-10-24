@@ -1,138 +1,177 @@
+import { router } from "expo-router";
 import React, { useState } from "react";
 import {
+    Alert,
     Image,
-    ScrollView,
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import Balance from "../../../components/Balance";
-import { networks } from "../../../constants/networks";
-
-const dataPlans: Record<
-    string,
-    { id: string; label: string; price: number }[]
-> = {
-    mtn: [
-        { id: "mtn1", label: "500MB - 30 Days", price: 500 },
-        { id: "mtn2", label: "1GB - 30 Days", price: 1000 },
-        { id: "mtn3", label: "5GB - 30 Days", price: 3000 },
-    ],
-    airtel: [
-        { id: "air1", label: "750MB - 14 Days", price: 600 },
-        { id: "air2", label: "1.5GB - 30 Days", price: 1200 },
-        { id: "air3", label: "3GB - 30 Days", price: 2500 },
-    ],
-    glo: [
-        { id: "glo1", label: "1GB - 14 Days", price: 500 },
-        { id: "glo2", label: "2GB - 30 Days", price: 1000 },
-        { id: "glo3", label: "6GB - 30 Days", price: 3000 },
-    ],
-    etisalat: [
-        { id: "eti1", label: "500MB - 7 Days", price: 300 },
-        { id: "eti2", label: "1.5GB - 30 Days", price: 1000 },
-        { id: "eti3", label: "4GB - 30 Days", price: 2500 },
-    ],
-};
+import Button from "../../../components/Button";
+import FormField from "../../../components/FormField";
+import KeyboardAvoidWrapper from "../../../components/KeyboardAvoidWrapper";
+import { dataPlans, networks } from "../../../constants/networks";
 
 const Index = () => {
     const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
     const [customAmount, setCustomAmount] = useState("");
+    const [phone, setPhone] = useState("");
+
+    const handlePlanChange = (planId: string) => {
+        setSelectedPlan(planId);
+        if (selectedNetwork) {
+            const plan = dataPlans[selectedNetwork].find(
+                (p) => p.id === planId
+            );
+            if (plan) {
+                setCustomAmount(String(plan.price));
+            }
+        }
+    };
+
+    const handleProceed = () => {
+        if (!selectedNetwork) {
+            Alert.alert("Validation Error", "Please select a network.");
+            return;
+        }
+        if (!selectedPlan) {
+            Alert.alert("Validation Error", "Please select a data plan.");
+            return;
+        }
+        if (!phone || phone.length < 10) {
+            Alert.alert(
+                "Validation Error",
+                "Please enter a valid phone number."
+            );
+            return;
+        }
+        if (
+            !customAmount ||
+            isNaN(Number(customAmount)) ||
+            Number(customAmount) <= 0
+        ) {
+            Alert.alert("Validation Error", "Please enter a valid amount.");
+            return;
+        }
+
+        // If all validations pass, navigate to confirmation screen
+        const details = [
+            {
+                label: "Network",
+                value:
+                    networks.find((n) => n.id === selectedNetwork)?.id || "N/A",
+            },
+            { label: "Phone Number", value: phone },
+            {
+                label: "Plan",
+                value:
+                    dataPlans[selectedNetwork!].find(
+                        (p) => p.id === selectedPlan
+                    )?.label || "Custom",
+            },
+        ];
+
+        router.push({
+            pathname: "/confirm-transaction",
+            params: {
+                title: "Confirm Data Purchase",
+                amount: customAmount,
+                details: JSON.stringify(details),
+                showBeneficiary: "true",
+            },
+        });
+    };
 
     return (
-        <View className="flex-1 bg-white">
-            {/* Balance Component */}
-            <Balance />
-
-            <View className="absolute top-[155px] self-center w-[288px] h-[333px] bg-white rounded-xl p-4 shadow">
-                {/* Title */}
-                <Text className="text-[10px] font-medium text-[#212121] mb-2">
-                    Choose Network
-                </Text>
-
-                {/* Network Logos */}
-                <View className="flex-row justify-between mb-6">
-                    {networks.map((net) => (
-                        <TouchableOpacity
-                            key={net.id}
-                            onPress={() => {
-                                setSelectedNetwork(net.id);
-                                setSelectedPlan(null);
-                                setCustomAmount("");
-                            }}
-                            className={`w-[50px] h-[50px] rounded-md border items-center justify-center ${
-                                selectedNetwork === net.id
-                                    ? "border-[#1B8A52]"
-                                    : "border-[#E5E7EA]"
-                            }`}
-                        >
-                            <Image
-                                source={net.Icon}
-                                style={{
-                                    width: 40,
-                                    height: 40,
-                                    resizeMode: "contain",
-                                }}
-                            />
-                        </TouchableOpacity>
-                    ))}
-                </View>
-
-                {/* Data Plans */}
-                {selectedNetwork && (
-                    <View className="mb-4">
-                        <Text className="text-[12px] font-medium text-[#131927] mb-1">
-                            Select Data Plan
-                        </Text>
-                        <ScrollView
-                            className="max-h-[120px] border border-[#E5E7EA] rounded-lg bg-[#F9FAFB]"
-                            nestedScrollEnabled
-                        >
-                            {dataPlans[selectedNetwork].map((plan) => (
-                                <TouchableOpacity
-                                    key={plan.id}
-                                    onPress={() => {
-                                        setSelectedPlan(plan.id);
-                                        setCustomAmount(String(plan.price));
-                                    }}
-                                    className={`px-3 py-2 border-b border-[#E5E7EA] ${
-                                        selectedPlan === plan.id
-                                            ? "bg-[#1B8A52]"
-                                            : "bg-transparent"
-                                    }`}
-                                >
-                                    <Text
-                                        className={`text-[14px] ${
-                                            selectedPlan === plan.id
-                                                ? "text-white"
-                                                : "text-[#131927]"
-                                        }`}
-                                    >
-                                        {plan.label} — ₦{plan.price}
-                                    </Text>
-                                </TouchableOpacity>
-                            ))}
-                        </ScrollView>
-                    </View>
-                )}
-
-                {/* Custom Amount Input */}
-                <View>
-                    <Text className="text-[12px] font-medium text-[#131927] mb-1">
-                        Enter Custom Amount
-                    </Text>
-                    <TextInput
-                        value={customAmount}
-                        onChangeText={setCustomAmount}
-                        placeholder="Enter amount"
-                        keyboardType="numeric"
-                        className="w-full h-[40px] px-3 rounded-lg bg-[#F9FAFB] border border-[#E5E7EA] text-[14px] text-[#131927]"
+        <SafeAreaView className="flex-1 bg-[#F9FAFB] w-[95%] mx-auto">
+            <KeyboardAvoidWrapper>
+                <View className="mt-3 w-full mx-auto bg-transparent flex gap-3">
+                    <Balance />
+                    <Button
+                        input="Topup my number"
+                        onPress={() => {}}
+                        variant="outline"
                     />
                 </View>
-            </View>
-        </View>
+
+                <View className="bg-white rounded-xl p-4 shadow-sm mt-8 mb-4">
+                    {/* Title */}
+                    <Text className="text-base font-medium text-gray-700 mb-2">
+                        Choose Network
+                    </Text>
+
+                    {/* Network Logos */}
+                    <View className="flex-row justify-between mb-6">
+                        {networks.map((net) => (
+                            <TouchableOpacity
+                                key={net.id}
+                                onPress={() => {
+                                    setSelectedNetwork(net.id);
+                                    setSelectedPlan(null);
+                                    setCustomAmount("");
+                                }}
+                                className={`w-14 h-14 rounded-lg border-2 p-1 items-center justify-center ${
+                                    selectedNetwork === net.id
+                                        ? "border-green-700"
+                                        : "border-transparent"
+                                }`}
+                            >
+                                <Image
+                                    source={net.Icon}
+                                    className="w-full h-full rounded-md"
+                                    resizeMode="contain"
+                                />
+                            </TouchableOpacity>
+                        ))}
+                    </View>
+
+                    {/* Data Plans */}
+                    {selectedNetwork && (
+                        <FormField
+                            label="Select Data Plan"
+                            type="select"
+                            value={selectedPlan || ""}
+                            onChangeText={handlePlanChange}
+                            options={dataPlans[selectedNetwork].map((plan) => ({
+                                label: `${plan.label} — ₦${plan.price}`,
+                                value: plan.id,
+                            }))}
+                        />
+                    )}
+
+                    {/* Amount Input */}
+                    <View className="mt-4 mb-6">
+                        <Text className="text-sm font-medium text-gray-800 mb-1">
+                            Amount
+                        </Text>
+                        <TextInput
+                            value={customAmount}
+                            onChangeText={setCustomAmount}
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            className="w-full h-11 px-3 rounded-lg bg-gray-100 border border-gray-200 text-sm text-gray-800"
+                        />
+                    </View>
+
+                    {/* Phone Number Input */}
+                    <FormField
+                        label="Phone Number"
+                        value={phone}
+                        onChangeText={setPhone}
+                        placeholder="Enter phone number"
+                        keyboardType="phone-pad"
+                    />
+
+                    <View className="mt-10">
+                        <Button input="Proceed" onPress={handleProceed} />
+                    </View>
+                </View>
+            </KeyboardAvoidWrapper>
+        </SafeAreaView>
     );
 };
 

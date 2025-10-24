@@ -1,7 +1,15 @@
+import { Landmark } from "lucide-react-native";
 import React from "react";
 import { Image, Text, View } from "react-native";
 
-export default function Balance() {
+export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
+    if (version === "v1") {
+        return <BalanceV1 />;
+    }
+    return <BalanceV2 />;
+}
+
+function BalanceV1() {
     return (
         <View
             className="border-[0.01px] mt-5 h-36 rounded-2xl relative overflow-hidden"
@@ -34,6 +42,26 @@ export default function Balance() {
                 <View>
                     <Text className="text-[#EFEFEF] text-[16px]">
                         Pending Balance N2,500,000
+                    </Text>
+                </View>
+            </View>
+        </View>
+    );
+}
+
+function BalanceV2() {
+    return (
+        <View className="w-full h-28 mx-auto bg-green-100 flex flex-row gap-3">
+            <View className="bg-white rounded-xl h-20 w-[90%] m-auto flex flex-row gap-3 items-center">
+                <View className="flex-row justify-center items-center w-12 h-12 ml-4 my-auto bg-green-100 rounded-full">
+                    <Landmark size={24} color="#1B8A52" strokeWidth={2} />
+                </View>
+                <View>
+                    <Text className="text-xl font-bold text-gray-800">
+                        N200,000.00
+                    </Text>
+                    <Text className="text-sm font-medium text-gray-500">
+                        Available Balance
                     </Text>
                 </View>
             </View>
