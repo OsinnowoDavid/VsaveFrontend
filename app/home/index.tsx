@@ -15,9 +15,12 @@ import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import NavButton from "../../components/NavButton";
 import TransactionCard from "../../components/TransactionCard";
 import { recentTransactions } from "../../constants/transactions";
+import useProfileStore from "../../store/useProfileStore";
 
 export default function Home() {
     const router = useRouter();
+
+    const { profile } = useProfileStore();
 
     const quickActions = [
         {
@@ -62,7 +65,7 @@ export default function Home() {
             <View className="mt-6 w-[95%] mx-auto bg-[#f5f5f5]">
                 <View className="flex flex-row justify-between pe-3">
                     <Text className="font-meduim text-2xl px-2">
-                        Welcome, David
+                        Welcome, {profile?.firstName}
                     </Text>
                     <View className="flex flex-row gap-5">
                         <UserCircleIcon

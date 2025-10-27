@@ -30,18 +30,20 @@ export const emailSchema = z.email({ message: "Invalid email address." });
 
 export const passwordSchema = z
     .string()
-    .min(8, { message: "Password must be at least 8 characters long." })
-    .max(100, { message: "Password cannot be longer than 100 characters." })
-    .regex(/[a-z]/, {
-        message: "Password must contain at least one lowercase letter.",
-    })
-    .regex(/[A-Z]/, {
-        message: "Password must contain at least one uppercase letter.",
-    })
-    .regex(/[0-9]/, { message: "Password must contain at least one number." })
-    .regex(/[^a-zA-Z0-9]/, {
-        message: "Password must contain at least one special character.",
-    });
+    .min(6, { message: "Password must be at least 6 characters long." });
+// z.string()
+// .min(8, { message: "Password must be at least 8 characters long." })
+// .max(100, { message: "Password cannot be longer than 100 characters." })
+// .regex(/[a-z]/, {
+//     message: "Password must contain at least one lowercase letter.",
+// })
+// .regex(/[A-Z]/, {
+//     message: "Password must contain at least one uppercase letter.",
+// })
+// .regex(/[0-9]/, { message: "Password must contain at least one number." })
+// .regex(/[^a-zA-Z0-9]/, {
+//     message: "Password must contain at least one special character.",
+// });
 
 export const confirmPasswordSchema = z
     .object({
@@ -75,22 +77,32 @@ export const phoneNumberSchema = z
 export const genderSchema = z
     .string()
     .min(1, "Gender is required")
-    .refine((val) => val === "male" || val === "female", {
+    .refine((val) => val === "Male" || val === "Female", {
         message: "Please select a valid gender.",
     });
 
-export const dateOfBirthSchema = z
-    .string()
-    .min(1, "Date of birth is required")
-    .refine((val) => new Date(val) <= new Date(), {
+export const dateOfBirthSchema = z.coerce
+    .date({
+        error: "Date of birth is required", // Catches null/undefined
+    })
+    .refine((val) => !isNaN(val.getTime()), {
+        message: "That's not a valid date!", // Catches 'Invalid Date' objects resulting from bad coercion
+    })
+    .refine((val) => val <= new Date(), {
         message: "Date of birth cannot be in the future.",
     });
 
-export const signupSchema = z.object({
-    fullName: fullNameSchema,
-    email: emailSchema,
-    phoneNumber: phoneNumberSchema,
-    gender: genderSchema,
-    dateOfBirth: dateOfBirthSchema,
-    password: passwordSchema,
-});
+export const signupSchema = z
+    .object({
+        fullName: fullNameSchema,
+        email: emailSchema,
+        phoneNumber: phoneNumberSchema,
+        gender: genderSchema,
+        dateOfBirth: dateOfBirthSchema,
+        password: passwordSchema,
+        confirmPassword: z.string(),
+    })
+    .refine((data) => data.password === data.confirmPassword, {
+        message: "Passwords don't match.",
+        path: ["confirmPassword"], // Set the error on the confirmPassword field
+    });

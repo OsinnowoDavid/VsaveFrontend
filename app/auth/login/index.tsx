@@ -1,11 +1,16 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
+import { Alert } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
-import { emailSchema, passwordSchema } from "../../../schema/form";
-import useAuthStore from "../../../store/useAuthStore";
+import {
+    emailSchema,
+    passwordSchema,
+    signinSchema,
+} from "../../../schema/form";
+import { handleSignin } from "../../../services/authService";
 
 export default function LoginScreen() {
     const [form, setForm] = useState({
@@ -18,12 +23,37 @@ export default function LoginScreen() {
     const [signupBg, setSignBg] = useState("bg-green-700");
 
     const handleSubmit = async () => {
-        // --- Development Shortcut ---
-        // This will simulate a login and redirect to the home screen.
-        const login = useAuthStore.getState().login;
-        login("fake-dev-token"); // Use a fake token for the session
-        router.replace("/home");
-        // --------------------------
+        const formValidation = signinSchema.safeParse(form);
+
+        if (!formValidation.success) {
+            Alert.alert(
+                "Invalid Input",
+                "Please check your email and password."
+            );
+            return;
+        }
+
+        setIsLoading(true);
+        setSigninInput("Logging in...");
+        setSignBg("bg-green-900");
+
+        try {
+            const result = await handleSignin(form);
+            if (result.success) {
+                router.replace("/home");
+            } else {
+                Alert.alert("Login Failed", result.message);
+            }
+        } catch (error: any) {
+            Alert.alert(
+                "Login Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setSigninInput("Login");
+            setSignBg("bg-green-700");
+            setIsLoading(false);
+        }
     };
 
     return (

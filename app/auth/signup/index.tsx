@@ -1,6 +1,12 @@
-import { router } from "expo-router";
+import { RelativePathString, router } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Platform, ScrollView, StatusBar, StatusBarStyle } from "react-native";
+import {
+    Alert,
+    Platform,
+    ScrollView,
+    StatusBar,
+    StatusBarStyle,
+} from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import DatePickerField from "../../../components/DatePickerField";
@@ -16,11 +22,13 @@ import {
     genderSchema,
     passwordSchema,
     phoneNumberSchema,
+    signupSchema,
 } from "../../../schema/form";
-import useAuthStore from "../../../store/useAuthStore";
+import { handleSignup } from "../../../services/authService";
+import { SignUpData } from "../../../types/data";
 
 export default function SignUpScreen() {
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<SignUpData>({
         fullName: "",
         email: "",
         countryCode: "234",
@@ -48,12 +56,42 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
-        // --- Development Shortcut ---
-        // This will simulate a login and redirect to the home screen.
-        const login = useAuthStore.getState().login;
-        login("fake-dev-token"); // Use a fake token for the session
-        router.replace("/home");
-        // --------------------------
+        const validationResult = signupSchema.safeParse(form);
+        if (!validationResult.success) {
+            const firstError = validationResult.error;
+            Alert.alert("Invalid Input", firstError.issues[0].message);
+            return;
+        }
+
+        setIsLoading(true);
+        setSignupInput("Creating account...");
+        setSignBg("bg-green-900");
+
+        try {
+            const result = await handleSignup(form);
+            if (result.success) {
+                Alert.alert(
+                    "Signup Successful",
+                    "Please check your email to verify your account."
+                );
+                // Navigate to a verification screen, passing the email
+                router.push({
+                    pathname: "/auth/verify-email" as RelativePathString,
+                    params: { email: form.email },
+                });
+            } else {
+                Alert.alert("Signup Failed", result.message);
+            }
+        } catch (error: any) {
+            Alert.alert(
+                "Signup Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setIsLoading(false);
+            setSignupInput("Sign Up");
+            setSignBg("bg-green-700");
+        }
     };
 
     return (
@@ -113,8 +151,8 @@ export default function SignUpScreen() {
                         type="select"
                         options={[
                             { label: "Select Gender", value: "" },
-                            { label: "Male", value: "male" },
-                            { label: "Female", value: "female" },
+                            { label: "Male", value: "Male" },
+                            { label: "Female", value: "Female" },
                         ]}
                         validate
                         schema={genderSchema}
@@ -122,13 +160,13 @@ export default function SignUpScreen() {
                     />
                     <DatePickerField
                         label="Date of Birth"
-                        value={form.dateOfBirth} // Pass the Date object
+                        value={form.dateOfBirth as Date} // Pass the Date object
                         onChange={(dateOfBirth) =>
                             setForm({ ...form, dateOfBirth })
                         }
                         validate
                         schema={dateOfBirthSchema}
-                        field={form.dateOfBirth.toISOString()}
+                        field={form.dateOfBirth}
                     />
                     <FormField
                         label="Password"
