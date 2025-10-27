@@ -1,4 +1,4 @@
-import { Pressable, Text } from "react-native";
+import { ActivityIndicator, Pressable, Text } from "react-native";
 
 interface ButtonProps {
     onPress: () => void;
@@ -10,6 +10,7 @@ interface ButtonProps {
     border?: string;
     color?: string;
     disabled?: boolean;
+    isLoading?: boolean;
 }
 
 export default function Button({
@@ -21,6 +22,7 @@ export default function Button({
     border,
     color,
     disabled = false,
+    isLoading = false,
 }: ButtonProps) {
     const variants = {
         classic: "bg-green-700 text-white",
@@ -28,39 +30,50 @@ export default function Button({
         glass: "bg-green-100 text-green-800",
     };
 
-    const baseStyle = "w-full py-3 rounded-xl";
+    const isButtonDisabled = disabled || isLoading;
+
+    const baseStyle = "w-full py-3 rounded-xl flex items-center justify-center";
     const variantStyle = variants[variant];
+
+    const pressableClasses = [
+        baseStyle,
+        !bg && !border && !color
+            ? variantStyle
+                  .split(" ")
+                  .filter((s) => s.startsWith("bg-") || s.startsWith("border"))
+                  .join(" ")
+            : `${bg} ${border}`,
+        isButtonDisabled ? "opacity-50" : "",
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    const textClasses = [
+        "text-center font-semibold",
+        color
+            ? color
+            : variantStyle.split(" ").find((s) => s.startsWith("text-")),
+    ]
+        .filter(Boolean)
+        .join(" ");
+
+    const loadingColor =
+        variant === "classic" || (bg && bg.includes("green"))
+            ? "white"
+            : "#1B8A52";
 
     return (
         <Pressable
-            className={`${baseStyle} ${
-                !bg && !border && !color
-                    ? variantStyle
-                          .split(" ")
-                          .filter(
-                              (s) =>
-                                  s.startsWith("bg-") || s.startsWith("border")
-                          )
-                          .join(" ")
-                    : `${bg} ${border}`
-            }`}
+            className={pressableClasses}
             onPress={onPress}
-            disabled={disabled}
+            disabled={isButtonDisabled}
         >
-            {children ? (
+            {isLoading ? (
+                <ActivityIndicator color={loadingColor} />
+            ) : children ? (
                 children
             ) : (
-                <Text
-                    className={`text-center font-semibold ${
-                        color
-                            ? color
-                            : variantStyle
-                                  .split(" ")
-                                  .find((s) => s.startsWith("text-"))
-                    }`}
-                >
-                    {input}
-                </Text>
+                <Text className={textClasses}>{input}</Text>
             )}
         </Pressable>
     );
