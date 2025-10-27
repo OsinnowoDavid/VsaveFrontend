@@ -124,7 +124,7 @@ export default function ResetPasswordScreen() {
         if (!isValid) {
             Alert.alert(
                 "Invalid Password",
-                "Please check your passwords and try again. Ensure they match and meet the security requirements.",
+                "Please check your passwords and try again. Ensure they match and meet the security requirements."
             );
             return;
         }

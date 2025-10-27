@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
+import useProfileStore from "./useProfileStore";
 
 interface AuthState {
     token: string | null;
@@ -12,13 +13,17 @@ interface AuthState {
 const useAuthStore = create<AuthState>((set) => ({
     token: null,
     isAuthLoading: true, // Start in a loading state
-    login: (token: string) => {
+    login: async (token: string) => {
         set({ token, isAuthLoading: false });
-        AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("authToken", token);
+        // After logging in, immediately fetch the user's profile
+        useProfileStore.getState().fetchProfile();
     },
-    logout: () => {
+    logout: async () => {
         set({ token: null, isAuthLoading: false });
-        AsyncStorage.removeItem("authToken");
+        await AsyncStorage.removeItem("authToken");
+        // When logging out, clear the user's profile data
+        useProfileStore.getState().clearProfile();
     },
     // Function to load the token from storage on app startup
     hydrate: async () => {

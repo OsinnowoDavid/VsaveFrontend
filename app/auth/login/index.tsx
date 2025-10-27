@@ -11,7 +11,6 @@ import {
     signinSchema,
 } from "../../../schema/form";
 import { handleSignin } from "../../../services/authService";
-import { validateFormField } from "../../../utils";
 
 export default function LoginScreen() {
     const [form, setForm] = useState({
@@ -24,28 +23,36 @@ export default function LoginScreen() {
     const [signupBg, setSignBg] = useState("bg-green-700");
 
     const handleSubmit = async () => {
-        if (isLoading) return;
+        const formValidation = signinSchema.safeParse(form);
 
-        const { isValid } = validateFormField(signinSchema, form);
-        setSignBg("bg-green-700");
-        if (!isValid) {
+        if (!formValidation.success) {
             Alert.alert(
                 "Invalid Input",
-                "Some fields are incorrect. Please review the form.",
+                "Please check your email and password."
             );
-        } else {
-            setIsLoading(true);
-            setSigninInput("Logging you in...");
-            const response = await handleSignin(form);
-            setIsLoading(false);
-            if (response.success) {
-                setSigninInput("Login Success!");
-                router.replace("/home"); // Navigate to home on success
+            return;
+        }
+
+        setIsLoading(true);
+        setSigninInput("Logging in...");
+        setSignBg("bg-green-900");
+
+        try {
+            const result = await handleSignin(form);
+            if (result.success) {
+                router.replace("/home");
             } else {
-                setSigninInput("Login failed! Please try again");
-                setSignBg("bg-red-600");
-                Alert.alert("Login Failed", response.message);
+                Alert.alert("Login Failed", result.message);
             }
+        } catch (error: any) {
+            Alert.alert(
+                "Login Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setSigninInput("Login");
+            setSignBg("bg-green-700");
+            setIsLoading(false);
         }
     };
 

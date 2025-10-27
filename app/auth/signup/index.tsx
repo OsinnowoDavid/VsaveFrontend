@@ -25,10 +25,10 @@ import {
     signupSchema,
 } from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
-import { validateFormField } from "../../../utils";
+import { SignUpData } from "../../../types/data";
 
 export default function SignUpScreen() {
-    const [form, setForm] = useState({
+    const [form, setForm] = useState<SignUpData>({
         fullName: "",
         email: "",
         countryCode: "234",
@@ -56,70 +56,41 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
-        if (isLoading) return;
-
-        // 1. Validate the form data first
-        const validationData = {
-            fullName: form.fullName,
-            email: form.email,
-            phoneNumber: form.phoneNumber,
-            gender: form.gender,
-            dateOfBirth: form.dateOfBirth.toISOString(), // Use ISO string for validation
-            password: form.password,
-        };
-
-        const { isValid } = validateFormField(signupSchema, validationData);
-
-        if (!isValid) {
-            Alert.alert(
-                "Validation Error",
-                "Some fields are incorrect. Please review the form.",
-            );
+        const validationResult = signupSchema.safeParse(form);
+        if (!validationResult.success) {
+            const firstError = validationResult.error;
+            Alert.alert("Invalid Input", firstError.issues[0].message);
             return;
         }
 
-        if (form.password !== form.confirmPassword) {
-            Alert.alert("Validation Error", "Passwords don't match.");
-            return;
-        }
-
-        // 2. Format the payload for the API
-        const nameParts = form.fullName.trim().split(" ");
-        const apiPayload = {
-            firstName: nameParts[0],
-            lastName: nameParts.slice(1).join(" ") || nameParts[0], // Handle single name case
-            email: form.email,
-            password: form.password,
-            gender: form.gender.charAt(0).toUpperCase() + form.gender.slice(1), // Capitalize (e.g., "male" -> "Male")
-            dateOfBirth: form.dateOfBirth.toISOString().split("T")[0], // Format as YYYY-MM-DD
-            phoneNumber: form.phoneNumber, // Send local number as is
-        };
-
-        // 3. Submit to the backend
         setIsLoading(true);
-        setSignupInput("Submitting...");
-        setSignBg("bg-green-700");
-        const response = await handleSignup(apiPayload);
-        setIsLoading(false);
+        setSignupInput("Creating account...");
+        setSignBg("bg-green-900");
 
-        if (response.success) {
-            setSignupInput("Success! Account Created");
-            Alert.alert("Registration Successful", response.data?.message, [
-                {
-                    text: "OK",
-                    // TODO: Navigate to email verification screen
-                    onPress: () =>
-                        router.push({
-                            pathname:
-                                "/auth/verify-email" as RelativePathString,
-                            params: { email: apiPayload.email },
-                        }),
-                },
-            ]);
-        } else {
-            setSignupInput("An error occurred!");
-            setSignBg("bg-red-600");
-            Alert.alert("Registration Failed", response.message);
+        try {
+            const result = await handleSignup(form);
+            if (result.success) {
+                Alert.alert(
+                    "Signup Successful",
+                    "Please check your email to verify your account."
+                );
+                // Navigate to a verification screen, passing the email
+                router.push({
+                    pathname: "/auth/verify-email" as RelativePathString,
+                    params: { email: form.email },
+                });
+            } else {
+                Alert.alert("Signup Failed", result.message);
+            }
+        } catch (error: any) {
+            Alert.alert(
+                "Signup Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setIsLoading(false);
+            setSignupInput("Sign Up");
+            setSignBg("bg-green-700");
         }
     };
 
@@ -180,8 +151,8 @@ export default function SignUpScreen() {
                         type="select"
                         options={[
                             { label: "Select Gender", value: "" },
-                            { label: "Male", value: "male" },
-                            { label: "Female", value: "female" },
+                            { label: "Male", value: "Male" },
+                            { label: "Female", value: "Female" },
                         ]}
                         validate
                         schema={genderSchema}
@@ -189,13 +160,13 @@ export default function SignUpScreen() {
                     />
                     <DatePickerField
                         label="Date of Birth"
-                        value={form.dateOfBirth} // Pass the Date object
+                        value={form.dateOfBirth as Date} // Pass the Date object
                         onChange={(dateOfBirth) =>
                             setForm({ ...form, dateOfBirth })
                         }
                         validate
                         schema={dateOfBirthSchema}
-                        field={form.dateOfBirth.toISOString()}
+                        field={form.dateOfBirth}
                     />
                     <FormField
                         label="Password"

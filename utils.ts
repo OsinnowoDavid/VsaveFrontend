@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const validateFormField = (
     schema: z.ZodType,
-    field: string | object,
+    field: string | object
 ) => {
     const result = schema.safeParse(field);
 

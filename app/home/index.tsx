@@ -15,20 +15,25 @@ import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import NavButton from "../../components/NavButton";
 import TransactionCard from "../../components/TransactionCard";
 import { recentTransactions } from "../../constants/transactions";
+import useProfileStore from "../../store/useProfileStore";
 
 export default function Home() {
     const router = useRouter();
+
+    const { profile } = useProfileStore();
 
     const quickActions = [
         {
             label: "Send",
             icon: <ArrowUpRight color="#1B8A52" size={28} />,
-            onPress: () => {},
+            onPress: () => {
+                router.push("/home/send-money");
+            },
         },
         {
             label: "Add Money",
             icon: <PlusCircle color="#1B8A52" size={28} />,
-            onPress: () => router.push("/home/addMoney"),
+            onPress: () => router.push("/home/add-money"),
         },
         {
             label: "Terminal",
@@ -60,15 +65,21 @@ export default function Home() {
             <View className="mt-6 w-[95%] mx-auto bg-[#f5f5f5]">
                 <View className="flex flex-row justify-between pe-3">
                     <Text className="font-meduim text-2xl px-2">
-                        Welcome, David
+                        Welcome, {profile?.firstName}
                     </Text>
                     <View className="flex flex-row gap-5">
-                        <UserCircleIcon color={"#1B8A52"} />
-                        <Bell color={"#1B8A52"} />
+                        <UserCircleIcon
+                            color={"#1B8A52"}
+                            onPress={() => router.push("/menu/account")}
+                        />
+                        <Bell
+                            color={"#1B8A52"}
+                            onPress={() => router.push("/menu/notifications")}
+                        />
                     </View>
                 </View>
                 <Balance />
-                <View className="mt-8">
+                <View className="mt-7">
                     <Text className="text-xl font-semibold mb-4">
                         Quick Actions
                     </Text>

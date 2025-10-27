@@ -25,7 +25,7 @@ const Index = () => {
         setSelectedPlan(planId);
         if (selectedNetwork) {
             const plan = dataPlans[selectedNetwork].find(
-                (p) => p.id === planId,
+                (p) => p.id === planId
             );
             if (plan) {
                 setCustomAmount(String(plan.price));
@@ -45,7 +45,7 @@ const Index = () => {
         if (!phone || phone.length < 10) {
             Alert.alert(
                 "Validation Error",
-                "Please enter a valid phone number.",
+                "Please enter a valid phone number."
             );
             return;
         }
@@ -70,7 +70,7 @@ const Index = () => {
                 label: "Plan",
                 value:
                     dataPlans[selectedNetwork!].find(
-                        (p) => p.id === selectedPlan,
+                        (p) => p.id === selectedPlan
                     )?.label || "Custom",
             },
         ];

@@ -50,11 +50,11 @@ const ScrollPicker = forwardRef<ScrollPickerHandle, ScrollPickerProps>(
             width = "100%",
             value,
         },
-        ref,
+        ref
     ) => {
         const scrollRef = useRef<ScrollView>(null);
         const [currentValue, setCurrentValue] = useState(
-            value ?? list[0]?.value ?? "",
+            value ?? list[0]?.value ?? ""
         );
 
         useImperativeHandle(ref, () => ({
@@ -72,7 +72,7 @@ const ScrollPicker = forwardRef<ScrollPickerHandle, ScrollPickerProps>(
         }, []);
 
         const handleMomentumScrollEnd = (
-            e: NativeSyntheticEvent<NativeScrollEvent>,
+            e: NativeSyntheticEvent<NativeScrollEvent>
         ) => {
             const offsetY = e.nativeEvent.contentOffset.y;
             const index = Math.round(offsetY / itemHeight);
@@ -150,7 +150,7 @@ const ScrollPicker = forwardRef<ScrollPickerHandle, ScrollPickerProps>(
                 </ScrollView>
             </View>
         );
-    },
+    }
 );
 
 const styles = StyleSheet.create({

@@ -1,6 +1,5 @@
 import { Slot, useRouter, useSegments } from "expo-router";
 import React, { useEffect } from "react";
-import SplashScreen from "../components/SplashScreen";
 import useAuthStore from "../store/useAuthStore";
 
 const useProtectedRoute = () => {
@@ -21,10 +20,10 @@ const useProtectedRoute = () => {
             !inAuthGroup
         ) {
             // Redirect to the login page.
-            router.replace("/auth/login");
+            // router.replace("/auth/login");
         } else if (token && inAuthGroup) {
             // Redirect away from the auth screens if the user is signed in.
-            router.replace("/home");
+            // router.replace("/home");
         }
     }, [token, segments, isAuthLoading, router]);
 };
@@ -36,8 +35,7 @@ export default function RootLayout() {
     // while the auth state is being determined.
     const { isAuthLoading } = useAuthStore();
     if (isAuthLoading) {
-        return <SplashScreen />;
+        // return <SplashScreen />;
     }
-
     return <Slot />;
 }

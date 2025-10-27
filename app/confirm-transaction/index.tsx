@@ -1,8 +1,9 @@
 import { router, useLocalSearchParams } from "expo-router";
-import { ArrowLeft, Landmark } from "lucide-react-native";
+import { ArrowLeft } from "lucide-react-native";
 import React, { useState } from "react";
 import { Alert, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import Balance from "../../components/Balance";
 import Button from "../../components/Button";
 import KeyboardAvoidingWrapper from "../../components/KeyboardAvoidWrapper";
 import PinInput from "../../components/PinInput";
@@ -63,25 +64,7 @@ export default function ConfirmTransactionScreen() {
                         {params.title || "Confirm Transaction"}
                     </Text>
 
-                    <View className="w-full h-28 mx-auto bg-green-100 flex flex-row gap-3">
-                        <View className="bg-white rounded-xl h-20 w-[90%] m-auto flex flex-row gap-3 items-center">
-                            <View className="flex-row justify-center items-center w-12 h-12 ml-4 my-auto bg-green-100 rounded-full">
-                                <Landmark
-                                    size={24}
-                                    color="#1B8A52"
-                                    strokeWidth={2}
-                                />
-                            </View>
-                            <View>
-                                <Text className="text-xl font-bold text-gray-800">
-                                    N200,000.00
-                                </Text>
-                                <Text className="text-sm font-medium text-gray-500">
-                                    Available Balance
-                                </Text>
-                            </View>
-                        </View>
-                    </View>
+                    <Balance version="v2" />
 
                     <View className="bg-white rounded-xl p-4 shadow-sm mt-4 mb-4">
                         {/* Details */}

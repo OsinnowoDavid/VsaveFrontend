@@ -72,9 +72,7 @@ Failed requests return a `4xx` or `5xx` status code with a `status` of `"error"`
 {
     "status": "error",
     "message": "Validation failed.",
-    "errors": [
-        { "field": "email", "message": "Email is already in use." }
-    ]
+    "errors": [{ "field": "email", "message": "Email is already in use." }]
 }
 ```
 

@@ -1,12 +1,20 @@
 import useAuthStore from "../store/useAuthStore";
+import { SignUpData } from "../types/data";
 import apiClient from "./apiClient";
 
-export const handleSignup = async (registrationData: any) => {
+export const handleSignup = async (registrationData: SignUpData) => {
+    const names = registrationData.fullName.split(" ");
+    const form = {
+        firstName: names[0],
+        lastName: names[names.length - 1],
+        email: registrationData.email,
+        phoneNumber: registrationData.phoneNumber,
+        gender: registrationData.gender,
+        dateOfBirth: registrationData.dateOfBirth,
+        password: registrationData.password,
+    };
     try {
-        const response = await apiClient.post(
-            "/user/register",
-            registrationData,
-        );
+        const response = await apiClient.post("/user/register", form);
 
         if (response.data.status === "success") {
             console.log("Signup successful:", response.data.message);
@@ -41,7 +49,7 @@ export const verifyEmail = async (data: { email: string; token: string }) => {
     } catch (error: any) {
         console.error(
             "Email verification error:",
-            error.response?.data || error.message,
+            error.response?.data || error.message
         );
         const errorMessage =
             error.response?.data?.message ||
@@ -54,7 +62,7 @@ export const resendVerificationToken = async (data: { email: string }) => {
     try {
         const response = await apiClient.post(
             "/user/resend-verification-token",
-            data,
+            data
         );
 
         if (response.data.status === "success") {
@@ -65,7 +73,7 @@ export const resendVerificationToken = async (data: { email: string }) => {
     } catch (error: any) {
         console.error(
             "Resend token error:",
-            error.response?.data || error.message,
+            error.response?.data || error.message
         );
         const errorMessage =
             error.response?.data?.message ||
@@ -81,8 +89,6 @@ export const handleSignin = async (form: {
     const login = useAuthStore.getState().login;
     try {
         const response = await apiClient.post("/user/login", form);
-
-        console.log("Signin response:", response.data);
 
         if (response.data && response.data.status === "success") {
             login(response.data.token); // Save token to Zustand store

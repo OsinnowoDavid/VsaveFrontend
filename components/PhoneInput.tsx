@@ -39,7 +39,7 @@ const countries = Country.getAllCountries()
     // Remove duplicates for countries sharing the same phone code, keeping the first one.
     .filter(
         (country, index, self) =>
-            index === self.findIndex((c) => c.value === country.value),
+            index === self.findIndex((c) => c.value === country.value)
     )
     .sort((a, b) => a.label.localeCompare(b.label));
 
@@ -75,7 +75,7 @@ export default function PhoneInput({
             return countries;
         }
         return countries.filter((country) =>
-            country.label.toLowerCase().includes(searchQuery.toLowerCase()),
+            country.label.toLowerCase().includes(searchQuery.toLowerCase())
         );
     }, [searchQuery]);
     const inputContainerStyle =

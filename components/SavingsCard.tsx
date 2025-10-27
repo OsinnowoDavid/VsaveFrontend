@@ -7,7 +7,7 @@ export default function SavingsCard() {
         <View className="w-[95%] mx-auto mt-10 bg-[#6BAA8A] flex flex-col gap-4 px-3 py-4 rounded-md">
             {/* Header */}
             <View className="w-full justify-center">
-                <Text className="text-[15px] font-semibold text-[#FAFAFA]">
+                <Text className="text-lg font-semibold text-[#FAFAFA]">
                     Available Balance: ₦300,000
                 </Text>
             </View>
@@ -21,12 +21,12 @@ export default function SavingsCard() {
                     className="px-3 py-2 rounded-md"
                 >
                     {/* Savings Row */}
-                    <View className="flex-row justify-between items-center h-14">
+                    <View className="flex-row justify-between items-center">
                         <View className="py-2">
-                            <Text className="text-[15px] text-[rgba(250,250,250,0.6)]">
+                            <Text className="text-lg text-[rgba(250,250,250,0.6)]">
                                 My Savings
                             </Text>
-                            <Text className="text-[16px] font-semibold text-white">
+                            <Text className="text-lg font-semibold text-white">
                                 ₦100,000
                             </Text>
                         </View>
@@ -41,7 +41,7 @@ export default function SavingsCard() {
 
                     {/* Maturity Info */}
                     <View className="border-t border-[rgba(250,250,250,0.2)] py-1">
-                        <Text className="text-[10px] text-[rgba(250,250,250,0.6)]">
+                        <Text className="text-sm text-[rgba(250,250,250,0.6)]">
                             Next maturity: 20-09-2025 (20 days plan)
                         </Text>
                     </View>
@@ -49,13 +49,13 @@ export default function SavingsCard() {
             </View>
             {/* Actions */}
             <View className="flex-row justify-between gap-3">
-                <TouchableOpacity className="bg-[#1B8A52] rounded flex-row items-center justify-center flex-grow">
-                    <Text className="text-white text-[12px] font-semibold ">
+                <TouchableOpacity className="bg-[#1B8A52] rounded text-center items-center justify-center p-2 flex-grow">
+                    <Text className="text-white text-base font-semibold whitespace-nowrap">
                         Top Up
                     </Text>
                 </TouchableOpacity>
                 <TouchableOpacity className="bg-white rounded flex-row items-center justify-center p-2 flex-grow">
-                    <Text className="text-[#1B8A52] text-[10px] font-semibold">
+                    <Text className="text-[#1B8A52] text-base font-semibold">
                         Withdraw
                     </Text>
                 </TouchableOpacity>

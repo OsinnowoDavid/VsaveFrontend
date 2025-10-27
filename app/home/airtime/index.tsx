@@ -21,7 +21,7 @@ const Index = () => {
         if (!phone || phone.length < 10) {
             Alert.alert(
                 "Validation Error",
-                "Please enter a valid phone number.",
+                "Please enter a valid phone number."
             );
             return;
         }
