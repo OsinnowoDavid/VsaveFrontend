@@ -13,6 +13,18 @@ interface ButtonProps {
     isLoading?: boolean;
 }
 
+interface ButtonProps {
+    onPress: () => void;
+    input?: string;
+    variant?: "classic" | "outline" | "glass";
+    // Allow overriding for specific cases
+    children?: React.ReactNode;
+    bg?: string;
+    border?: string;
+    color?: string;
+    disabled?: boolean;
+}
+
 export default function Button({
     onPress,
     input = "",

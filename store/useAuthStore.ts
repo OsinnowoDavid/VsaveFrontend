@@ -36,4 +36,7 @@ const useAuthStore = create<AuthState>((set) => ({
     },
 }));
 
+// Immediately attempt to hydrate the store when the app loads
+useAuthStore.getState().hydrate();
+
 export default useAuthStore;
