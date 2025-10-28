@@ -12,25 +12,26 @@ interface AuthState {
 const useAuthStore = create<AuthState>((set) => ({
     token: null,
     isAuthLoading: true, // Start in a loading state
-    login: (token: string) => {
+    login: async (token) => {
         set({ token, isAuthLoading: false });
-        AsyncStorage.setItem("authToken", token);
+        await AsyncStorage.setItem("authToken", token);
     },
-    logout: () => {
+    logout: async () => {
         set({ token: null, isAuthLoading: false });
-        AsyncStorage.removeItem("authToken");
+        await AsyncStorage.removeItem("authToken");
     },
     // Function to load the token from storage on app startup
     hydrate: async () => {
         try {
             const token = await AsyncStorage.getItem("authToken");
             if (token) {
-                set({ token });
+                set({ token, isAuthLoading: false }); // If token is found, we are no longer loading
+            } else {
+                set({ isAuthLoading: false }); // If no token, we are also no longer loading
             }
         } catch (e) {
             console.error("Failed to load auth token from storage", e);
-        } finally {
-            set({ isAuthLoading: false }); // Hydration is complete
+            set({ isAuthLoading: false }); // On error, stop loading
         }
     },
 }));

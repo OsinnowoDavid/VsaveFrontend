@@ -1,26 +1,44 @@
 import * as ImagePicker from "expo-image-picker";
 import { router } from "expo-router";
 import { ArrowLeft, Camera } from "lucide-react-native";
-import React, { useState } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import {
+    Alert,
+    Image,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import EditableField from "../../../components/EditableField";
 import HomeScreenWrapper from "../../../components/HomeScreenWrapper";
-export default function AccountScreen() {
-    const [image, setImage] = useState<string | null>(null);
-    const [user, setUser] = useState({
-        fullName: "David",
-        email: "david@example.com",
-        phone: "+1 234 567 890",
-    });
+import useProfileStore from "../../../store/useProfileStore";
 
-    const handleSave = (field: keyof typeof user, value: string) => {
-        setUser((prev) => ({ ...prev, [field]: value }));
-        // Here you would typically call an API to save the data
-        console.log(`Saving ${field}: ${value}`);
+export default function AccountScreen() {
+    const { profile, updateProfile } = useProfileStore();
+
+    // This function would call your backend API to persist the changes.
+    const handleSave = async (
+        field: "firstName" | "lastName" | "email" | "phoneNumber",
+        value: string
+    ) => {
+        try {
+            // --- API Call Placeholder ---
+            // const updatedProfile = await api.updateUserProfile({ [field]: value });
+            // On success, update the local store state.
+            console.log(`Simulating save for ${field}: ${value}`);
+            updateProfile({ [field]: value });
+            Alert.alert("Success", `${field} updated successfully.`);
+        } catch (error) {
+            console.error("Failed to update profile:", error);
+            Alert.alert(
+                "Error",
+                "Failed to update your profile. Please try again."
+            );
+        }
     };
 
     const pickImage = async () => {
-        // No permissions request is needed for launching the image library
         let result = await ImagePicker.launchImageLibraryAsync({
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
@@ -29,7 +47,14 @@ export default function AccountScreen() {
         });
 
         if (!result.canceled) {
-            setImage(result.assets[0].uri);
+            const newImageUri = result.assets[0].uri;
+            // --- API Call Placeholder for Image Upload ---
+            // const formData = new FormData();
+            // formData.append('profilePicture', { uri: newImageUri, name: 'photo.jpg', type: 'image/jpeg' });
+            // const response = await api.uploadProfilePicture(formData);
+            // On success, update the store with the new URL from the backend
+            console.log(`Simulating image upload for URI: ${newImageUri}`);
+            updateProfile({ profilePicture: newImageUri });
         }
     };
 
@@ -55,9 +80,12 @@ export default function AccountScreen() {
                         <View className="relative">
                             <Image
                                 source={
-                                    image
-                                        ? { uri: image }
-                                        : require("../../../assets/images/apple-touch-icon.png")
+                                    profile?.profile?.profilePicture
+                                        ? {
+                                              uri: profile.profile
+                                                  .profilePicture,
+                                          }
+                                        : require("../../../assets/images/favicon-96x96.png")
                                 }
                                 className="w-32 h-32 rounded-full border-4 border-gray-50"
                             />
@@ -74,19 +102,24 @@ export default function AccountScreen() {
                     <View className="bg-white rounded-lg shadow-sm p-6 -mt-16 pt-20">
                         {/* Editable Fields */}
                         <EditableField
-                            label="Full Name"
-                            initialValue={user.fullName}
-                            onSave={(value) => handleSave("fullName", value)}
+                            label="First Name"
+                            initialValue={profile?.profile?.firstName ?? ""}
+                            onSave={(value) => handleSave("firstName", value)}
+                        />
+                        <EditableField
+                            label="Last Name"
+                            initialValue={profile?.profile?.lastName ?? ""}
+                            onSave={(value) => handleSave("lastName", value)}
                         />
                         <EditableField
                             label="Email Address"
-                            initialValue={user.email}
+                            initialValue={profile?.profile?.email ?? ""}
                             onSave={(value) => handleSave("email", value)}
                         />
                         <EditableField
                             label="Phone Number"
-                            initialValue={user.phone}
-                            onSave={(value) => handleSave("phone", value)}
+                            initialValue={profile?.profile?.phoneNumber ?? ""}
+                            onSave={(value) => handleSave("phoneNumber", value)}
                         />
                     </View>
                 </View>
