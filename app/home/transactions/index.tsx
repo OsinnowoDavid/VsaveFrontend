@@ -1,12 +1,19 @@
 import { router } from "expo-router";
 import { ArrowLeft, Download } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
-import { Alert, FlatList, Text, TouchableOpacity, View } from "react-native";
+import React, { useEffect, useMemo, useState } from "react";
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import FilterModal from "../../../components/FilterModal";
 import { SearchBar } from "../../../components/SearchBar";
 import TransactionCard from "../../../components/TransactionCard";
-import { allTransactions } from "../../../constants/transactions";
+import useTransactionStore from "../../../store/useTransactionStore";
 
 type FilterOption =
     | "All"
@@ -17,6 +24,14 @@ type FilterOption =
     | "Debit Only";
 
 export default function TransactionHistoryScreen() {
+    const { transactions, isLoading, error, fetchTransactions } =
+        useTransactionStore();
+
+    useEffect(() => {
+        // Fetch transactions when the component mounts
+        fetchTransactions();
+    }, []);
+
     const [activeFilter, setActiveFilter] = useState<FilterOption>("All");
     const [searchQuery, setSearchQuery] = useState("");
     const [isFilterModalVisible, setFilterModalVisible] = useState(false);
@@ -53,20 +68,18 @@ export default function TransactionHistoryScreen() {
     };
 
     const filteredTransactions = useMemo(() => {
-        let transactions = allTransactions;
+        let filtered = [...transactions]; // Create a mutable copy to avoid reassignment issues
         const today = new Date();
 
         switch (activeFilter) {
             case "Credit Only":
-                transactions = transactions.filter(
-                    (tx) => tx.type === "credit"
-                );
+                filtered = filtered.filter((tx) => tx.type === "credit");
                 break;
             case "Debit Only":
-                transactions = transactions.filter((tx) => tx.type === "debit");
+                filtered = filtered.filter((tx) => tx.type === "debit");
                 break;
             case "Today":
-                transactions = transactions.filter((tx) => {
+                filtered = filtered.filter((tx) => {
                     return (
                         new Date(tx.date).toDateString() ===
                         today.toDateString()
@@ -76,14 +89,14 @@ export default function TransactionHistoryScreen() {
             case "This Week":
                 const oneWeekAgo = new Date();
                 oneWeekAgo.setDate(today.getDate() - 7);
-                transactions = transactions.filter(
+                filtered = filtered.filter(
                     (tx) => new Date(tx.date) >= oneWeekAgo
                 );
                 break;
             case "This Month":
                 const currentMonth = today.getMonth();
                 const currentYear = today.getFullYear();
-                transactions = transactions.filter((tx) => {
+                filtered = filtered.filter((tx) => {
                     const txDate = new Date(tx.date);
                     return (
                         txDate.getMonth() === currentMonth &&
@@ -94,13 +107,29 @@ export default function TransactionHistoryScreen() {
         }
 
         if (searchQuery) {
-            return transactions.filter((tx) =>
+            return filtered.filter((tx) =>
                 tx.title.toLowerCase().includes(searchQuery.toLowerCase())
             );
         }
 
-        return transactions;
-    }, [activeFilter, searchQuery]);
+        return filtered;
+    }, [activeFilter, searchQuery, transactions]);
+
+    if (isLoading && transactions.length === 0) {
+        return (
+            <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
+                <ActivityIndicator size="large" color="#1B8A52" />
+            </SafeAreaView>
+        );
+    }
+
+    if (error) {
+        return (
+            <SafeAreaView className="flex-1 justify-center items-center bg-gray-50">
+                <Text className="text-red-500 text-center">{error}</Text>
+            </SafeAreaView>
+        );
+    }
 
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
@@ -127,9 +156,9 @@ export default function TransactionHistoryScreen() {
                 }
                 renderItem={({ item }) => <TransactionCard {...item} />}
                 ListEmptyComponent={
-                    <View className="flex-1 justify-center items-center p-8">
-                        <Text className="text-gray-500">
-                            No transactions match your filters.
+                    <View className="flex-1 justify-center items-center p-8 mt-20">
+                        <Text className="text-gray-500 text-lg">
+                            No transactions yet.
                         </Text>
                     </View>
                 }
