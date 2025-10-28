@@ -1,61 +1,75 @@
 import { create } from "zustand";
-import { IUser } from "../types/profile";
-import useAuthStore from "./useAuthStore";
+import { fetchUserProfile } from "../services/profileService";
 
-const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
+interface KycDetails {
+    accountNumber: number;
+    address: string;
+    bank: string;
+    bvn: string;
+    country: string;
+    state: string;
+    profession: string;
+}
 
-// We can omit fields that shouldn't be stored on the client, like password.
-// We can also simplify Mongoose-specific types.
-export type UserProfile = Omit<IUser, "password" | "_id" | "KYC"> & {
-    _id: string;
-    KYC: string | null;
-};
+interface ProfileDetails {
+    firstName: string;
+    lastName: string;
+    email: string;
+    phoneNumber: string;
+    virtualAccountNumber: string;
+    availableBalance: number;
+    pendingBalance: number;
+    profilePicture?: string;
+    gender: string;
+    dateOfBirth: string;
+    isEmailVerified: boolean;
+}
+
+interface Profile {
+    profile: ProfileDetails | null;
+    kyc: KycDetails | null;
+}
 
 interface ProfileState {
-    profile: UserProfile | null;
+    profile: Profile | null;
+    hasCompletedKYC: boolean;
     isProfileLoading: boolean;
-    fetchProfile: () => Promise<void>;
-    updateProfile: (data: Partial<UserProfile>) => void;
+    fetchProfile: (token: string) => Promise<void>;
+    updateProfile: (data: Partial<ProfileDetails>) => void;
     clearProfile: () => void;
 }
 
 const useProfileStore = create<ProfileState>((set, get) => ({
     profile: null,
-    isProfileLoading: false,
-    fetchProfile: async () => {
-        const { token } = useAuthStore.getState();
-        const url = `${API_BASE_URL}/user/profile`;
-        if (!token) {
-            return; // No token, no user to fetch
-        }
+    isProfileLoading: false, // Start with false, set to true during fetch
+    hasCompletedKYC: false,
+    fetchProfile: async (token) => {
         set({ isProfileLoading: true });
-        try {
-            // Replace with your actual API endpoint
-            const response = await fetch(url, {
-                headers: {
-                    authorization: `${token}`,
-                },
+        const response = await fetchUserProfile(token);
+        if (response?.success) {
+            set({
+                profile: response.data,
+                isProfileLoading: false,
+                hasCompletedKYC: !!response.data.kyc,
             });
-            if (!response.ok) throw new Error("Failed to fetch profile");
-            const result = await response.json();
-            if (result.Status.toLowerCase() === "success" && result.data) {
-                set({ profile: result.data, isProfileLoading: false });
-            } else {
-                throw new Error(
-                    result.message || "Failed to parse profile data"
-                );
-            }
-        } catch (error) {
-            console.error("Failed to fetch user profile:", error);
+        } else {
             set({ isProfileLoading: false });
         }
     },
-    updateProfile: (data) => {
-        set((state) => ({
-            profile: state.profile ? { ...state.profile, ...data } : null,
-        }));
+    updateProfile: (data: Partial<ProfileDetails>) => {
+        set((state) =>
+            state.profile && state.profile.profile
+                ? {
+                      profile: {
+                          ...state.profile,
+                          profile: { ...state.profile.profile, ...data },
+                      },
+                  }
+                : state
+        );
     },
-    clearProfile: () => set({ profile: null, isProfileLoading: false }),
+    clearProfile: () =>
+        set({ profile: null, isProfileLoading: false, hasCompletedKYC: false }),
 }));
 
 export default useProfileStore;

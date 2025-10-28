@@ -80,8 +80,11 @@ export default function AccountScreen() {
                         <View className="relative">
                             <Image
                                 source={
-                                    profile?.profilePicture
-                                        ? { uri: profile.profilePicture }
+                                    profile?.profile?.profilePicture
+                                        ? {
+                                              uri: profile.profile
+                                                  .profilePicture,
+                                          }
                                         : require("../../../assets/images/favicon-96x96.png")
                                 }
                                 className="w-32 h-32 rounded-full border-4 border-gray-50"
@@ -100,22 +103,22 @@ export default function AccountScreen() {
                         {/* Editable Fields */}
                         <EditableField
                             label="First Name"
-                            initialValue={profile?.firstName ?? ""}
+                            initialValue={profile?.profile?.firstName ?? ""}
                             onSave={(value) => handleSave("firstName", value)}
                         />
                         <EditableField
                             label="Last Name"
-                            initialValue={profile?.lastName ?? ""}
+                            initialValue={profile?.profile?.lastName ?? ""}
                             onSave={(value) => handleSave("lastName", value)}
                         />
                         <EditableField
                             label="Email Address"
-                            initialValue={profile?.email ?? ""}
+                            initialValue={profile?.profile?.email ?? ""}
                             onSave={(value) => handleSave("email", value)}
                         />
                         <EditableField
                             label="Phone Number"
-                            initialValue={profile?.phoneNumber ?? ""}
+                            initialValue={profile?.profile?.phoneNumber ?? ""}
                             onSave={(value) => handleSave("phoneNumber", value)}
                         />
                     </View>

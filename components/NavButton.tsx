@@ -1,5 +1,11 @@
 import { ReactNode } from "react";
-import { Image, ImageSourcePropType, Pressable, Text } from "react-native";
+import {
+    Image,
+    ImageSourcePropType,
+    Pressable,
+    Text,
+    View,
+} from "react-native";
 
 interface NavButtonProps {
     onPress: () => void;
@@ -13,6 +19,7 @@ interface NavButtonProps {
     source?: ImageSourcePropType;
     alt?: string;
     width?: string;
+    padding?: string;
     imageHeight?: number;
     imageWidth?: number;
 }
@@ -29,31 +36,34 @@ export default function NavButton({
     iconComponent,
     alt = "",
     width = "w-max",
+    padding = "p-1",
     imageWidth = 35,
     imageHeight = 35,
 }: NavButtonProps) {
     return (
-        <Pressable
-            className={`${width} px-4 py-3 rounded-xl ${bg} ${border} flex flex-col justify-center items-center`}
-            onPress={onPress}
-        >
-            {icon && (
-                <>
-                    {iconType === "image" ? (
-                        <Image
-                            source={source}
-                            alt={alt}
-                            width={imageWidth}
-                            height={imageHeight}
-                        />
-                    ) : (
-                        iconComponent
-                    )}
-                </>
-            )}
-            <Text className={`text-center font-semibold ${color}`}>
+        <View className={`flex flex-col ${width}`}>
+            <Pressable
+                className={`${padding} ${bg} rounded-xl ${border} flex flex-col justify-center items-center`}
+                onPress={onPress}
+            >
+                {icon && (
+                    <>
+                        {iconType === "image" ? (
+                            <Image
+                                source={source}
+                                alt={alt}
+                                width={imageWidth}
+                                height={imageHeight}
+                            />
+                        ) : (
+                            iconComponent
+                        )}
+                    </>
+                )}
+            </Pressable>
+            <Text className={`text-center text-sm font-semibold ${color}`}>
                 {input}
             </Text>
-        </Pressable>
+        </View>
     );
 }

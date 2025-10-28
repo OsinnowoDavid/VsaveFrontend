@@ -1,6 +1,7 @@
-import { Landmark } from "lucide-react-native";
+import * as Clipboard from "expo-clipboard";
+import { Copy, Landmark } from "lucide-react-native";
 import React from "react";
-import { Image, Text, View } from "react-native";
+import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import useProfileStore from "../store/useProfileStore";
 
 export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
@@ -11,7 +12,7 @@ export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
 }
 
 function BalanceV1() {
-    const { profile } = useProfileStore();
+    const { profile } = useProfileStore(); // profile is { profile: ProfileDetails, kyc: KycDetails }
 
     const formatCurrency = (amount: number | undefined) => {
         if (amount === undefined) return "0.00";
@@ -20,6 +21,16 @@ function BalanceV1() {
             maximumFractionDigits: 2,
         });
     };
+
+    const copyToClipboard = async () => {
+        if (profile?.profile?.virtualAccountNumber) {
+            await Clipboard.setStringAsync(
+                profile.profile.virtualAccountNumber
+            );
+            Alert.alert("Copied!", "Account number copied to clipboard.");
+        }
+    };
+
     return (
         <View
             className="border-[0.01px] mt-5 h-36 rounded-2xl relative overflow-hidden"
@@ -39,20 +50,26 @@ function BalanceV1() {
                     backgroundColor: "rgba(27, 138, 82, 0.7)",
                 }}
             >
-                <View>
-                    <Text className="text-white text-lg">
-                        Available Balance
+                <View className="flex-row items-center gap-2">
+                    <Text className="text-white text-base">
+                        Account Number:{" "}
+                        {profile?.profile?.virtualAccountNumber ?? "123456789"}
                     </Text>
+                    {profile?.profile?.virtualAccountNumber && (
+                        <TouchableOpacity onPress={copyToClipboard}>
+                            <Copy size={16} color="white" />
+                        </TouchableOpacity>
+                    )}
                 </View>
                 <View>
                     <Text className="text-white text-4xl tracking-tighter">
-                        ₦{formatCurrency(profile?.availableBalance)}
+                        ₦{formatCurrency(profile?.profile?.availableBalance)}
                     </Text>
                 </View>
                 <View>
                     <Text className="text-[#EFEFEF] text-[16px]">
                         Pending Balance ₦
-                        {formatCurrency(profile?.pendingBalance)}
+                        {formatCurrency(profile?.profile?.pendingBalance)}
                     </Text>
                 </View>
             </View>
@@ -77,7 +94,7 @@ function BalanceV2() {
                 </View>
                 <View>
                     <Text className="text-xl font-bold text-gray-800">
-                        ₦{formatCurrency(profile?.availableBalance)}
+                        ₦{formatCurrency(profile?.profile?.availableBalance)}
                     </Text>
                     <Text className="text-sm font-medium text-gray-500">
                         Available Balance
