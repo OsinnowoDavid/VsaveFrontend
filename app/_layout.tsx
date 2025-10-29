@@ -1,6 +1,7 @@
 import { Slot, useRouter, useSegments } from "expo-router";
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SplashScreen from "../components/SplashScreen";
+import { hasPin } from "../services/pinService";
 import useAuthStore from "../store/useAuthStore";
 import useProfileStore from "../store/useProfileStore";
 
@@ -30,25 +31,48 @@ const useAuthObserver = () => {
 };
 
 const useProtectedRoute = () => {
-    const { token, isAuthLoading } = useAuthStore();
+    const { token, hasCachedToken, isAuthLoading } = useAuthStore();
     const { hasCompletedKYC, isProfileLoading, profile } = useProfileStore();
     const segments = useSegments();
     const router = useRouter();
+    const [pinStatus, setPinStatus] = useState({
+        loading: true,
+        hasPin: false,
+    });
+
+    // Effect to check for local PIN once user is authenticated
+    useEffect(() => {
+        if (token) {
+            const checkPin = async () => {
+                const userHasPin = await hasPin();
+                setPinStatus({ loading: false, hasPin: userHasPin });
+            };
+            checkPin();
+        } else {
+            // If there's no token, no need to check for a PIN.
+            setPinStatus({ loading: false, hasPin: false });
+        }
+    }, [token]);
 
     useEffect(() => {
         // If the auth state is still loading, don't do anything.
         // A splash screen would be rendered here.
-        if (isAuthLoading || (token && isProfileLoading)) return;
+        if (isAuthLoading || (token && (isProfileLoading || pinStatus.loading)))
+            return;
 
         const inAuthGroup = segments[0] === "auth";
 
-        // Condition 1: User is not logged in and not in the auth flow.
-        // Redirect to login.
-        if (!token && !inAuthGroup) {
-            // Redirect to the auth group if the user is not signed in.
-            router.replace("/auth/login");
+        // Condition 1: User is not logged in and is trying to access a protected route.
+        // The root `index` screen is public (segments.length === 0).
+        // The auth group is public.
+        if (!token && !inAuthGroup && segments.length > 0) {
+            // Redirect to the auth group if the user is not signed in and not on a public screen.
+            router.replace("/auth/login"); // Or could be the root index, depending on desired UX
             return;
         }
+
+        // --- POST-LOGIN LOGIC ---
+        // The following rules apply only after the user is actively logged in (token is set).
 
         // Condition 2: User is logged in, but KYC is not complete and they are not in the KYC flow.
         // Redirect to KYC screen.
@@ -58,13 +82,33 @@ const useProtectedRoute = () => {
             return;
         }
 
-        // Condition 3: User is logged in, has completed KYC, but is still in the auth group.
+        // Condition 3: User is logged in and has KYC, but somehow still doesn't have a PIN.
+        // This is a fallback. Redirect to PIN setup screen.
+        if (
+            token &&
+            hasCompletedKYC &&
+            !pinStatus.hasPin &&
+            segments[1] !== "pincode-setup"
+        ) {
+            router.replace("/auth/pincode-setup");
+            return;
+        }
+
+        // Condition 4: User is fully authenticated (token, KYC, PIN) but is still in an auth screen.
         // Redirect to home.
-        if (token && hasCompletedKYC && inAuthGroup) {
+        if (token && hasCompletedKYC && pinStatus.hasPin && inAuthGroup) {
             // Redirect away from the auth group if the user is signed in.
             router.replace("/home");
         }
-    }, [token, segments, isAuthLoading, hasCompletedKYC, isProfileLoading]);
+    }, [
+        token,
+        hasCachedToken,
+        segments,
+        isAuthLoading,
+        hasCompletedKYC,
+        isProfileLoading,
+        pinStatus,
+    ]);
 };
 
 export default function RootLayout() {

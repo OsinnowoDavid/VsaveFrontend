@@ -26,7 +26,6 @@ type FilterOption =
 export default function TransactionHistoryScreen() {
     const { transactions, isLoading, error, fetchTransactions } =
         useTransactionStore();
-
     useEffect(() => {
         // Fetch transactions when the component mounts
         fetchTransactions();
@@ -108,7 +107,9 @@ export default function TransactionHistoryScreen() {
 
         if (searchQuery) {
             return filtered.filter((tx) =>
-                tx.title.toLowerCase().includes(searchQuery.toLowerCase())
+                (tx.reciever || tx.sender || tx.type)
+                    .toLowerCase()
+                    .includes(searchQuery.toLowerCase())
             );
         }
 
@@ -151,9 +152,7 @@ export default function TransactionHistoryScreen() {
 
             <FlatList
                 data={filteredTransactions}
-                keyExtractor={(item, index) =>
-                    `${item.title}-${item.date}-${index}`
-                }
+                keyExtractor={(item) => item._id}
                 renderItem={({ item }) => <TransactionCard {...item} />}
                 ListEmptyComponent={
                     <View className="flex-1 justify-center items-center p-8 mt-20">

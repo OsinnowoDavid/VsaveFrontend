@@ -1,37 +1,51 @@
-// --- Development Mock Data ---
-const mockBankList = [
-    { id: 1, code: "044", name: "Access Bank" },
-    { id: 2, code: "023", name: "Citibank Nigeria" },
-    { id: 3, code: "050", name: "Ecobank Nigeria" },
-    { id: 4, code: "070", name: "Fidelity Bank" },
-    { id: 5, code: "011", name: "First Bank of Nigeria" },
-    { id: 6, code: "214", name: "First City Monument Bank" },
-    { id: 7, code: "058", name: "Guaranty Trust Bank" },
-    { id: 8, code: "033", name: "United Bank for Africa" },
-    { id: 9, code: "035", name: "Wema Bank" },
-    { id: 10, code: "057", name: "Zenith Bank" },
-];
-const mockResolvedAccounts: { [key: string]: { account_name: string } } = {
-    "0123456789": { account_name: "JOHN DOE" },
-    "9876543210": { account_name: "JANE SMITH" },
-    "1234567890": { account_name: "ALICE WILLIAMS" },
-};
-// ---------------------------
+import { Bank } from "../types/data"; // Assuming a shared type definition
+import apiClient from "./apiClient";
+
+// In-memory cache for the bank list
+let cachedBankList: Bank[] | null = null;
 
 export const getBankList = async (): Promise<{
     success: boolean;
-    data?: { id: number; code: string; name: string }[];
+    data?: Bank[];
     message?: string;
 }> => {
-    // --- Development Shortcut ---
-    // This will return mock data instead of calling the API.
-    console.log("Using mock bank list for development.");
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            resolve({ success: true, data: mockBankList });
-        }, 500); // Simulate a short network delay
-    });
-    // --------------------------
+    // 1. Return cached data if available
+    if (cachedBankList) {
+        return { success: true, data: cachedBankList };
+    }
+
+    try {
+        // 2. Fetch from API if not cached
+        const response = await apiClient.get("/user/get-bank-code");
+
+        // Note: The API returns status "Success" with a capital 'S'
+        if (response.data && response.data.status === "Success") {
+            // 3. Map the API response to the format expected by the UI
+            const formattedData = response.data.data.map((bank: any) => ({
+                id: bank._id, // Use _id as the unique identifier
+                name: bank.bank,
+                code: bank.bankCode,
+            }));
+
+            // Sort the bank list alphabetically by name
+            formattedData.sort((a, b) => a.name.localeCompare(b.name));
+
+            // 4. Store the formatted data in the cache
+            cachedBankList = formattedData;
+
+            return { success: true, data: formattedData };
+        } else {
+            return {
+                success: false,
+                message: response.data.message || "Failed to fetch banks.",
+            };
+        }
+    } catch (error: any) {
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred while fetching the bank list.";
+        return { success: false, message: errorMessage };
+    }
 };
 
 export const resolveBankAccount = async (details: {
@@ -42,20 +56,52 @@ export const resolveBankAccount = async (details: {
     data?: { account_name: string };
     message?: string;
 }> => {
-    // --- Development Shortcut ---
-    console.log("Using mock account resolution for development.", details);
-    return new Promise((resolve) => {
-        setTimeout(() => {
-            const resolvedAccount = mockResolvedAccounts[details.accountNumber];
-            if (resolvedAccount) {
-                resolve({ success: true, data: resolvedAccount });
-            } else {
-                resolve({
-                    success: false,
-                    message: "Invalid account number.",
-                });
-            }
-        }, 1000); // Simulate a network delay
-    });
-    // --------------------------
+    try {
+        const response = await apiClient.post("/account-lookup", details);
+
+        if (response.data && response.data.status === "success") {
+            return { success: true, data: response.data.data };
+        } else {
+            return {
+                success: false,
+                message: response.data.message || "Failed to resolve account.",
+            };
+        }
+    } catch (error: any) {
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred while resolving the bank account, please try again.";
+        return { success: false, message: errorMessage };
+    }
+};
+
+export const sendToBank = async (
+    details: {
+        bankCode: string;
+        accountNumber: string;
+        accountName: string;
+        amount: number;
+    },
+    token: string
+): Promise<{ success: boolean; data?: any; message?: string }> => {
+    try {
+        const response = await apiClient.post("/payout", details, {
+            headers: { Authorization: `Bearer ${token}` },
+        });
+
+        if (response.data && response.data.status === "success") {
+            return {
+                success: true,
+                data: response.data.data,
+                message: response.data.message,
+            };
+        } else {
+            throw new Error(response.data.message || "Bank transfer failed.");
+        }
+    } catch (error: any) {
+        const errorMessage =
+            error.response?.data?.message ||
+            "An error occurred during the bank transfer.";
+        throw new Error(errorMessage);
+    }
 };

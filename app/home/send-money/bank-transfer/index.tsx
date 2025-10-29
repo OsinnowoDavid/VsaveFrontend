@@ -17,22 +17,21 @@ import TransactionStatusModal from "../../../../components/TransactionStatusModa
 import {
     getBankList,
     resolveBankAccount,
+    sendToBank,
 } from "../../../../services/bankService";
-
-interface Bank {
-    id: number;
-    code: string;
-    name: string;
-}
+import { verifyPin } from "../../../../services/pinService"; // Corrected import
+import useAuthStore from "../../../../store/useAuthStore";
+import { Bank } from "../../../../types/data";
 
 export default function BankTransferScreen() {
     const [banks, setBanks] = useState<Bank[]>([]);
     const [form, setForm] = useState({
         bankCode: "",
-        accountNumber: "0123456789",
+        accountNumber: "",
         amount: "",
         remark: "",
     });
+    const [pin, setPin] = useState("");
     const [resolvedAccount, setResolvedAccount] = useState<{
         account_name: string;
     } | null>(null);
@@ -43,6 +42,8 @@ export default function BankTransferScreen() {
     const [transactionStatus, setTransactionStatus] = useState<
         "success" | "failure"
     >("success");
+
+    const { token } = useAuthStore();
 
     useEffect(() => {
         const fetchBanks = async () => {
@@ -86,21 +87,47 @@ export default function BankTransferScreen() {
         }
     };
 
-    const handleSendMoney = () => {
-        // TODO: Implement actual transaction logic
-        console.log("Sending money with details:", form);
+    const handleSendMoney = async () => {
+        if (!token) {
+            Alert.alert("Error", "You are not authenticated. Please log in.");
+            return;
+        }
+        if (!resolvedAccount) {
+            Alert.alert("Error", "Recipient account is not verified.");
+            return;
+        }
+
+        if (pin.length !== 4) {
+            Alert.alert("Error", "Please enter your 4-digit transaction PIN.");
+            return;
+        }
+
         setIsLoading(true);
-        setTimeout(() => {
+        try {
+            // 1. Verify PIN before proceeding with the transfer
+            await verifyPin(pin);
+
+            await sendToBank(
+                {
+                    bankCode: form.bankCode,
+                    accountNumber: form.accountNumber,
+                    accountName: resolvedAccount.account_name,
+                    amount: Number(form.amount),
+                },
+                token
+            );
+
+            setTransactionStatus("success");
+        } catch (error: any) {
+            setTransactionStatus("failure");
+            // The status modal will show the error, but we can also alert it.
+            Alert.alert("Transfer Failed", error.message);
+        } finally {
             setIsLoading(false);
             setIsModalVisible(false);
-
-            // Determine success or failure (hardcoded to success for now)
-            const isSuccess = true;
-            setTransactionStatus(isSuccess ? "success" : "failure");
-
-            // Show the status modal
+            setPin(""); // Clear PIN after attempt
             setIsStatusModalVisible(true);
-        }, 2000);
+        }
     };
 
     const bankOptions = banks.map((bank) => ({
@@ -196,6 +223,8 @@ export default function BankTransferScreen() {
                 title="Confirm Transfer"
                 amount={form.amount}
                 isLoading={isLoading}
+                pin={pin}
+                onPinChange={setPin}
                 details={[
                     {
                         label: "Recipient Name",

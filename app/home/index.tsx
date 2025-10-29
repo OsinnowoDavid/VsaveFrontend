@@ -117,7 +117,7 @@ export default function Home() {
                         ))}
                     </View>
                 </View>
-                <View className="mt-8">
+                <View className="mt-3">
                     <View className="mb-4 flex flex-row justify-between">
                         <Text className="text-xl font-semibold">
                             Recent transactions
@@ -132,7 +132,7 @@ export default function Home() {
                     </View>
                     <View className="bg-white rounded-xl p-2">
                         {transactions.slice(0, 3).map((tx, index) => (
-                            <TransactionCard key={index} {...tx} />
+                            <TransactionCard key={tx._id || index} {...tx} />
                         ))}
                         {transactions.length === 0 && (
                             <Text className="text-center text-gray-500 p-4">

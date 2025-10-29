@@ -11,6 +11,7 @@ import {
     signinSchema,
 } from "../../../schema/form";
 import { handleSignin } from "../../../services/authService";
+import { hasPin } from "../../../services/pinService";
 
 export default function LoginScreen() {
     const [form, setForm] = useState({
@@ -40,7 +41,15 @@ export default function LoginScreen() {
         try {
             const result = await handleSignin(form);
             if (result.success) {
-                router.replace("/home");
+                // After successful login, check if a PIN is set up.
+                const userHasPin = await hasPin();
+                if (userHasPin) {
+                    // If PIN exists, redirect to the PIN login screen.
+                    router.replace("/auth/login-with-pin");
+                } else {
+                    // If no PIN exists, force user to create one.
+                    router.replace("/auth/pincode-setup");
+                }
             } else {
                 Alert.alert("Login Failed", result.message);
             }
