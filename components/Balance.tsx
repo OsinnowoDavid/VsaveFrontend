@@ -104,23 +104,3 @@ function BalanceV2() {
         </View>
     );
 }
-
-function BalanceV2() {
-    return (
-        <View className="w-full h-28 mx-auto bg-green-100 flex flex-row gap-3">
-            <View className="bg-white rounded-xl h-20 w-[90%] m-auto flex flex-row gap-3 items-center">
-                <View className="flex-row justify-center items-center w-12 h-12 ml-4 my-auto bg-green-100 rounded-full">
-                    <Landmark size={24} color="#1B8A52" strokeWidth={2} />
-                </View>
-                <View>
-                    <Text className="text-xl font-bold text-gray-800">
-                        N200,000.00
-                    </Text>
-                    <Text className="text-sm font-medium text-gray-500">
-                        Available Balance
-                    </Text>
-                </View>
-            </View>
-        </View>
-    );
-}

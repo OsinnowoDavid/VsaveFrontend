@@ -7,17 +7,20 @@ export default function PinInput({
     textPosition,
     value,
     onChangeText,
+    maxLength,
 }: {
     label?: string;
     icon?: ReactNode;
     textPosition?: "text-center" | "text-left" | "text-right";
     value: string;
     onChangeText: (text: string) => void;
+    maxLength?: number;
 }) {
-    const maxLength = 6;
+    const pinLength: number = maxLength ?? 6;
 
     const handleChange = (text: string) => {
-        if (/^\d{0,6}$/.test(text)) onChangeText(text);
+        const regex = new RegExp(`^\\d{0,${pinLength}}$`);
+        if (regex.test(text)) onChangeText(text);
     };
 
     return (
@@ -33,7 +36,7 @@ export default function PinInput({
 
             <TouchableWithoutFeedback>
                 <View className="flex-row gap-2 mb-6 justify-center items-center">
-                    {Array.from({ length: maxLength }).map((_, i) => (
+                    {Array.from({ length: pinLength }).map((_, i) => (
                         <View
                             key={i}
                             className="w-12 h-12 border border-gray-300 rounded-md items-center justify-center bg-white"
@@ -51,7 +54,7 @@ export default function PinInput({
                 value={value}
                 onChangeText={handleChange}
                 keyboardType="number-pad"
-                maxLength={maxLength}
+                maxLength={pinLength}
                 focusable
                 className="border"
                 style={{

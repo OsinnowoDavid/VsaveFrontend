@@ -7,6 +7,7 @@ import Balance from "../../components/Balance";
 import Button from "../../components/Button";
 import KeyboardAvoidingWrapper from "../../components/KeyboardAvoidWrapper";
 import PinInput from "../../components/PinInput";
+
 interface Detail {
     label: string;
     value: string;
