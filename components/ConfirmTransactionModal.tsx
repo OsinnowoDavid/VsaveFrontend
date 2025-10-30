@@ -2,6 +2,7 @@ import React from "react";
 import { ActivityIndicator, Modal, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Button from "./Button";
+import PinInput from "./PinInput";
 
 interface DetailItem {
     label: string;
@@ -16,6 +17,8 @@ interface ConfirmTransactionModalProps {
     details: DetailItem[];
     amount: string;
     isLoading?: boolean;
+    pin: string;
+    onPinChange: (pin: string) => void;
 }
 
 export default function ConfirmTransactionModal({
@@ -26,6 +29,8 @@ export default function ConfirmTransactionModal({
     details,
     amount,
     isLoading = false,
+    pin,
+    onPinChange,
 }: ConfirmTransactionModalProps) {
     return (
         <Modal
@@ -67,6 +72,14 @@ export default function ConfirmTransactionModal({
                             ₦{amount}
                         </Text>
                     </View>
+
+                    {/* PIN Input */}
+                    <PinInput
+                        label="Enter Transaction PIN"
+                        value={pin}
+                        onChangeText={onPinChange}
+                        maxLength={4}
+                    />
 
                     {/* Action Buttons */}
                     <View className="flex-row gap-3">

@@ -11,15 +11,25 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 import Balance from "../../../components/Balance";
 import Button from "../../../components/Button";
+import ConfirmTransactionModal from "../../../components/ConfirmTransactionModal";
 import FormField from "../../../components/FormField";
 import KeyboardAvoidWrapper from "../../../components/KeyboardAvoidWrapper";
 import { dataPlans, networks } from "../../../constants/networks";
+import { verifyPin } from "../../../services/pinService";
+import { buyData } from "../../../services/vending";
+import useAuthStore from "../../../store/useAuthStore";
+import useProfileStore from "../../../store/useProfileStore";
 
 const Index = () => {
+    const { profile } = useProfileStore();
+    const { token } = useAuthStore();
     const [selectedNetwork, setSelectedNetwork] = useState<string | null>(null);
     const [selectedPlan, setSelectedPlan] = useState<string | null>(null);
-    const [customAmount, setCustomAmount] = useState("");
+    const [amount, setAmount] = useState("");
     const [phone, setPhone] = useState("");
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [pin, setPin] = useState("");
 
     const handlePlanChange = (planId: string) => {
         setSelectedPlan(planId);
@@ -28,7 +38,7 @@ const Index = () => {
                 (p) => p.id === planId
             );
             if (plan) {
-                setCustomAmount(String(plan.price));
+                setAmount(String(plan.price));
             }
         }
     };
@@ -49,41 +59,73 @@ const Index = () => {
             );
             return;
         }
-        if (
-            !customAmount ||
-            isNaN(Number(customAmount)) ||
-            Number(customAmount) <= 0
-        ) {
+        if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
             Alert.alert("Validation Error", "Please enter a valid amount.");
             return;
         }
 
-        // If all validations pass, navigate to confirmation screen
-        const details = [
-            {
-                label: "Network",
-                value:
-                    networks.find((n) => n.id === selectedNetwork)?.id || "N/A",
-            },
-            { label: "Phone Number", value: phone },
-            {
-                label: "Plan",
-                value:
-                    dataPlans[selectedNetwork!].find(
-                        (p) => p.id === selectedPlan
-                    )?.label || "Custom",
-            },
-        ];
+        // All validations passed, show the confirmation modal
+        setIsModalVisible(true);
+    };
 
-        router.push({
-            pathname: "/confirm-transaction",
-            params: {
-                title: "Confirm Data Purchase",
-                amount: customAmount,
-                details: JSON.stringify(details),
-                showBeneficiary: "true",
-            },
-        });
+    const handleConfirmPurchase = async () => {
+        if (!token) {
+            Alert.alert("Authentication Error", "Please log in and try again.");
+            return;
+        }
+        if (pin.length !== 4) {
+            Alert.alert("Error", "Please enter your 4-digit transaction PIN.");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // 1. Verify PIN first
+            await verifyPin(pin);
+
+            // 2. If PIN is correct, proceed with data purchase
+            const numericAmount = Number(amount);
+            const result = await buyData(
+                // Assuming buyData also needs token as Bearer
+                phone,
+                numericAmount,
+                selectedPlan!,
+                token
+            );
+
+            if (result.status === "success") {
+                Alert.alert(
+                    "Success",
+                    result.message || "Data purchase successful!"
+                );
+                router.replace("/home");
+            }
+            // Error is handled by the alert inside the service
+        } catch (error: any) {
+            Alert.alert(
+                "Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setIsLoading(false);
+            setIsModalVisible(false);
+            setPin(""); // Clear PIN after attempt
+        }
+    };
+
+    const handleTopupMyNumber = () => {
+        if (profile?.profile?.phoneNumber) {
+            setPhone(profile.profile.phoneNumber);
+            Alert.alert(
+                "Phone Number Pre-filled",
+                "Your number has been added."
+            );
+        } else {
+            Alert.alert(
+                "Error",
+                "Your phone number is not available in your profile."
+            );
+        }
     };
 
     return (
@@ -93,7 +135,7 @@ const Index = () => {
                     <Balance />
                     <Button
                         input="Topup my number"
-                        onPress={() => {}}
+                        onPress={handleTopupMyNumber}
                         variant="outline"
                     />
                 </View>
@@ -112,7 +154,7 @@ const Index = () => {
                                 onPress={() => {
                                     setSelectedNetwork(net.id);
                                     setSelectedPlan(null);
-                                    setCustomAmount("");
+                                    setAmount("");
                                 }}
                                 className={`w-14 h-14 rounded-lg border-2 p-1 items-center justify-center ${
                                     selectedNetwork === net.id
@@ -149,8 +191,8 @@ const Index = () => {
                             Amount
                         </Text>
                         <TextInput
-                            value={customAmount}
-                            onChangeText={setCustomAmount}
+                            value={amount}
+                            onChangeText={setAmount}
                             placeholder="Enter amount"
                             keyboardType="numeric"
                             className="w-full h-11 px-3 rounded-lg bg-gray-100 border border-gray-200 text-sm text-gray-800"
@@ -171,6 +213,33 @@ const Index = () => {
                     </View>
                 </View>
             </KeyboardAvoidWrapper>
+
+            <ConfirmTransactionModal
+                isVisible={isModalVisible}
+                onClose={() => setIsModalVisible(false)}
+                onConfirm={handleConfirmPurchase}
+                title="Confirm Data Purchase"
+                amount={amount}
+                isLoading={isLoading}
+                pin={pin}
+                onPinChange={setPin}
+                details={[
+                    {
+                        label: "Network",
+                        value:
+                            networks.find((n) => n.id === selectedNetwork)
+                                ?.id || "N/A",
+                    },
+                    { label: "Phone Number", value: phone },
+                    {
+                        label: "Plan",
+                        value:
+                            dataPlans[selectedNetwork!]?.find(
+                                (p) => p.id === selectedPlan
+                            )?.label || "Custom",
+                    },
+                ]}
+            />
         </SafeAreaView>
     );
 };

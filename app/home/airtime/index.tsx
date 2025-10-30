@@ -1,17 +1,27 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Image, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import Balance from "../../../components/Balance";
 import Button from "../../../components/Button";
+import ConfirmTransactionModal from "../../../components/ConfirmTransactionModal";
 import FormField from "../../../components/FormField";
 import KeyboardAvoidWrapper from "../../../components/KeyboardAvoidWrapper";
 import { networks, quickAmounts } from "../../../constants/networks";
+import { verifyPin } from "../../../services/pinService"; // Corrected import
+import { buyAirtime } from "../../../services/vending";
+import useAuthStore from "../../../store/useAuthStore";
+import useProfileStore from "../../../store/useProfileStore";
 
 const Index = () => {
+    const { profile } = useProfileStore(); // Get profile from store
+    const { token } = useAuthStore();
     const [selectedNetwork, setSelectedNetwork] = useState<string>("");
     const [amount, setAmount] = useState<string>(""); // single source of truth for amount
-    const [phone, setPhone] = useState("");
+    const [phone, setPhone] = useState(profile?.profile?.phoneNumber ?? "");
+    const [isModalVisible, setIsModalVisible] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [pin, setPin] = useState("");
 
     const handleProceed = () => {
         if (!selectedNetwork) {
@@ -30,25 +40,64 @@ const Index = () => {
             return;
         }
 
-        // If all validations pass, navigate to confirmation screen
-        const details = [
-            {
-                label: "Network",
-                value:
-                    networks.find((n) => n.id === selectedNetwork)?.id || "N/A",
-            },
-            { label: "Phone Number", value: phone },
-        ];
+        // All validations passed, show the confirmation modal
+        setIsModalVisible(true);
+    };
 
-        router.push({
-            pathname: "/confirm-transaction",
-            params: {
-                title: "Confirm Airtime Purchase",
-                amount: amount,
-                details: JSON.stringify(details),
-                showBeneficiary: "true",
-            },
-        });
+    const handleConfirmPurchase = async () => {
+        if (!token) {
+            Alert.alert("Authentication Error", "Please log in and try again.");
+            return;
+        }
+        if (pin.length !== 4) {
+            Alert.alert("Error", "Please enter your 4-digit transaction PIN.");
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            // 1. Verify PIN first
+            await verifyPin(pin);
+
+            // 2. If PIN is correct, proceed with airtime purchase
+            const numericAmount = Number(amount);
+            const result = await buyAirtime(phone, numericAmount, `${token}`);
+
+            if (result.status === "success") {
+                Alert.alert(
+                    "Success",
+                    result.message || "Airtime purchase successful!"
+                );
+                router.replace("/home");
+            } else {
+                // This case handles non-error responses that are not 'success'
+                throw new Error(result.message || "Airtime purchase failed.");
+            }
+        } catch (error: any) {
+            Alert.alert(
+                "Error",
+                error.message || "An unexpected error occurred."
+            );
+        } finally {
+            setIsLoading(false);
+            setIsModalVisible(false);
+            setPin(""); // Clear PIN after attempt
+        }
+    };
+
+    const handleTopupMyNumber = () => {
+        if (profile?.profile?.phoneNumber) {
+            setPhone(profile.profile.phoneNumber);
+            Alert.alert(
+                "Phone Number Pre-filled",
+                "Your number has been added."
+            );
+        } else {
+            Alert.alert(
+                "Error",
+                "Your phone number is not available in your profile."
+            );
+        }
     };
 
     return (
@@ -58,7 +107,7 @@ const Index = () => {
                     <Balance />
                     <Button
                         input="Topup my number"
-                        onPress={() => {}}
+                        onPress={handleTopupMyNumber} // Use the new handler
                         variant="outline"
                     />
                 </View>
@@ -67,7 +116,7 @@ const Index = () => {
                     {/* Network Logos */}
                     <View className="flex-row justify-between mb-6">
                         {networks.map((net) => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={net.id}
                                 onPress={() => setSelectedNetwork(net.id)}
                                 className={`w-14 h-14 rounded-lg border-2 p-1 ${
@@ -81,7 +130,7 @@ const Index = () => {
                                     className="w-full h-full rounded-md"
                                     resizeMode="contain"
                                 />
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
 
@@ -91,7 +140,7 @@ const Index = () => {
                         value={selectedNetwork}
                         onChangeText={setSelectedNetwork}
                         options={networks.map((net) => ({
-                            label: net.id,
+                            label: net.id, // Display network ID as label for selection
                             value: net.id,
                         }))}
                     />
@@ -99,7 +148,7 @@ const Index = () => {
                     {/* Quick Amount Buttons */}
                     <View className="flex-row flex-wrap justify-between gap-y-3 mb-4">
                         {quickAmounts.map((amt) => (
-                            <TouchableOpacity
+                            <Pressable
                                 key={amt}
                                 onPress={() => setAmount(String(amt))}
                                 className={`w-[23%] h-10 rounded-md items-center justify-center ${
@@ -117,7 +166,7 @@ const Index = () => {
                                 >
                                     ₦{amt}
                                 </Text>
-                            </TouchableOpacity>
+                            </Pressable>
                         ))}
                     </View>
 
@@ -142,6 +191,26 @@ const Index = () => {
                     </View>
                 </View>
             </KeyboardAvoidWrapper>
+
+            <ConfirmTransactionModal
+                isVisible={isModalVisible}
+                onClose={() => setIsModalVisible(false)}
+                onConfirm={handleConfirmPurchase}
+                title="Confirm Airtime Purchase"
+                amount={amount}
+                isLoading={isLoading}
+                pin={pin}
+                onPinChange={setPin}
+                details={[
+                    {
+                        label: "Network",
+                        value:
+                            networks.find((n) => n.id === selectedNetwork)
+                                ?.id || "N/A",
+                    },
+                    { label: "Phone Number", value: phone },
+                ]}
+            />
         </SafeAreaView>
     );
 };

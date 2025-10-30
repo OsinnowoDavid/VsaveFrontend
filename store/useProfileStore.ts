@@ -1,5 +1,8 @@
 import { create } from "zustand";
-import { fetchUserProfile } from "../services/profileService";
+import {
+    clearProfileCache,
+    fetchUserProfile,
+} from "../services/profileService";
 
 interface KycDetails {
     accountNumber: number;
@@ -34,7 +37,7 @@ interface ProfileState {
     profile: Profile | null;
     hasCompletedKYC: boolean;
     isProfileLoading: boolean;
-    fetchProfile: (token: string) => Promise<void>;
+    fetchProfile: (token: string) => Promise<any>; // Return the response
     updateProfile: (data: Partial<ProfileDetails>) => void;
     clearProfile: () => void;
 }
@@ -55,6 +58,7 @@ const useProfileStore = create<ProfileState>((set, get) => ({
         } else {
             set({ isProfileLoading: false });
         }
+        return response; // Return the response to the caller
     },
     updateProfile: (data: Partial<ProfileDetails>) => {
         set((state) =>
@@ -68,8 +72,10 @@ const useProfileStore = create<ProfileState>((set, get) => ({
                 : state
         );
     },
-    clearProfile: () =>
-        set({ profile: null, isProfileLoading: false, hasCompletedKYC: false }),
+    clearProfile: () => {
+        clearProfileCache(); // Clear the service-level cache
+        set({ profile: null, isProfileLoading: false, hasCompletedKYC: false });
+    },
 }));
 
 export default useProfileStore;

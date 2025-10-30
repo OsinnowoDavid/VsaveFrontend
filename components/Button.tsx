@@ -85,7 +85,9 @@ export default function Button({
             ) : children ? (
                 children
             ) : (
-                <Text className={textClasses}>{input}</Text>
+                <Text className={`${textClasses} ${isLoading ? "ml-2" : ""}`}>
+                    {input}
+                </Text>
             )}
         </Pressable>
     );
