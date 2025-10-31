@@ -1,6 +1,13 @@
 import { Picker } from "@react-native-picker/picker";
+import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
-import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
+import {
+    KeyboardTypeOptions,
+    Pressable,
+    Text,
+    TextInput,
+    View,
+} from "react-native";
 import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";
 
@@ -34,6 +41,7 @@ export default function FormField({
     field,
 }: FormFieldProps) {
     const [fieldError, setFieldError] = useState("");
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
     const handleFocus = () => {
         if (!validate) return;
@@ -46,8 +54,12 @@ export default function FormField({
         if (!!error) setFieldError(error);
     };
 
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible((prev) => !prev);
+    };
+
     const inputContainerStyle =
-        "w-full h-12 px-3 rounded-lg bg-gray-100 border border-gray-200 justify-center";
+        "w-full h-12 px-3 rounded-lg bg-gray-100 border border-gray-200 flex-row items-center";
     const textStyle = "text-lg text-gray-800";
 
     return (
@@ -57,7 +69,9 @@ export default function FormField({
                     {label}
                 </Text>
             )}
-            <View className={inputContainerStyle}>
+            <View
+                className={`${inputContainerStyle} ${type === "select" ? "justify-center" : ""}`}
+            >
                 {type === "select" ? (
                     <Picker
                         selectedValue={value}
@@ -76,16 +90,27 @@ export default function FormField({
                 ) : (
                     <>
                         <TextInput
+                            className="flex-1 text-sm text-gray-800"
                             value={value}
                             onChangeText={onChangeText}
                             placeholder={placeholder}
-                            secureTextEntry={secureTextEntry}
+                            secureTextEntry={
+                                secureTextEntry && !isPasswordVisible
+                            }
                             keyboardType={keyboardType}
                             maxLength={maxLength}
-                            className={textStyle}
                             onBlur={handleBlur}
                             onFocus={handleFocus}
                         />
+                        {secureTextEntry && (
+                            <Pressable onPress={togglePasswordVisibility}>
+                                {isPasswordVisible ? (
+                                    <EyeOff size={20} color="#6B7280" />
+                                ) : (
+                                    <Eye size={20} color="#6B7280" />
+                                )}
+                            </Pressable>
+                        )}
                     </>
                 )}
             </View>
