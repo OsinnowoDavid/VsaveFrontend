@@ -102,7 +102,11 @@ export default function Savings() {
                             disabled={activePlans.length === 0}
                         >
                             <Text
-                                className={`text-sm ${activePlans.length > 0 ? "text-[#1B8A52]" : "text-gray-400"}`}
+                                className={`text-sm ${
+                                    activePlans.length > 0
+                                        ? "text-[#1B8A52]"
+                                        : "text-gray-400"
+                                }`}
                             >
                                 View all
                             </Text>

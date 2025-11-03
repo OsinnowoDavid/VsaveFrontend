@@ -74,7 +74,9 @@ export default function FormField({
                 </Text>
             )}
             <View
-                className={`${inputContainerStyle} ${type === "select" ? "justify-center" : ""}`}
+                className={`${inputContainerStyle} ${
+                    type === "select" ? "justify-center" : ""
+                }`}
             >
                 {type === "select" ? (
                     <TouchableOpacity

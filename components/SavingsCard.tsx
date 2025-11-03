@@ -23,7 +23,7 @@ export default function SavingsCard({
             <View className="w-full justify-center">
                 <Text className="text-lg font-semibold text-[#FAFAFA]">
                     Available Balance: ₦
-                    {isLoading ? "..." : (balance?.toLocaleString() ?? "0.00")}
+                    {isLoading ? "..." : balance?.toLocaleString() ?? "0.00"}
                 </Text>
             </View>
 
