@@ -33,7 +33,7 @@ export default function SignUpScreen() {
         email: "",
         countryCode: "234",
         phoneNumber: "", // Store as string
-        gender: "Male", // Default to an empty string or a placeholder value
+        gender: "", // Default to an empty string or a placeholder value
         dateOfBirth: new Date(),
         password: "",
         confirmPassword: "",

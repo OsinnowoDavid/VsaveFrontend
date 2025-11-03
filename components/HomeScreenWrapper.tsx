@@ -1,7 +1,10 @@
 import { usePathname, useRouter } from "expo-router";
 import { ReactNode } from "react";
-import { View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar, View } from "react-native";
+import {
+    SafeAreaView,
+    useSafeAreaInsets,
+} from "react-native-safe-area-context";
 import HomeIcon from "../assets/icons/HomeIcon";
 import MenuIcon from "../assets/icons/MenuIcon";
 import RewardIcon from "../assets/icons/RewardIcon";
@@ -20,6 +23,7 @@ export default function HomeScreenWrapper({
     const router = useRouter();
     const pathname = usePathname();
 
+    const insets = useSafeAreaInsets();
     const navItems = [
         {
             href: "/home",
@@ -51,6 +55,7 @@ export default function HomeScreenWrapper({
                     id="footer"
                     className="border-t border-gray-200 w-full absolute bottom-0 flex flex-row justify-around items-center py-1 bg-white"
                 >
+                    <StatusBar barStyle="dark-content" />
                     {navItems.map((item) => {
                         const isActive = pathname.startsWith(item.href);
                         const Icon = item.icon;
