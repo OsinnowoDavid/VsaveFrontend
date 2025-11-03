@@ -1,18 +1,18 @@
 name: "Continuous Integration"
 
 on:
-  push:
-  pull_request:
+    push:
+    pull_request:
 
 jobs:
-  run-checks:
-    runs-on: "ubuntu-latest"
-    outputs:
-      checks-passed: ${{steps.ts-checks.outputs.checks-passed}}
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    run-checks:
+        runs-on: "ubuntu-latest"
+        outputs:
+            checks-passed: ${{steps.ts-checks.outputs.checks-passed}}
+        steps:
+            - name: Checkout Repository
+              uses: actions/checkout@v4
 
-      - name: Run TS Checks
-        id: ts-checks
-        uses: owen-6936/ts-checks@v1.0.0
+            - name: Run TS Checks
+              id: ts-checks
+              uses: owen-6936/ts-checks@v1.0.0
