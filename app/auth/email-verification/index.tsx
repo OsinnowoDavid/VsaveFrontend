@@ -25,6 +25,7 @@ export default function VerifyEmailScreen() {
     };
 
     const handleVerify = async () => {
+        console.log(token);
         if (!email || !token || token.length !== 6) {
             Alert.alert(
                 "Invalid Token",
@@ -33,7 +34,7 @@ export default function VerifyEmailScreen() {
             return;
         }
         setIsLoading(true);
-        const response = await verifyEmail({ email, token });
+        const response = await verifyEmail({ email, code: token });
         setIsLoading(false);
 
         if (response.success) {

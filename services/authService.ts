@@ -18,8 +18,9 @@ export const handleSignup = async (registrationData: SignUpData) => {
     };
     try {
         const response = await apiClient.post("/user/register", form);
+        console.log("Signup response:", response);
 
-        if (response.data.status === "success") {
+        if (response.data.status?.toLower?.() === "success") {
             console.log("Signup successful:", response.data.message);
             return { success: true, data: response.data };
         } else {
@@ -30,7 +31,6 @@ export const handleSignup = async (registrationData: SignUpData) => {
             };
         }
     } catch (error: any) {
-        console.error("Signup error:", error.response?.data || error.message);
         const errorMessage =
             error.response?.data?.message ||
             "An error occurred during registration. Please try again.";
@@ -38,10 +38,12 @@ export const handleSignup = async (registrationData: SignUpData) => {
     }
 };
 
-export const verifyEmail = async (data: { email: string; token: string }) => {
+export const verifyEmail = async (data: { email: string; code: string }) => {
     try {
         const response = await apiClient.post("/user/verify-email", data);
-        if (response.data.status === "success") {
+        console.log("Email verification response:", response);
+
+        if (response.data.status.toLowerCase() === "success") {
             return { success: true, message: response.data.message };
         } else {
             return {
@@ -88,12 +90,20 @@ export const resendVerificationToken = async (data: { email: string }) => {
 export const handleSignin = async (form: {
     email: string;
     password: string;
-}): Promise<{ success: boolean; message?: string }> => {
+}): Promise<{
+    success: boolean;
+    message?: string;
+    isEmailVerified?: boolean;
+}> => {
     const login = useAuthStore.getState().login;
     try {
         const response = await apiClient.post("/user/login", form);
+        console.log("Login response:", response.data);
 
-        if (response.data && response.data.status === "success") {
+        if (
+            response.data &&
+            response.data.status?.toLowerCase?.() === "success"
+        ) {
             await login(response.data.token); // Save token to Zustand store
 
             // After login, fetch the user's KYC status
@@ -114,12 +124,16 @@ export const handleSignin = async (form: {
                 router.replace("/home");
             }
 
-            return { success: true };
+            return {
+                success: true,
+                isEmailVerified: response.data.isEmailVerified,
+            };
         } else {
             return {
                 success: false,
                 message:
                     response.data.message || "Login failed. Please try again.",
+                isEmailVerified: response.data.isEmailVerified,
             };
         }
     } catch (error: any) {

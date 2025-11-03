@@ -3,79 +3,118 @@ import {
     clearProfileCache,
     fetchUserProfile,
 } from "../services/profileService";
+import { getTransactions } from "../services/transactionService";
+import useAuthStore from "./useAuthStore";
 
-interface KycDetails {
-    accountNumber: number;
-    address: string;
-    bank: string;
-    bvn: string;
-    country: string;
-    state: string;
-    profession: string;
-}
-
+// Define interfaces for your data structures
 interface ProfileDetails {
+    // Add your profile properties here
+    // e.g., name: string, email: string, etc.
+    _id: string;
     firstName: string;
     lastName: string;
     email: string;
     phoneNumber: string;
-    virtualAccountNumber: string;
-    availableBalance: number;
-    pendingBalance: number;
-    profilePicture?: string;
     gender: string;
     dateOfBirth: string;
-    isEmailVerified: boolean;
+    availableBalance: number;
+    pendingBalance: number;
+    virtualAccountNumber: string;
+    profilePicture?: string;
 }
 
-interface Profile {
-    profile: ProfileDetails | null;
-    kyc: KycDetails | null;
+interface KycDetails {
+    // Add your KYC properties here
+}
+
+interface Transaction {
+    // Add your transaction properties here
+    _id: string;
+    type: string;
+    amount: number;
+    date: string;
+    status: string;
 }
 
 interface ProfileState {
-    profile: Profile | null;
-    hasCompletedKYC: boolean;
+    profile: { profile: ProfileDetails | null; kyc: KycDetails | null };
+    transactions: Transaction[];
     isProfileLoading: boolean;
-    fetchProfile: (token: string) => Promise<any>; // Return the response
-    updateProfile: (data: Partial<ProfileDetails>) => void;
+    hasCompletedKYC: boolean;
     clearProfile: () => void;
+    fetchProfile: (token: string) => Promise<any>;
+    fetchProfileAndTransactions: () => Promise<void>;
+    updateProfile: (updates: Partial<ProfileDetails>) => void;
+    setProfile: (data: {
+        profile: ProfileDetails | null;
+        kyc: KycDetails | null;
+    }) => void;
 }
 
 const useProfileStore = create<ProfileState>((set, get) => ({
-    profile: null,
-    isProfileLoading: false, // Start with false, set to true during fetch
+    profile: { profile: null, kyc: null },
+    transactions: [],
+    isProfileLoading: true, // Start with loading true
     hasCompletedKYC: false,
-    fetchProfile: async (token) => {
+
+    setProfile: (data) => set({ profile: data }),
+
+    clearProfile: () => {
+        clearProfileCache(); // Clear the in-memory cache from the service
+        set({
+            profile: { profile: null, kyc: null },
+            transactions: [],
+            hasCompletedKYC: false,
+            isProfileLoading: false,
+        });
+    },
+
+    updateProfile: (updates) =>
+        set((state) => {
+            if (state.profile.profile) {
+                return {
+                    profile: {
+                        ...state.profile,
+                        profile: { ...state.profile.profile, ...updates },
+                    },
+                };
+            }
+            return state;
+        }),
+
+    fetchProfile: async (token: string) => {
         set({ isProfileLoading: true });
-        const response = await fetchUserProfile(token);
-        if (response?.success) {
-            set({
-                profile: response.data,
-                isProfileLoading: false,
-                hasCompletedKYC: !!response.data.kyc,
-            });
-        } else {
+        try {
+            const response = await fetchUserProfile(token);
+            if (response.success && response.data) {
+                set({
+                    profile: response.data,
+                    // Assuming KYC is complete if the `kyc` object exists and is not null
+                    hasCompletedKYC: !!response.data.kyc,
+                });
+            }
+            return response;
+        } finally {
             set({ isProfileLoading: false });
         }
-        return response; // Return the response to the caller
     },
-    updateProfile: (data: Partial<ProfileDetails>) => {
-        set((state) =>
-            state.profile && state.profile.profile
-                ? {
-                      profile: {
-                          ...state.profile,
-                          profile: { ...state.profile.profile, ...data },
-                      },
-                  }
-                : state
-        );
-    },
-    clearProfile: () => {
-        clearProfileCache(); // Clear the service-level cache
-        set({ profile: null, isProfileLoading: false, hasCompletedKYC: false });
+
+    fetchProfileAndTransactions: async () => {
+        const { token } = useAuthStore.getState();
+
+        // Fetch profile and transactions in parallel for better performance
+        const [profileResponse, transactionsResponse] = await Promise.all([
+            get().fetchProfile(token), // Use the store's own fetchProfile
+            getTransactions(), // Assuming you have this service
+        ]);
+
+        if (transactionsResponse.success && transactionsResponse.data) {
+            set({ transactions: transactionsResponse.data });
+        }
     },
 }));
 
 export default useProfileStore;
+
+// NOTE: You will need to create `getTransactions` in a `transactionService.ts` file.
+// It would be similar to your `savingsService.ts`.
