@@ -9,7 +9,7 @@ export type PlanCardProps = {
     progress: number; // 0–100
 };
 
-export const PlanCard: React.FC<PlanCardProps> = ({
+const PlanCard: React.FC<PlanCardProps> = ({
     title,
     amount,
     startDate,
@@ -48,3 +48,5 @@ export const PlanCard: React.FC<PlanCardProps> = ({
         </View>
     );
 };
+
+export default PlanCard;

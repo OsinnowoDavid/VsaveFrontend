@@ -51,7 +51,17 @@ export default function LoginScreen() {
                     router.replace("/auth/pincode-setup");
                 }
             } else {
-                Alert.alert("Login Failed", result.message);
+                Alert.alert("Login Failed", result.message, [
+                    {
+                        onPress: () => {
+                            if (!result.isEmailVerified)
+                                router.replace({
+                                    pathname: "/auth/email-verification",
+                                    params: { email: form.email },
+                                });
+                        },
+                    },
+                ]);
             }
         } catch (error: any) {
             Alert.alert(
