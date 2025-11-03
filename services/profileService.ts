@@ -39,7 +39,7 @@ export const fetchUserProfile = async (
         const result = await response.json();
 
         // Note: Corrected `result?.Status` to `result?.status` to match API spec
-        if (response.ok && result?.Status === "success") {
+        if (response.ok && result?.Status?.toLowerCase?.() === "success") {
             // 2. Store the fetched data in the cache
             cachedProfile = result.data;
             return { success: true, data: result.data };

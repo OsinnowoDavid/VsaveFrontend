@@ -1,4 +1,4 @@
-import { RelativePathString, router } from "expo-router";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
@@ -72,13 +72,19 @@ export default function SignUpScreen() {
             if (result.success) {
                 Alert.alert(
                     "Signup Successful",
-                    "Please check your email to verify your account."
+                    "Please check your email to verify your account.",
+                    [
+                        {
+                            onPress: () => {
+                                // Navigate to a verification screen, passing the email
+                                router.replace({
+                                    pathname: "/auth/email-verification",
+                                    params: { email: form.email },
+                                });
+                            },
+                        },
+                    ]
                 );
-                // Navigate to a verification screen, passing the email
-                router.push({
-                    pathname: "/auth/verify-email" as RelativePathString,
-                    params: { email: form.email },
-                });
             } else {
                 Alert.alert("Signup Failed", result.message);
             }

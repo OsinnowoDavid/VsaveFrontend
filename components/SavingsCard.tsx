@@ -2,13 +2,28 @@ import { LinearGradient } from "expo-linear-gradient";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
-export default function SavingsCard() {
+interface SavingsCardProps {
+    balance?: number;
+    mySavings?: number;
+    nextMaturityDate?: string;
+    planDuration?: number;
+    isLoading: boolean;
+}
+
+export default function SavingsCard({
+    balance,
+    mySavings,
+    nextMaturityDate,
+    planDuration,
+    isLoading,
+}: SavingsCardProps) {
     return (
         <View className="w-[95%] mx-auto mt-10 bg-[#6BAA8A] flex flex-col gap-4 px-3 py-4 rounded-md">
             {/* Header */}
             <View className="w-full justify-center">
                 <Text className="text-lg font-semibold text-[#FAFAFA]">
-                    Available Balance: ₦300,000
+                    Available Balance: ₦
+                    {isLoading ? "..." : balance?.toLocaleString() ?? "0.00"}
                 </Text>
             </View>
 
@@ -27,7 +42,7 @@ export default function SavingsCard() {
                                 My Savings
                             </Text>
                             <Text className="text-lg font-semibold text-white">
-                                ₦100,000
+                                ₦{mySavings?.toLocaleString() ?? "0.00"}
                             </Text>
                         </View>
 
@@ -41,9 +56,12 @@ export default function SavingsCard() {
 
                     {/* Maturity Info */}
                     <View className="border-t border-[rgba(250,250,250,0.2)] py-1">
-                        <Text className="text-sm text-[rgba(250,250,250,0.6)]">
-                            Next maturity: 20-09-2025 (20 days plan)
-                        </Text>
+                        {nextMaturityDate && (
+                            <Text className="text-sm text-[rgba(250,250,250,0.6)]">
+                                Next maturity: {nextMaturityDate} (
+                                {planDuration} days plan)
+                            </Text>
+                        )}
                     </View>
                 </LinearGradient>
             </View>

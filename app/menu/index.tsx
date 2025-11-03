@@ -82,7 +82,7 @@ export default function MenuScreen() {
                     text: "Log Out",
                     onPress: () => {
                         logout();
-                        router.replace("/auth/login");
+                        router.replace("/");
                     },
                     style: "destructive",
                 },

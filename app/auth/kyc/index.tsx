@@ -8,7 +8,11 @@ import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
 import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
 import { getBankList, resolveBankAccount } from "../../../services/bankService";
-import { submitKYCStage1 } from "../../../services/kycService";
+import {
+    getSubRegions,
+    submitKYCStage1,
+    SubRegion,
+} from "../../../services/kycService";
 import useAuthStore from "../../../store/useAuthStore";
 import useProfileStore from "../../../store/useProfileStore";
 
@@ -48,6 +52,7 @@ export default function KYCScreen() {
     const [resolvedAccountName, setResolvedAccountName] = useState<
         string | null
     >(null);
+    const [subRegions, setSubRegions] = useState<SubRegion[]>([]);
     const [isResolving, setIsResolving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -59,6 +64,8 @@ export default function KYCScreen() {
         state: "",
         bvn: "",
         address: "",
+        accountDetails: "",
+        subRegion: "",
     });
 
     const { fetchProfile } = useProfileStore();
@@ -75,6 +82,20 @@ export default function KYCScreen() {
             }
         };
         fetchBanks();
+
+        const fetchSubRegions = async () => {
+            const response = await getSubRegions();
+            console.log(response);
+            if (response.success && response.data) {
+                setSubRegions(response.data);
+            } else {
+                Alert.alert(
+                    "Error",
+                    response.message || "Could not load sub-regions."
+                );
+            }
+        };
+        fetchSubRegions();
     }, []);
 
     // Update state options when country changes
@@ -114,6 +135,7 @@ export default function KYCScreen() {
             accountNumber: form.accountNumber,
             bankCode: form.bankCode,
         });
+        console.log(form.bankCode);
         setIsResolving(false);
         if (response.success && response.data.account_name) {
             setResolvedAccountName(response.data.account_name);
@@ -132,6 +154,7 @@ export default function KYCScreen() {
             { key: "state", name: "State" },
             { key: "address", name: "Address" },
             { key: "bvn", name: "BVN" },
+            { key: "subRegion", name: "Sub Region" },
         ];
 
         for (const field of requiredFields) {
@@ -150,11 +173,12 @@ export default function KYCScreen() {
         const submissionData = {
             profession: form.profession,
             accountNumber: form.accountNumber,
-            bank: form.bankCode, // Map bankCode to 'bank' as per API spec
+            bankCode: form.bankCode,
             country: form.country,
             state: form.state,
             bvn: form.bvn,
             address: form.address,
+            subRegion: form.subRegion,
         };
 
         const response = await submitKYCStage1(submissionData);
@@ -249,6 +273,18 @@ export default function KYCScreen() {
                             handleFormChange("address", value)
                         }
                         value={form.address}
+                    />
+                    <FormField
+                        label="Sub Region"
+                        type="select"
+                        value={form.subRegion}
+                        onChangeText={(value) =>
+                            handleFormChange("subRegion", value)
+                        }
+                        options={subRegions.map((region) => ({
+                            label: region.subRegionName,
+                            value: region._id,
+                        }))}
                     />
                     <FormField
                         label="BVN"

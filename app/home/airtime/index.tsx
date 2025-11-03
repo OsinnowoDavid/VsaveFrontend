@@ -29,16 +29,22 @@ const Index = () => {
             return;
         }
         if (!phone || phone.length < 10) {
+            // All validations passed, show the confirmation modal
+
             Alert.alert(
-                "Validation Error",
+                "Validation Error", // All validations passed, show the confirmation modal
+
                 "Please enter a valid phone number."
-            );
+            ); // All validations passed, show the confirmation modal
+
             return;
-        }
+        } // All validations passed, show the confirmation modal
+
+        // All validations passed, show the confirmation modal
         if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
             Alert.alert("Validation Error", "Please enter a valid amount.");
             return;
-        }
+        } // All validations passed, show the confirmation modal
 
         // All validations passed, show the confirmation modal
         setIsModalVisible(true);
@@ -59,11 +65,11 @@ const Index = () => {
             // 1. Verify PIN first
             await verifyPin(pin);
 
-            // 2. If PIN is correct, proceed with airtime purchase
+            // 2. If PIN is correct, proceed with airtime purchasre
             const numericAmount = Number(amount);
             const result = await buyAirtime(phone, numericAmount, `${token}`);
 
-            if (result.status === "success") {
+            if (result.status.toLowerCase() === "success") {
                 Alert.alert(
                     "Success",
                     result.message || "Airtime purchase successful!"
