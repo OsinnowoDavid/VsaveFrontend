@@ -20,7 +20,7 @@ export const handleSignup = async (registrationData: SignUpData) => {
         const response = await apiClient.post("/user/register", form);
         console.log("Signup response:", response);
 
-        if (response.data.status?.toLower?.() === "success") {
+        if (response.data.status?.toLowerCase?.() === "success") {
             console.log("Signup successful:", response.data.message);
             return { success: true, data: response.data };
         } else {
@@ -33,7 +33,8 @@ export const handleSignup = async (registrationData: SignUpData) => {
     } catch (error: any) {
         const errorMessage =
             error.response?.data?.message ||
-            "An error occurred during registration. Please try again.";
+            "An unexpected error occurred. Please try again.";
+        console.log(error)
         return { success: false, message: errorMessage };
     }
 };

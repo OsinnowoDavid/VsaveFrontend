@@ -12,7 +12,6 @@ import {
 } from "../../../schema/form";
 import { handleSignin } from "../../../services/authService";
 import { hasPin } from "../../../services/pinService";
-
 export default function LoginScreen() {
     const [form, setForm] = useState({
         email: "",
@@ -56,7 +55,7 @@ export default function LoginScreen() {
                         onPress: () => {
                             if (!result.isEmailVerified)
                                 router.replace({
-                                    pathname: "/auth/email-verification",
+                                    pathname: "/auth",
                                     params: { email: form.email },
                                 });
                         },

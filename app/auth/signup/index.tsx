@@ -86,7 +86,8 @@ export default function SignUpScreen() {
                     ]
                 );
             } else {
-                Alert.alert("Signup Failed", result.message);
+                Alert.alert("Signup", result.message);
+                console.log(result.message);
             }
         } catch (error: any) {
             Alert.alert(
