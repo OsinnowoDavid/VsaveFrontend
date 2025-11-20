@@ -8,7 +8,11 @@ const ScreenWrapper = ({ children }: { children: React.ReactNode }) => {
     Platform.OS === "ios"
       ? {
           paddingTop: 40,
-          with: "100%",
+          // paddingVertical:20
+
+          
+          // width:100
+          // with: "100%",
 
         }
       : {

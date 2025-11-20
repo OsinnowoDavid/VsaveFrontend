@@ -1,6 +1,6 @@
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Alert } from "react-native";
+import { Alert, Text, View, TouchableOpacity } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
@@ -11,15 +11,16 @@ import {
     signinSchema,
 } from "../../../schema/form";
 import { handleSignin } from "../../../services/authService";
-import { hasPin } from "../../../services/pinService";
+import { useRouter } from "expo-router";
+
 export default function LoginScreen() {
+    const router = useRouter()
     const [form, setForm] = useState({
         email: "",
         password: "",
     });
     const [isLoading, setIsLoading] = useState(false);
     const [signinInput, setSigninInput] = useState("Login");
-
     const [signupBg, setSignBg] = useState("bg-green-700");
 
     const handleSubmit = async () => {
@@ -39,28 +40,18 @@ export default function LoginScreen() {
 
         try {
             const result = await handleSignin(form);
+            // if (result.isEmailVerified === false) {
+            //     // Pass the email as a parameter
+            //     router.push({
+            //         pathname: "/auth/email-verification",
+            //         params: { email: form.email }
+            //     });
+            // }
             if (result.success) {
+                router.replace("/home")
                 // After successful login, check if a PIN is set up.
-                const userHasPin = await hasPin();
-                if (userHasPin) {
-                    // If PIN exists, redirect to the PIN login screen.
-                    router.replace("/auth/login-with-pin");
-                } else {
-                    // If no PIN exists, force user to create one.
-                    router.replace("/auth/pincode-setup");
-                }
             } else {
-                Alert.alert("Login Failed", result.message, [
-                    {
-                        onPress: () => {
-                            if (!result.isEmailVerified)
-                                router.replace({
-                                    pathname: "/auth",
-                                    params: { email: form.email },
-                                });
-                        },
-                    },
-                ]);
+                Alert.alert("Login Failed", result.message);
             }
         } catch (error: any) {
             Alert.alert(
@@ -103,6 +94,13 @@ export default function LoginScreen() {
                     bg={signupBg}
                     disabled={isLoading}
                 />
+                <View className="mt-5 ">
+                    <TouchableOpacity onPress={() => router.push("/auth/signup")}>
+                        <Text className="text-right underline text-2xl">
+                            Signup Instead
+                        </Text>
+                    </TouchableOpacity>
+                </View>
             </FormWrapper>
         </ScreenWrapper>
     );

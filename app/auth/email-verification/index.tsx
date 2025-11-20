@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Alert, Pressable, Text, View } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -12,29 +12,38 @@ import {
 
 export default function VerifyEmailScreen() {
     const router = useRouter();
-    const { email } = useLocalSearchParams<{ email: string }>();
-    const [token, setToken] = useState("");
+    const params = useLocalSearchParams<{ email: string }>();
+    const [email, setEmail] = useState("");
+    const [code, setCode] = useState(""); // Changed from 'token' to 'code'
     const [isLoading, setIsLoading] = useState(false);
     const [isResending, setIsResending] = useState(false);
 
-    const maskEmail = (email?: string) => {
-        if (!email) return "";
+    // Extract and set email from params
+    useEffect(() => {
+        if (params.email) {
+            const emailValue = Array.isArray(params.email) ? params.email[0] : params.email;
+            setEmail(emailValue);
+        }
+    }, [params.email]);
+
+    const maskEmail = (email: string) => {
+        if (!email) return "your email";
         const [user, domain] = email.split("@");
         if (user.length <= 3) return email;
         return `${user.substring(0, 3)}****@${domain}`;
     };
 
     const handleVerify = async () => {
-        console.log(token);
-        if (!email || !token || token.length !== 6) {
+        console.log(code); // Log code instead of token
+        if (!email || !code || code.length !== 6) {
             Alert.alert(
-                "Invalid Token",
+                "Invalid Code",
                 "Please enter the 6-digit code from your email."
             );
             return;
         }
         setIsLoading(true);
-        const response = await verifyEmail({ email, code: token });
+        const response = await verifyEmail({ email, code }); // Now matches backend expectation
         setIsLoading(false);
 
         if (response.success) {
@@ -49,7 +58,10 @@ export default function VerifyEmailScreen() {
     };
 
     const handleResend = async () => {
-        if (!email) return;
+        if (!email) {
+            Alert.alert("Error", "No email address found.");
+            return;
+        }
         setIsResending(true);
         const response = await resendVerificationToken({ email });
         setIsResending(false);
@@ -75,13 +87,13 @@ export default function VerifyEmailScreen() {
 
                         <PinInput
                             label=""
-                            value={token}
-                            onChangeText={setToken}
+                            value={code} // Changed from token to code
+                            onChangeText={setCode} // Changed from setToken to setCode
                         />
 
                         <View className="flex-row gap-1 justify-center items-center mt-4">
                             <Text className="font-medium text-gray-600">
-                                Didn’t receive a code?
+                                Didn't receive a code?
                             </Text>
                             <Pressable
                                 onPress={handleResend}

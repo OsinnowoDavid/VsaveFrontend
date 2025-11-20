@@ -3,7 +3,7 @@ import { Alert } from "react-native";
 import useAuthStore from "../store/useAuthStore";
 import { SignUpData } from "../types/data";
 import apiClient from "./apiClient";
-import { getKYCStatus } from "./kycService";
+// import { getKYCStatus } from "./kycService";
 
 export const handleSignup = async (registrationData: SignUpData) => {
     const names = registrationData.fullName.split(" ");
@@ -94,7 +94,6 @@ export const handleSignin = async (form: {
 }): Promise<{
     success: boolean;
     message?: string;
-    isEmailVerified?: boolean;
 }> => {
     const login = useAuthStore.getState().login;
     try {
@@ -107,34 +106,17 @@ export const handleSignin = async (form: {
         ) {
             await login(response.data.token); // Save token to Zustand store
 
-            // After login, fetch the user's KYC status
-            const kycResponse = await getKYCStatus();
-
-            // Check KYC status and redirect accordingly
-            if (
-                kycResponse.success &&
-                (kycResponse.status === "pending" ||
-                    kycResponse.status === "failed")
-            ) {
-                Alert.alert(
-                    "KYC Required",
-                    "Please complete your KYC verification to continue."
-                );
-                router.replace("/auth/kyc");
-            } else {
-                router.replace("/home");
-            }
-
+            // Redirect to home immediately without checking verification
+            router.replace("/home");
+            
             return {
                 success: true,
-                isEmailVerified: response.data.isEmailVerified,
             };
         } else {
             return {
                 success: false,
                 message:
                     response.data.message || "Login failed. Please try again.",
-                isEmailVerified: response.data.isEmailVerified,
             };
         }
     } catch (error: any) {

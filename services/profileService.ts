@@ -13,7 +13,6 @@ interface ApiResponse<T> {
     data?: T;
     message?: string;
 }
-
 export const fetchUserProfile = async (
     token: string
 ): Promise<ApiResponse<any>> => {
@@ -33,13 +32,34 @@ export const fetchUserProfile = async (
             headers: {
                 authorization: `${token}`,
                 "Content-Type": "application/json",
+                "Accept": "application/json", // Explicitly ask for JSON
             },
         });
 
+        // FIRST, check if response is JSON before parsing
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // It's not JSON - get the text to see what we actually received
+            const text = await response.text();
+            console.error('❌ Server returned non-JSON response:', {
+                status: response.status,
+                url: response.url, // This shows final URL after redirects
+                contentType,
+                bodyPreview: text.substring(0, 500),
+            });
+            
+            return {
+                success: false,
+                message: `Server error (${response.status}). Please try again later.`
+            };
+        }
+
+        // Now safely parse as JSON
         const result = await response.json();
 
-        // Note: Corrected `result?.Status` to `result?.status` to match API spec
-        if (response.ok && result?.Status?.toLowerCase?.() === "success") {
+        // Note: Your API might use 'status' instead of 'Status' - check the actual response
+        const status = result?.Status || result?.status;
+        if (response.ok && status?.toLowerCase?.() === "success") {
             // 2. Store the fetched data in the cache
             cachedProfile = result.data;
             return { success: true, data: result.data };
@@ -51,6 +71,6 @@ export const fetchUserProfile = async (
         }
     } catch (error) {
         console.error("fetchUserProfile error:", error);
-        return { success: false, message: "An unexpected error occurred." };
+        return { success: false, message: "Network error. Please check your connection." };
     }
 };

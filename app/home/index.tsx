@@ -10,7 +10,7 @@ import {
     Wifi,
 } from "lucide-react-native";
 import { useEffect } from "react";
-import { StatusBar, Text, TouchableOpacity, View } from "react-native";
+import {  Text, TouchableOpacity, View } from "react-native";
 import Balance from "../../components/Balance";
 import HomeScreenWrapper from "../../components/HomeScreenWrapper";
 import NavButton from "../../components/NavButton";
@@ -80,7 +80,7 @@ export default function Home() {
 
     return (
         <HomeScreenWrapper bgColor="bg-[#f5f5f5]">
-            <StatusBar barStyle="dark-content" />
+            {/* <StatusBar barStyle="dark-content" /> */}
             <View className="mt-6 w-[95%] mx-auto bg-[#f5f5f5]">
                 <View className="flex flex-row justify-between pe-3">
                     <Text className="font-meduim text-2xl px-2">

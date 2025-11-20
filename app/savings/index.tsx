@@ -98,7 +98,9 @@ export default function Savings() {
 
                         <TouchableOpacity
                             className="flex-row items-center space-x-1"
-                            onPress={() => router.push("/savings/active-plans")}
+                            onPress={() => router.push("/savings/active-plans")
+
+                            }
                             disabled={activePlans.length === 0}
                         >
                             <Text
@@ -141,6 +143,18 @@ export default function Savings() {
                             No available savings plans at the moment.
                         </Text>
                     )}
+
+                    <View>
+                        <TouchableOpacity   onPress={() => router.push("/savings/createSavings")}
+ >
+
+                        <Text className="text-center underline  border-1 rounded p-6 text-green-600 bg-white">
+                        Create my savings plan
+
+                        </Text>
+                        </TouchableOpacity>
+
+                    </View>
 
                     {availablePlans.map((plan) => (
                         <AvailablePlanCard

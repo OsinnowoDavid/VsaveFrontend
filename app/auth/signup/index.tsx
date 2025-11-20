@@ -6,6 +6,9 @@ import {
     ScrollView,
     StatusBar,
     StatusBarStyle,
+    View,
+    Text,
+    TouchableOpacity
 } from "react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
@@ -26,8 +29,12 @@ import {
 } from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
 import { SignUpData } from "../../../types/data";
+import { useRouter } from "expo-router";
+
 
 export default function SignUpScreen() {
+        const router = useRouter();
+    
     const [form, setForm] = useState<SignUpData>({
         fullName: "",
         email: "",
@@ -103,13 +110,13 @@ export default function SignUpScreen() {
 
     return (
         <ScreenWrapper>
-            <StatusBar
+            {/* <StatusBar
                 barStyle={
                     Platform.OS === "android"
                         ? (barStyle as StatusBarStyle)
                         : "light-content"
                 }
-            />
+            /> */}
             <FormWrapper heading="Sign Up">
                 <ScrollView
                     className="max-h-[400px]"
@@ -210,6 +217,16 @@ export default function SignUpScreen() {
                         bg={signupBg}
                         disabled={isLoading}
                     />
+                    <View className="mt-5 ">
+                        <TouchableOpacity onPress={()=> router.push("/auth/login")}>
+
+                        <Text className=" text-right underline text-2xl" >
+                            Login Instead
+                        </Text>
+                        </TouchableOpacity>
+
+
+                    </View>
                 </ScrollView>
             </FormWrapper>
         </ScreenWrapper>

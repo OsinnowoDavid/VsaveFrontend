@@ -55,7 +55,7 @@ export default function HomeScreenWrapper({
                     id="footer"
                     className="border-t border-gray-200 w-full absolute bottom-0 flex flex-row justify-around items-center py-1 bg-white"
                 >
-                    <StatusBar barStyle="dark-content" />
+                    {/* <StatusBar barStyle="dark-content" /> */}
                     {navItems.map((item) => {
                         const isActive = pathname.startsWith(item.href);
                         const Icon = item.icon;
