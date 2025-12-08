@@ -69,7 +69,7 @@ const Index = () => {
             const numericAmount = Number(amount);
             const result = await buyAirtime(phone, numericAmount, `${token}`);
 
-            if (result.status.toLowerCase() === "success") {
+            if (result.status.toLowerCase() === "Success") {
                 Alert.alert(
                     "Success",
                     result.message || "Airtime purchase successful!"

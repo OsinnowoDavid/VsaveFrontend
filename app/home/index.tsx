@@ -34,7 +34,7 @@ export default function Home() {
             icon: <ArrowUpRight color="#1B8A52" size={28} />,
             bgColor: "bg-green-200/20",
             onPress: () => {
-                router.push("/home/send-money");
+                router.push("/home/send-money/bank-transfer");
             },
             width: "w-[20%]",
         },

@@ -19,7 +19,7 @@ export const getTransactions = async (): Promise<{
 
         const result = await response.json();
 
-        if (response.ok && result.status.toLowerCase() === "success") {
+        if (response.ok && result.status === "Success") {
             return { success: true, data: result.data || [] };
         } else {
             return { success: false, message: result.message };

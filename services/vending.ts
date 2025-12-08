@@ -33,7 +33,7 @@ export const buyAirtime = async (
         const data: BuyAirtimeResponse = await response.json();
         console.log("API Response:", data);
 
-        if (!response.ok || data.status?.toLowerCase() !== "success") {
+        if (!response.ok || data.status?.toLowerCase() !== "Success") {
             throw new Error(data.message || "Airtime purchase failed.");
         }
 

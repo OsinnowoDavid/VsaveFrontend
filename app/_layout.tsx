@@ -84,23 +84,19 @@ const useProtectedRoute = () => {
 
         // Condition 3: User is logged in and has KYC, but somehow still doesn't have a PIN.
         // This is a fallback. Redirect to PIN setup screen.
-        // if (
-        //     token &&
-        //     hasCompletedKYC &&
-        //     !pinStatus.hasPin &&
-        //     segments[1] !== "pincode-setup"
-        // ) {
-        //     router.replace("/auth/pincode-setup");
-        //     return;
-        // }
+        if (
+            token &&
+            hasCompletedKYC &&
+            !pinStatus.hasPin &&
+            segments[1] !== "pincode-setup"
+        ) {
+            router.replace("/auth/pincode-setup");
+            return;
+        }
 
         // Condition 4: User is fully authenticated (token, KYC, PIN) but is still in an auth screen.
         // Redirect to home.
-        // if (token && hasCompletedKYC && pinStatus.hasPin && inAuthGroup) {
-        //     // Redirect away from the auth group if the user is signed in.
-        //     router.replace("/home");
-        // }
-        if (token ) {
+        if (token && hasCompletedKYC && pinStatus.hasPin && inAuthGroup) {
             // Redirect away from the auth group if the user is signed in.
             router.replace("/home");
         }

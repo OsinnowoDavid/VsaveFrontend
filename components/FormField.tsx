@@ -27,6 +27,7 @@ interface FormFieldProps {
     validate?: boolean;
     schema?: any;
     field?: any;
+    autoTrim?: boolean; // New prop to control trimming behavior
 }
 
 export default function FormField({
@@ -42,6 +43,7 @@ export default function FormField({
     validate = false,
     schema,
     field,
+    autoTrim = true, // Default to true for auto-trimming
 }: FormFieldProps) {
     const [fieldError, setFieldError] = useState("");
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -56,6 +58,25 @@ export default function FormField({
         if (!validate) return;
         const error = validateFormField(schema, field).errorMessage;
         if (!!error) setFieldError(error);
+        
+        // Auto-trim on blur for non-password fields
+        if (autoTrim && type === "text" && !secureTextEntry && value) {
+            const trimmedValue = value.trim();
+            if (trimmedValue !== value) {
+                onChangeText(trimmedValue);
+            }
+        }
+    };
+
+    const handleChangeText = (text: string) => {
+        // For non-password fields, trim spaces in real-time
+        if (autoTrim && type === "text" && !secureTextEntry) {
+            // Remove leading spaces and prevent multiple consecutive spaces
+            const processedText = text.replace(/^\s+/, '').replace(/\s{2,}/g, ' ');
+            onChangeText(processedText);
+        } else {
+            onChangeText(text);
+        }
     };
 
     const togglePasswordVisibility = () => {
@@ -94,7 +115,7 @@ export default function FormField({
                         <TextInput
                             className="flex-1 text-sm text-gray-800"
                             value={value}
-                            onChangeText={onChangeText}
+                            onChangeText={handleChangeText}
                             placeholder={placeholder}
                             secureTextEntry={
                                 secureTextEntry && !isPasswordVisible
@@ -126,7 +147,10 @@ export default function FormField({
                     onRequestClose={() => setPickerVisible(false)}
                 >
                     <SafeAreaView className="flex-1 justify-end bg-black/50">
-                        <View className="bg-white rounded-t-3xl p-6 max-h-[50%]">
+                        <View
+                            className="bg-white rounded-t-3xl p-6"
+                            style={{ maxHeight: "50%" }}
+                        >
                             <View className="flex-row justify-between items-center mb-4">
                                 <Text className="text-xl font-bold text-gray-800">
                                     {label}
@@ -160,4 +184,4 @@ export default function FormField({
             )}
         </View>
     );
-}
+} 

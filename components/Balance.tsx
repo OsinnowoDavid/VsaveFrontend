@@ -3,6 +3,7 @@ import { Copy, Landmark } from "lucide-react-native";
 import React from "react";
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import useProfileStore from "../store/useProfileStore";
+import { router } from "expo-router";
 
 export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
     if (version === "v1") {
@@ -13,6 +14,7 @@ export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
 
 function BalanceV1() {
     const { profile } = useProfileStore(); // profile is { profile: ProfileDetails, kyc: KycDetails }
+    console.log("PROFILE Data",profile)
 
     const formatCurrency = (amount: number | undefined) => {
         if (amount === undefined) return "0.00";
@@ -52,8 +54,8 @@ function BalanceV1() {
             >
                 <View className="flex-row items-center gap-2">
                     <Text className="text-white text-base">
-                        Account Number:{" "}
-                        {profile?.profile?.virtualAccountNumber ?? "123456789"}
+                        Account number:{" "}
+                        {profile?.profile?.virtualAccountNumber ?? "account number is  not  ready"}
                     </Text>
                     {profile?.profile?.virtualAccountNumber && (
                         <TouchableOpacity onPress={copyToClipboard}>
@@ -62,16 +64,28 @@ function BalanceV1() {
                     )}
                 </View>
                 <View>
+                    {
+                        profile.kyc=== null ? (
+                            <TouchableOpacity onPressOut={()=>router.push("/auth/kyc")}>
+                            <Text> click to complete kyc</Text>
+
+
+                            </TouchableOpacity>
+
+                        ):
+                        
+
+                    <Text className="text-[#EFEFEF] text-[16px]">
+                        Assigned bank : GT Bank
+                    </Text>}
+
+                </View>
+                <View>
                     <Text className="text-white text-4xl tracking-tighter">
                         ₦{formatCurrency(profile?.profile?.availableBalance)}
                     </Text>
                 </View>
-                <View>
-                    <Text className="text-[#EFEFEF] text-[16px]">
-                        Pending Balance ₦
-                        {formatCurrency(profile?.profile?.pendingBalance)}
-                    </Text>
-                </View>
+                
             </View>
         </View>
     );

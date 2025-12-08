@@ -1,18 +1,27 @@
 import { Country, State } from "country-state-city";
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
-import { ActivityIndicator, Alert, Text, View } from "react-native";
+import {
+    ActivityIndicator,
+    Alert,
+    Text,
+    View,
+} from "react-native";
+
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
 import KeyboardAvoidingWrapper from "../../../components/KeyboardAvoidWrapper";
+import PinField from "../../../components/PinField";
+
 import { getBankList, resolveBankAccount } from "../../../services/bankService";
 import {
     getSubRegions,
     submitKYCStage1,
     SubRegion,
 } from "../../../services/kycService";
+
 import useAuthStore from "../../../store/useAuthStore";
 import useProfileStore from "../../../store/useProfileStore";
 
@@ -22,39 +31,47 @@ interface Bank {
     name: string;
 }
 
+/* ------------------------ COUNTRY HELPERS ------------------------ */
+
 const countries = Country.getAllCountries();
-const countryIndexToCodeMap = {};
-const countryOptions = countries.map((Icountry, index) => {
-    countryIndexToCodeMap[Icountry.isoCode] = index;
-    return { label: Icountry.name, value: Icountry.isoCode };
+
+const countryIndexToCodeMap: Record<string, number> = {};
+const countryOptions = countries.map((c, index) => {
+    countryIndexToCodeMap[c.isoCode] = index;
+    return { label: c.name, value: c.isoCode };
 });
 
-function stateOptionsAndIndexing(countryIsoCode: string) {
-    const stateIndexToCodeMap = {};
-    const states = State.getStatesOfCountry(countryIsoCode);
-    const stateOptions = states.map((Istate, index) => {
-        stateIndexToCodeMap[Istate.isoCode] = index;
-        return { label: Istate.name, value: Istate.isoCode };
-    });
-    return [stateOptions, stateIndexToCodeMap];
-}
+const getStateOptions = (countryCode: string) =>
+    State.getStatesOfCountry(countryCode).map((s) => ({
+        label: s.name,
+        value: s.isoCode,
+    }));
 
-const initialCountryIsoCode = "NG";
+const initialCountryCode = "NG";
 const initialCountry =
-    countryOptions[countryIndexToCodeMap[initialCountryIsoCode]];
+    countryOptions[countryIndexToCodeMap[initialCountryCode]];
+
+/* ----------------------------- SCREEN ----------------------------- */
 
 export default function KYCScreen() {
-    const [selectedCountry, setSelectedCountry] = useState(initialCountry);
-    const [stateOptions, setStateOptions] = useState(
-        stateOptionsAndIndexing(initialCountry.value)[0]
-    );
+    const router = useRouter();
+    const { fetchProfile } = useProfileStore();
+
     const [banks, setBanks] = useState<Bank[]>([]);
-    const [resolvedAccountName, setResolvedAccountName] = useState<
-        string | null
-    >(null);
     const [subRegions, setSubRegions] = useState<SubRegion[]>([]);
+    const [stateOptions, setStateOptions] = useState(
+        getStateOptions(initialCountryCode)
+    );
+
+    const [resolvedAccountName, setResolvedAccountName] =
+        useState<string | null>(null);
+
     const [isResolving, setIsResolving] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
+
+    const [showPin, setShowPin] = useState(false);
+    const [showConfirmPin, setShowConfirmPin] = useState(false);
+    const [pinError, setPinError] = useState<string | null>(null);
 
     const [form, setForm] = useState({
         profession: "",
@@ -62,182 +79,160 @@ export default function KYCScreen() {
         bankCode: "",
         country: initialCountry.value,
         state: "",
-        bvn: "",
         address: "",
-        accountDetails: "",
+        bvn: "",
         subRegion: "",
+        transactionPin: "",
+        confirmTransactionPin: "",
     });
 
-    const { fetchProfile } = useProfileStore();
-    const router = useRouter();
-
-    // Fetch bank list on component mount
-    useEffect(() => {
-        const fetchBanks = async () => {
-            const response = await getBankList();
-            if (response.success) {
-                setBanks(response.data);
-            } else {
-                Alert.alert("Error", "Could not load bank list.");
-            }
-        };
-        fetchBanks();
-
-        const fetchSubRegions = async () => {
-            const response = await getSubRegions();
-            console.log(response);
-            if (response.success && response.data) {
-                setSubRegions(response.data);
-            } else {
-                Alert.alert(
-                    "Error",
-                    response.message || "Could not load sub-regions."
-                );
-            }
-        };
-        fetchSubRegions();
-    }, []);
-
-    // Update state options when country changes
-    useEffect(() => {
-        const [newStates] = stateOptionsAndIndexing(form.country);
-        setStateOptions(newStates);
-        // Reset state if country changes
-        if (form.country !== selectedCountry.value) {
-            handleFormChange("state", "");
-            setSelectedCountry(
-                countryOptions[countryIndexToCodeMap[form.country]]
-            );
-        }
-    }, [form.country]);
-
-    // Debounce account resolution
-    useEffect(() => {
-        if (form.accountNumber.length === 10 && form.bankCode) {
-            const handler = setTimeout(() => {
-                handleResolveAccount();
-            }, 1000);
-
-            return () => clearTimeout(handler);
-        } else {
-            setResolvedAccountName(null);
-        }
-    }, [form.accountNumber, form.bankCode]);
-
-    const handleFormChange = (field: keyof typeof form, value: string) => {
-        setForm((prev) => ({ ...prev, [field]: value }));
+    const updateForm = (key: keyof typeof form, value: string) => {
+        setForm((prev) => ({ ...prev, [key]: value }));
     };
 
-    const handleResolveAccount = async () => {
+    /* ----------------------- INITIAL FETCH ----------------------- */
+
+    useEffect(() => {
+        (async () => {
+            const banksRes = await getBankList();
+            if (banksRes.success) setBanks(banksRes.data);
+
+            const regionsRes = await getSubRegions();
+            if (regionsRes.success && regionsRes.data) {
+                setSubRegions(regionsRes.data);
+            }
+        })();
+    }, []);
+
+    /* ----------------------- COUNTRY CHANGE ----------------------- */
+
+    useEffect(() => {
+        setStateOptions(getStateOptions(form.country));
+        updateForm("state", "");
+    }, [form.country]);
+
+    /* ----------------------- ACCOUNT RESOLVE ---------------------- */
+
+    useEffect(() => {
+        if (form.accountNumber.length === 10 && form.bankCode) {
+            const timer = setTimeout(resolveAccount, 800);
+            return () => clearTimeout(timer);
+        }
+        setResolvedAccountName(null);
+    }, [form.accountNumber, form.bankCode]);
+
+    const resolveAccount = async () => {
         setIsResolving(true);
         setResolvedAccountName(null);
-        const response = await resolveBankAccount({
+
+        const res = await resolveBankAccount({
             accountNumber: form.accountNumber,
             bankCode: form.bankCode,
         });
-        console.log(form.bankCode);
+
         setIsResolving(false);
-        if (response.success && response.data.account_name) {
-            setResolvedAccountName(response.data.account_name);
+
+        if (res.success && res.data.account_name) {
+            setResolvedAccountName(res.data.account_name);
         } else {
-            Alert.alert("Verification Failed", response.message);
+            Alert.alert("Verification Failed", res.message);
         }
     };
 
+    /* ---------------------------- SUBMIT ---------------------------- */
+
     const handleSubmit = async () => {
-        // --- Validation Start ---
-        const requiredFields: {
-            key: keyof typeof form;
-            name: string;
-        }[] = [
-            { key: "profession", name: "Profession" },
-            { key: "state", name: "State" },
-            { key: "address", name: "Address" },
-            { key: "bvn", name: "BVN" },
-            { key: "subRegion", name: "Sub Region" },
-        ];
-
-        for (const field of requiredFields) {
-            if (!form[field.key].trim()) {
-                Alert.alert(
-                    "Missing Information",
-                    `Please fill out the ${field.name} field.`
-                );
-                return;
-            }
+        if (!resolvedAccountName) {
+            Alert.alert("Error", "Please resolve bank account.");
+            return;
         }
-        // --- Validation End ---
 
+        if (
+            form.transactionPin.length !== 4 ||
+            form.confirmTransactionPin.length !== 4
+        ) {
+            Alert.alert("Invalid PIN", "PIN must be 4 digits.");
+            return;
+        }
+
+        if (form.transactionPin !== form.confirmTransactionPin) {
+            setPinError("PINs do not match.");
+            return;
+        }
+
+        setPinError(null);
         setIsLoading(true);
 
-        const submissionData = {
+        const payload = {
             profession: form.profession,
             accountNumber: form.accountNumber,
             bankCode: form.bankCode,
             country: form.country,
             state: form.state,
-            bvn: form.bvn,
             address: form.address,
+            bvn: form.bvn,
             subRegion: form.subRegion,
+            transactionPin: form.transactionPin,
         };
 
-        const response = await submitKYCStage1(submissionData);
-
+        const res = await submitKYCStage1(payload);
         setIsLoading(false);
 
-        if (response.success) {
-            Alert.alert("Success", response.message);
-            // Re-fetch profile to get new KYC status
+        if (res.success) {
             const token = useAuthStore.getState().token;
             if (token) await fetchProfile(token);
-            router.replace("/home"); // Redirect to home, protected route will handle it
+            router.replace("/home");
         } else {
-            Alert.alert("Submission Failed", response.message);
+            Alert.alert("Submission Failed", res.message);
         }
     };
 
+    /* ----------------------------- UI ----------------------------- */
+
     return (
         <ScreenWrapper>
-            <FormWrapper heading="KYC">
+            <FormWrapper heading="KYC Verification">
                 <KeyboardAvoidingWrapper>
                     <FormField
                         label="Profession"
-                        onChangeText={(value) =>
-                            handleFormChange("profession", value)
-                        }
                         type="select"
                         value={form.profession}
+                        onChangeText={(v) =>
+                            updateForm("profession", v)
+                        }
                         options={[
-                            { label: "Lottery Agent", value: "lottery-agent" },
                             { label: "Student", value: "student" },
                             { label: "Self Employed", value: "self-employed" },
                             { label: "Unemployed", value: "unemployed" },
-                            { label: "Others", value: "other" },
+                            { label: "Others", value: "others" },
                         ]}
                     />
+
                     <FormField
                         label="Bank"
                         type="select"
                         value={form.bankCode}
-                        onChangeText={(value) =>
-                            handleFormChange("bankCode", value)
+                        onChangeText={(v) =>
+                            updateForm("bankCode", v)
                         }
                         options={banks.map((b) => ({
                             label: b.name,
                             value: b.code,
                         }))}
                     />
+
                     <FormField
                         label="Account Number"
-                        placeholder="0123456789"
-                        onChangeText={(value) =>
-                            handleFormChange("accountNumber", value)
-                        }
-                        value={form.accountNumber}
                         keyboardType="number-pad"
                         maxLength={10}
+                        value={form.accountNumber}
+                        onChangeText={(v) =>
+                            updateForm("accountNumber", v)
+                        }
                     />
+
                     {isResolving && <ActivityIndicator className="my-2" />}
+
                     {resolvedAccountName && (
                         <View className="bg-green-50 p-3 rounded-lg mb-4">
                             <Text className="text-green-800 font-semibold">
@@ -245,60 +240,99 @@ export default function KYCScreen() {
                             </Text>
                         </View>
                     )}
+
                     <FormField
                         label="Country"
-                        onChangeText={(value) =>
-                            handleFormChange("country", value)
-                        }
                         type="select"
                         value={form.country}
+                        onChangeText={(v) =>
+                            updateForm("country", v)
+                        }
                         options={countryOptions}
                     />
+
                     <FormField
                         label="State"
                         type="select"
-                        placeholder=""
-                        options={
-                            stateOptions as { label: string; value: string }[]
-                        }
-                        onChangeText={(value) =>
-                            handleFormChange("state", value)
-                        }
                         value={form.state}
+                        onChangeText={(v) =>
+                            updateForm("state", v)
+                        }
+                        options={stateOptions}
                     />
+
                     <FormField
                         label="Address"
-                        placeholder="123 Techie Lane, Ikeja"
-                        onChangeText={(value) =>
-                            handleFormChange("address", value)
-                        }
                         value={form.address}
+                        onChangeText={(v) =>
+                            updateForm("address", v)
+                        }
                     />
+
                     <FormField
                         label="Sub Region"
                         type="select"
                         value={form.subRegion}
-                        onChangeText={(value) =>
-                            handleFormChange("subRegion", value)
+                        onChangeText={(v) =>
+                            updateForm("subRegion", v)
                         }
-                        options={subRegions.map((region) => ({
-                            label: region.subRegionName,
-                            value: region._id,
+                        options={subRegions.map((r) => ({
+                            label: r.subRegionName,
+                            value: r._id,
                         }))}
                     />
+
                     <FormField
                         label="BVN"
-                        placeholder="11-digit Bank Verification Number"
-                        onChangeText={(value) => handleFormChange("bvn", value)}
-                        value={form.bvn}
                         keyboardType="number-pad"
                         maxLength={11}
+                        value={form.bvn}
+                        onChangeText={(v) =>
+                            updateForm("bvn", v)
+                        }
                     />
+
+                    <View className="mt-6">
+                        <Text className="text-lg font-semibold mb-4">
+                            Transaction PIN
+                        </Text>
+
+                        <PinField
+                            label="Create PIN"
+                            value={form.transactionPin}
+                            onChangeText={(v) =>
+                                updateForm("transactionPin", v)
+                            }
+                            show={showPin}
+                            onToggleShow={() =>
+                                setShowPin((p) => !p)
+                            }
+                        />
+
+                        <PinField
+                            label="Confirm PIN"
+                            value={form.confirmTransactionPin}
+                            onChangeText={(v) =>
+                                updateForm("confirmTransactionPin", v)
+                            }
+                            show={showConfirmPin}
+                            onToggleShow={() =>
+                                setShowConfirmPin((p) => !p)
+                            }
+                        />
+
+                        {pinError && (
+                            <Text className="text-red-500 text-sm">
+                                {pinError}
+                            </Text>
+                        )}
+                    </View>
+
                     <Button
-                        onPress={handleSubmit}
                         input="Verify"
+                        onPress={handleSubmit}
                         isLoading={isLoading}
-                        disabled={!resolvedAccountName || isLoading}
+                        disabled={isLoading || !resolvedAccountName}
                     />
                 </KeyboardAvoidingWrapper>
             </FormWrapper>

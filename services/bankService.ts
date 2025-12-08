@@ -1,6 +1,7 @@
 import { Bank } from "../types/data"; // Assuming a shared type definition
 import apiClient from "./apiClient";
 
+
 // In-memory cache for the bank list
 let cachedBankList: Bank[] | null = null;
 
@@ -57,10 +58,21 @@ export const resolveBankAccount = async (details: {
     message?: string;
 }> => {
     try {
-        const response = await apiClient.post("/account-lookup", details);
+        console.log("Resolving bank account with details:", details);
+        
+        const response = await apiClient.post("user/account-lookup", details);
+        console.log("Bank account resolution response:", response.data);
 
-        if (response.data && response.data.status === "success") {
-            return { success: true, data: response.data.data };
+        // Check multiple possible success indicators
+        if (response.data && (response.data.status === "Success" || response.data.success === true)) {
+            // Handle different possible response structures
+            const accountData = response.data.data || response.data;
+            return { 
+                success: true, 
+                data: { 
+                    account_name: accountData.account_name || accountData.accountName || accountData.name 
+                } 
+            };
         } else {
             return {
                 success: false,
@@ -68,13 +80,14 @@ export const resolveBankAccount = async (details: {
             };
         }
     } catch (error: any) {
+        console.error("Bank account resolution error:", error);
         const errorMessage =
             error.response?.data?.message ||
+            error.message ||
             "An error occurred while resolving the bank account, please try again.";
         return { success: false, message: errorMessage };
     }
 };
-
 export const sendToBank = async (
     details: {
         bankCode: string;
@@ -89,7 +102,7 @@ export const sendToBank = async (
             headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (response.data && response.data.status === "success") {
+        if (response.data && response.data.status === "Success") {
             return {
                 success: true,
                 data: response.data.data,

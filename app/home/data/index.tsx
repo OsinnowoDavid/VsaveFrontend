@@ -93,7 +93,7 @@ const Index = () => {
                 token
             );
 
-            if (result.status === "success") {
+            if (result   .status.toLowerCase() === "Success") {
                 Alert.alert(
                     "Success",
                     result.message || "Data purchase successful!"

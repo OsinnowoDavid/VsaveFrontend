@@ -15,7 +15,6 @@ import Button from "../../../components/Button";
 import DatePickerField from "../../../components/DatePickerField";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
-import PhoneInput from "../../../components/PhoneInput";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
 import {
     confirmPasswordSchema,
@@ -33,27 +32,22 @@ import { useRouter } from "expo-router";
 
 
 export default function SignUpScreen() {
-        const router = useRouter();
+    const router = useRouter();
     
     const [form, setForm] = useState<SignUpData>({
         fullName: "",
         email: "",
-        countryCode: "234",
-        phoneNumber: "", // Store as string
-        gender: "", // Default to an empty string or a placeholder value
+        phoneNumber: "",
+        gender: "",
         dateOfBirth: new Date(),
         password: "",
         confirmPassword: "",
     });
 
     const keyboardVisible = useKeyboardVisible();
-
     const [barStyle, setBarStyle] = useState("light-content");
-
     const [signupInput, setSignupInput] = useState("Sign Up");
-
     const [signupBg, setSignBg] = useState("bg-green-700");
-
     const [isLoading, setIsLoading] = useState(false);
 
     function handleKeyboardVisible() {
@@ -83,7 +77,6 @@ export default function SignUpScreen() {
                     [
                         {
                             onPress: () => {
-                                // Navigate to a verification screen, passing the email
                                 router.replace({
                                     pathname: "/auth/email-verification",
                                     params: { email: form.email },
@@ -108,15 +101,13 @@ export default function SignUpScreen() {
         }
     };
 
+    // Debug function to check form state
+    const debugFormState = () => {
+        console.log("Form State:", form);
+    };
+
     return (
         <ScreenWrapper>
-            {/* <StatusBar
-                barStyle={
-                    Platform.OS === "android"
-                        ? (barStyle as StatusBarStyle)
-                        : "light-content"
-                }
-            /> */}
             <FormWrapper heading="Sign Up">
                 <ScrollView
                     className="max-h-[400px]"
@@ -126,9 +117,10 @@ export default function SignUpScreen() {
                     <FormField
                         label="Full Name"
                         value={form.fullName}
-                        onChangeText={(fullName) =>
-                            setForm({ ...form, fullName })
-                        }
+                        onChangeText={(fullName) => {
+                            setForm({ ...form, fullName });
+                            debugFormState(); // Add for debugging
+                        }}
                         placeholder="John Doe"
                         schema={fullNameSchema}
                         validate
@@ -137,31 +129,35 @@ export default function SignUpScreen() {
                     <FormField
                         label="Email"
                         value={form.email}
-                        onChangeText={(email) => setForm({ ...form, email })}
+                        onChangeText={(email) => {
+                            setForm({ ...form, email });
+                            debugFormState(); // Add for debugging
+                        }}
                         placeholder="you@example.com"
                         validate
                         schema={emailSchema}
                         field={form.email}
                     />
-                    <PhoneInput
+                    <FormField
                         label="Phone Number"
-                        phone={form.phoneNumber}
-                        countryCode={form.countryCode}
-                        onPhoneChange={(phoneNumber) =>
-                            setForm({ ...form, phoneNumber })
-                        }
-                        onCountryChange={(countryCode) =>
-                            setForm({ ...form, countryCode })
-                        }
+                        value={form.phoneNumber}
+                        onChangeText={(phoneNumber) => {
+                            setForm({ ...form, phoneNumber });
+                            debugFormState(); // Add for debugging
+                        }}
                         placeholder="08012345678"
+                        keyboardType="phone-pad"
                         validate
                         schema={phoneNumberSchema}
-                        field={form.phoneNumber} // Pass as string
+                        field={form.phoneNumber}
                     />
                     <FormField
                         label="Gender"
                         value={form.gender}
-                        onChangeText={(gender) => setForm({ ...form, gender })}
+                        onChangeText={(gender) => {
+                            setForm({ ...form, gender });
+                            debugFormState(); // Add for debugging
+                        }}
                         type="select"
                         options={[
                             { label: "Select Gender", value: "" },
@@ -174,10 +170,11 @@ export default function SignUpScreen() {
                     />
                     <DatePickerField
                         label="Date of Birth"
-                        value={form.dateOfBirth as Date} // Pass the Date object
-                        onChange={(dateOfBirth) =>
-                            setForm({ ...form, dateOfBirth })
-                        }
+                        value={form.dateOfBirth as Date}
+                        onChange={(dateOfBirth) => {
+                            setForm({ ...form, dateOfBirth });
+                            debugFormState(); // Add for debugging
+                        }}
                         validate
                         schema={dateOfBirthSchema}
                         field={form.dateOfBirth}
@@ -185,10 +182,12 @@ export default function SignUpScreen() {
                     <FormField
                         label="Password"
                         value={form.password}
-                        onChangeText={(password) =>
-                            setForm({ ...form, password })
-                        }
-                        placeholder="........."
+                        onChangeText={(password) => {
+                            console.log("Password input:", password); // Debug log
+                            setForm({ ...form, password });
+                            debugFormState(); // Add for debugging
+                        }}
+                        placeholder="Enter your password"
                         secureTextEntry
                         validate
                         schema={passwordSchema}
@@ -197,10 +196,12 @@ export default function SignUpScreen() {
                     <FormField
                         label="Confirm Password"
                         value={form.confirmPassword}
-                        onChangeText={(confirmPassword) =>
-                            setForm({ ...form, confirmPassword })
-                        }
-                        placeholder=".........."
+                        onChangeText={(confirmPassword) => {
+                            console.log("Confirm Password input:", confirmPassword); // Debug log
+                            setForm({ ...form, confirmPassword });
+                            debugFormState(); // Add for debugging
+                        }}
+                        placeholder="Confirm your password"
                         secureTextEntry
                         validate
                         schema={confirmPasswordSchema}
@@ -217,15 +218,14 @@ export default function SignUpScreen() {
                         bg={signupBg}
                         disabled={isLoading}
                     />
-                    <View className="mt-5 ">
-                        <TouchableOpacity onPress={()=> router.push("/auth/login")}>
+                    
 
-                        <Text className=" text-right underline text-2xl" >
-                            Login Instead
-                        </Text>
+                    <View className="mt-5">
+                        <TouchableOpacity onPress={() => router.push("/auth/login")}>
+                            <Text className="text-right underline text-2xl">
+                                Login Instead
+                            </Text>
                         </TouchableOpacity>
-
-
                     </View>
                 </ScrollView>
             </FormWrapper>

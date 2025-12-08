@@ -21,7 +21,7 @@ export default function App() {
             try {
                 // 1. Attempt to validate the token by fetching the profile
                 const token = await AsyncStorage.getItem("authToken");
-                if (!token) throw new Error("No token found");
+                // if (!token) throw new Error("No token found");
 
                 const profileResponse = await fetchProfile(token);
                 if (!profileResponse.success) {
@@ -88,7 +88,7 @@ export default function App() {
             <StatusBar barStyle="light-content" />
             <Image
                 source={require("../assets/images/transparent-logo.png")}
-                className="absolute top-20"
+                className="absolute top-25"
                 resizeMode="cover"
             />
             <SloganText />

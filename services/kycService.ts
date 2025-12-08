@@ -59,7 +59,7 @@ export const submitKYCStage1 = async (data: any): Promise<ApiResponse<any>> => {
     // This is just a placeholder to show where it belongs.
     console.log("Submitting KYC Data:", data);
     // Example:
-    // const response = await fetch(`${API_BASE_URL}/kyc/stage1`, { ... });
+    const response = await fetch(`${API_BASE_URL}/user/register-kyc1`,  data);
     // return await response.json();
     return new Promise((resolve) =>
         setTimeout(

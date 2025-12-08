@@ -23,7 +23,7 @@ export default function AddMoney() {
     return (
         <HomeScreenWrapper showFooter={false}>
             <View className="mt-7 flex flex-row justify-around">
-                <NavButton
+                {/* <NavButton
                     input="Dedicated Account"
                     onPress={() => {
                         setActiveTab(dedicatedAccount);
@@ -71,7 +71,7 @@ export default function AddMoney() {
                             : ""
                     }
                     bg="bg-[rgba(27,138,82,0.1)]"
-                />
+                /> */}
             </View>
             {activeTab.component}
         </HomeScreenWrapper>
