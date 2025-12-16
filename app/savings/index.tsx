@@ -4,8 +4,7 @@ import React, { useCallback, useEffect } from "react";
 import {
     ActivityIndicator,
     Alert,
-    RefreshControl,
-    ScrollView,
+
     Text,
     TouchableOpacity,
     View,
@@ -55,18 +54,9 @@ export default function Savings() {
 
     return (
         <HomeScreenWrapper bgColor="bg-gray-50">
-            <ScrollView
-                refreshControl={
-                    <RefreshControl
-                        refreshing={
-                            isLoading || isProfileLoading || isLoadingActive
-                        }
-                        onRefresh={onRefresh}
-                    />
-                }
-                showsVerticalScrollIndicator={false}
-                contentContainerStyle={{ paddingBottom: 80 }} // Prevents content from being hidden by the footer
-            >
+         
+// Prevents content from being hidden by the footer
+            
                 {/* Re-introducing the SavingsCard for summary */}
                 <SavingsCard
                     isLoading={isProfileLoading}
@@ -174,7 +164,7 @@ export default function Savings() {
                         />
                     ))}
                 </View>
-            </ScrollView>
+
         </HomeScreenWrapper>
     );
 }

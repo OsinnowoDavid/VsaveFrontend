@@ -77,6 +77,7 @@ export default function KYCScreen() {
         profession: "",
         accountNumber: "",
         bankCode: "",
+        accountDetails:"",
         country: initialCountry.value,
         state: "",
         address: "",
@@ -166,11 +167,12 @@ export default function KYCScreen() {
         const payload = {
             profession: form.profession,
             accountNumber: form.accountNumber,
-            bankCode: form.bankCode,
+            bank: form.bankCode,
             country: form.country,
             state: form.state,
             address: form.address,
             bvn: form.bvn,
+           accountDetails: resolvedAccountName,
             subRegion: form.subRegion,
             transactionPin: form.transactionPin,
         };
@@ -191,8 +193,10 @@ export default function KYCScreen() {
 
     return (
         <ScreenWrapper>
+
             <FormWrapper heading="KYC Verification">
                 <KeyboardAvoidingWrapper>
+
                     <FormField
                         label="Profession"
                         type="select"
@@ -201,7 +205,8 @@ export default function KYCScreen() {
                             updateForm("profession", v)
                         }
                         options={[
-                            { label: "Student", value: "student" },
+                            { label: "Lottery Agent", value: "Lottery Agent", },
+                            { label: "Student", value: "Student" },
                             { label: "Self Employed", value: "self-employed" },
                             { label: "Unemployed", value: "unemployed" },
                             { label: "Others", value: "others" },

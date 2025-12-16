@@ -12,7 +12,7 @@ import ScreenWrapper from "../../components/AuthScreenWrapper";
 import Button from "../../components/Button";
 import FormWrapper from "../../components/FormWrapper";
 import PinInput from "../../components/PinInput";
-import { verifyPin } from "../../services/pinService";
+import { welcomeBack } from "../../services/pinService";
 import useAuthStore from "../../store/useAuthStore";
 import useProfileStore from "../../store/useProfileStore";
 
@@ -31,7 +31,7 @@ export default function LoginWithPinScreen() {
         setIsLoading(true);
         try {
             // 1. Verify the PIN against the one stored on the device
-            await verifyPin(pin);
+            await welcomeBack(pin);
 
             // 2. If PIN is correct, retrieve the token from storage
             const token = await AsyncStorage.getItem("authToken");

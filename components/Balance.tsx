@@ -1,6 +1,6 @@
 import * as Clipboard from "expo-clipboard";
-import { Copy, Landmark } from "lucide-react-native";
-import React from "react";
+import { Copy, Landmark, Eye, EyeOff } from "lucide-react-native";
+import React, { useState } from "react";
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import useProfileStore from "../store/useProfileStore";
 import { router } from "expo-router";
@@ -13,8 +13,8 @@ export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
 }
 
 function BalanceV1() {
-    const { profile } = useProfileStore(); // profile is { profile: ProfileDetails, kyc: KycDetails }
-    console.log("PROFILE Data",profile)
+    const { profile } = useProfileStore();
+    const [showBalance, setShowBalance] = useState(true);
 
     const formatCurrency = (amount: number | undefined) => {
         if (amount === undefined) return "0.00";
@@ -31,6 +31,10 @@ function BalanceV1() {
             );
             Alert.alert("Copied!", "Account number copied to clipboard.");
         }
+    };
+
+    const toggleBalanceVisibility = () => {
+        setShowBalance(!showBalance);
     };
 
     return (
@@ -55,7 +59,7 @@ function BalanceV1() {
                 <View className="flex-row items-center gap-2">
                     <Text className="text-white text-base">
                         Account number:{" "}
-                        {profile?.profile?.virtualAccountNumber ?? "account number is  not  ready"}
+                        {profile?.profile?.virtualAccountNumber ?? "account number is not ready"}
                     </Text>
                     {profile?.profile?.virtualAccountNumber && (
                         <TouchableOpacity onPress={copyToClipboard}>
@@ -64,28 +68,31 @@ function BalanceV1() {
                     )}
                 </View>
                 <View>
-                    {
-                        profile.kyc=== null ? (
-                            <TouchableOpacity onPressOut={()=>router.push("/auth/kyc")}>
-                            <Text> click to complete kyc</Text>
-
-
-                            </TouchableOpacity>
-
-                        ):
-                        
-
-                    <Text className="text-[#EFEFEF] text-[16px]">
-                        Assigned bank : GT Bank
-                    </Text>}
+                    {profile.kyc === null ? (
+                        <TouchableOpacity onPressOut={() => router.push("/auth/kyc")}>
+                            <Text className="text-white text-3xl">click to complete kyc</Text>
+                        </TouchableOpacity>
+                    ) : (
+                        <Text className="text-[#EFEFEF] text-[16px]">
+                            Assigned bank : GT Bank
+                        </Text>
+                    )}
+                </View>
+                <View className="flex-row items-center justify-between">
+                    <View className="flex-row items-center">
+                        <Text className="text-white text-4xl tracking-tighter">
+                            ₦{showBalance ? formatCurrency(profile?.profile?.availableBalance) : "••••••"}
+                                                <TouchableOpacity onPress={toggleBalanceVisibility} className="ml-2">
+                        {showBalance ? (
+                            <EyeOff size={24} color="white" />
+                        ) : (
+                            <Eye size={24} color="white" />
+                        )}
+                    </TouchableOpacity>
+                        </Text>
+                    </View>
 
                 </View>
-                <View>
-                    <Text className="text-white text-4xl tracking-tighter">
-                        ₦{formatCurrency(profile?.profile?.availableBalance)}
-                    </Text>
-                </View>
-                
             </View>
         </View>
     );
@@ -93,6 +100,8 @@ function BalanceV1() {
 
 function BalanceV2() {
     const { profile } = useProfileStore();
+    const [showBalance, setShowBalance] = useState(true);
+
     const formatCurrency = (amount: number | undefined) => {
         if (amount === undefined) return "0.00";
         return amount.toLocaleString("en-NG", {
@@ -100,16 +109,37 @@ function BalanceV2() {
             maximumFractionDigits: 2,
         });
     };
+
+    const toggleBalanceVisibility = () => {
+        setShowBalance(!showBalance);
+    };
+
     return (
         <View className="w-full h-28 mx-auto bg-green-100 flex flex-row gap-3">
             <View className="bg-white rounded-xl h-20 w-[90%] m-auto flex flex-row gap-3 items-center">
                 <View className="flex-row justify-center items-center w-12 h-12 ml-4 my-auto bg-green-100 rounded-full">
                     <Landmark size={24} color="#1B8A52" strokeWidth={2} />
                 </View>
-                <View>
-                    <Text className="text-xl font-bold text-gray-800">
-                        ₦{formatCurrency(profile?.profile?.availableBalance)}
-                    </Text>
+                <View className="flex-1">
+                    <View className="flex-row items-center justify-between">
+                        <View className="flex-row items-center">
+                            <Text className="text-xl font-bold text-gray-800">
+                                ₦{showBalance ? formatCurrency(profile?.profile?.availableBalance) : "••••••"}
+                                                        <TouchableOpacity 
+                            onPress={toggleBalanceVisibility} 
+                            className="mr-4"
+                        >
+                            {showBalance ? (
+                                <EyeOff size={20} color="#fffff" />
+                            ) : (
+                                <Eye size={20} color="#fffff" />
+                            )}
+                        </TouchableOpacity>
+                            </Text>
+                            
+                        </View>
+
+                    </View>
                     <Text className="text-sm font-medium text-gray-500">
                         Available Balance
                     </Text>

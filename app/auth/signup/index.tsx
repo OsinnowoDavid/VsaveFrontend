@@ -8,8 +8,10 @@ import {
     StatusBarStyle,
     View,
     Text,
-    TouchableOpacity
+    TouchableOpacity,
+    Linking
 } from "react-native";
+import { Check } from "lucide-react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
 import Button from "../../../components/Button";
 import DatePickerField from "../../../components/DatePickerField";
@@ -30,7 +32,6 @@ import { handleSignup } from "../../../services/authService";
 import { SignUpData } from "../../../types/data";
 import { useRouter } from "expo-router";
 
-
 export default function SignUpScreen() {
     const router = useRouter();
     
@@ -44,6 +45,11 @@ export default function SignUpScreen() {
         confirmPassword: "",
     });
 
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
+    const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
+    
     const keyboardVisible = useKeyboardVisible();
     const [barStyle, setBarStyle] = useState("light-content");
     const [signupInput, setSignupInput] = useState("Sign Up");
@@ -57,6 +63,33 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
+        // Check if terms are accepted
+        if (!acceptedTerms || !acceptedPrivacy) {
+            Alert.alert(
+                "Accept Terms Required",
+                "You must accept both the Terms & Conditions and Privacy & Cookie Policy to continue.",
+                [
+                    {
+                        text: "Show Terms",
+                        onPress: () => {
+                            router.push("/auth/terms");
+                        }
+                    },
+                    {
+                        text: "Show Privacy Policy",
+                        onPress: () => {
+                            router.push("/auth/privacy");
+                        }
+                    },
+                    {
+                        text: "OK",
+                        style: "cancel"
+                    }
+                ]
+            );
+            return;
+        }
+
         const validationResult = signupSchema.safeParse(form);
         if (!validationResult.success) {
             const firstError = validationResult.error;
@@ -106,11 +139,76 @@ export default function SignUpScreen() {
         console.log("Form State:", form);
     };
 
+    const CustomCheckbox = ({ 
+        checked, 
+        onPress, 
+        label,
+        required = false 
+    }: { 
+        checked: boolean; 
+        onPress: () => void; 
+        label: React.ReactNode;
+        required?: boolean;
+    }) => {
+        return (
+            <TouchableOpacity
+                onPress={onPress}
+                className="flex-row items-start mb-4"
+                activeOpacity={0.7}
+            >
+                <View className={`w-6 h-6 rounded-md border-2 mr-3 mt-1 flex items-center justify-center
+                    ${checked 
+                        ? 'bg-green-500 border-green-500' 
+                        : 'bg-white border-gray-300'
+                    }`}
+                >
+                    {checked && (
+                        <Check size={16} color="#FFFFFF" />
+                    )}
+                </View>
+                <View className="flex-1">
+                    <Text className="text-gray-700 text-sm leading-relaxed">
+                        {label}
+                        {required && (
+                            <Text className="text-red-500"> *</Text>
+                        )}
+                    </Text>
+                </View>
+            </TouchableOpacity>
+        );
+    };
+
+    const PolicyLink = ({ 
+        text, 
+        onPress,
+        highlight = false 
+    }: { 
+        text: string; 
+        onPress: () => void;
+        highlight?: boolean;
+    }) => {
+        return (
+            <TouchableOpacity onPress={onPress} activeOpacity={0.7}>
+                <Text className={`underline ${highlight ? 'text-blue-600 font-semibold' : 'text-blue-500'}`}>
+                    {text}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
+    const readPolicy = (type: 'terms' | 'privacy') => {
+        if (type === 'terms') {
+            router.push("/auth/terms");
+        } else {
+            router.push("/auth/privacy");
+        }
+    };
+
     return (
         <ScreenWrapper>
             <FormWrapper heading="Sign Up">
                 <ScrollView
-                    className="max-h-[400px]"
+                    className="max-h-[500px]"
                     contentContainerStyle={{ paddingBottom: 24 }}
                     showsVerticalScrollIndicator={false}
                 >
@@ -119,7 +217,7 @@ export default function SignUpScreen() {
                         value={form.fullName}
                         onChangeText={(fullName) => {
                             setForm({ ...form, fullName });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         placeholder="John Doe"
                         schema={fullNameSchema}
@@ -131,7 +229,7 @@ export default function SignUpScreen() {
                         value={form.email}
                         onChangeText={(email) => {
                             setForm({ ...form, email });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         placeholder="you@example.com"
                         validate
@@ -143,7 +241,7 @@ export default function SignUpScreen() {
                         value={form.phoneNumber}
                         onChangeText={(phoneNumber) => {
                             setForm({ ...form, phoneNumber });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         placeholder="08012345678"
                         keyboardType="phone-pad"
@@ -156,7 +254,7 @@ export default function SignUpScreen() {
                         value={form.gender}
                         onChangeText={(gender) => {
                             setForm({ ...form, gender });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         type="select"
                         options={[
@@ -173,7 +271,7 @@ export default function SignUpScreen() {
                         value={form.dateOfBirth as Date}
                         onChange={(dateOfBirth) => {
                             setForm({ ...form, dateOfBirth });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         validate
                         schema={dateOfBirthSchema}
@@ -183,9 +281,9 @@ export default function SignUpScreen() {
                         label="Password"
                         value={form.password}
                         onChangeText={(password) => {
-                            console.log("Password input:", password); // Debug log
+                            console.log("Password input:", password);
                             setForm({ ...form, password });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         placeholder="Enter your password"
                         secureTextEntry
@@ -197,9 +295,9 @@ export default function SignUpScreen() {
                         label="Confirm Password"
                         value={form.confirmPassword}
                         onChangeText={(confirmPassword) => {
-                            console.log("Confirm Password input:", confirmPassword); // Debug log
+                            console.log("Confirm Password input:", confirmPassword);
                             setForm({ ...form, confirmPassword });
-                            debugFormState(); // Add for debugging
+                            debugFormState();
                         }}
                         placeholder="Confirm your password"
                         secureTextEntry
@@ -211,15 +309,114 @@ export default function SignUpScreen() {
                         }}
                     />
 
+                    {/* Terms and Privacy Acceptance Section */}
+                    <View className="mt-4 mb-6 p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <Text className="text-lg font-bold text-gray-900 mb-3">
+                            Terms & Policies
+                        </Text>
+                        
+                        <CustomCheckbox
+                            checked={acceptedTerms}
+                            onPress={() => setAcceptedTerms(!acceptedTerms)}
+                            required={true}
+                            label={
+                                <Text className="text-gray-700">
+                                    I have read, understood, and agree to the{' '}
+                                    <PolicyLink 
+                                        text="Terms & Conditions" 
+                                        onPress={() => readPolicy('terms')}
+                                        highlight={true}
+                                    />
+                                    {' '}of VSave. I understand that savings is compulsory 
+                                    and authorize automatic deductions for savings contributions.
+                                </Text>
+                            }
+                        />
+
+                        <CustomCheckbox
+                            checked={acceptedPrivacy}
+                            onPress={() => setAcceptedPrivacy(!acceptedPrivacy)}
+                            required={true}
+                            label={
+                                <Text className="text-gray-700">
+                                    I have read, understood, and agree to the{' '}
+                                    <PolicyLink 
+                                        text="Privacy & Cookie Policy" 
+                                        onPress={() => readPolicy('privacy')}
+                                        highlight={true}
+                                    />
+                                    {' '}of VSave. I consent to the collection, processing, 
+                                    and sharing of my data for regulatory, operational, and 
+                                    fraud-prevention purposes.
+                                </Text>
+                            }
+                        />
+
+                        <View className="mt-4 bg-blue-50 p-3 rounded border border-blue-100">
+                            <Text className="text-blue-800 text-xs leading-relaxed">
+                                <Text className="font-semibold">Important:</Text> By accepting these terms, 
+                                you acknowledge that VSave operates as a structured digital savings platform 
+                                with compulsory savings features. You authorize automatic deductions from your 
+                                wallet for savings contributions as outlined in the Terms & Conditions.
+                            </Text>
+                        </View>
+
+                        <View className="mt-4 flex-row space-x-4">
+                            <TouchableOpacity 
+                                onPress={() => {
+                                 router.push("/auth/TermsAndCondition");
+                                }}
+                                className="flex-1 py-2 px-4 bg-gray-100 rounded-lg border border-gray-300"
+                                activeOpacity={0.7}
+                            >
+                                <Text className="text-center text-gray-700 font-medium">
+                                    Read Terms
+                                </Text>
+                            </TouchableOpacity>
+                            
+                            <TouchableOpacity 
+                                onPress={() => {
+                                    router.push('/auth/Policy');
+                                }}
+                                className="flex-1 py-2 px-4 bg-gray-100 rounded-lg border border-gray-300"
+                                activeOpacity={0.7}
+                            >
+                                <Text className="text-center text-gray-700 font-medium">
+                                    Read Privacy Policy
+                                </Text>
+                            </TouchableOpacity>
+                        </View>
+                    </View>
+
+                    {/* Sign Up Button */}
                     <Button
                         input={signupInput}
                         onPress={handleSubmit}
                         color="text-white"
                         bg={signupBg}
-                        disabled={isLoading}
+                        disabled={isLoading || !acceptedTerms || !acceptedPrivacy}
                     />
-                    
 
+                    {/* Acceptance Status */}
+                    <View className="mt-4 p-3 rounded-lg bg-gray-50">
+                        <View className="flex-row items-center justify-between mb-2">
+                            <Text className="text-sm text-gray-600">Terms & Conditions:</Text>
+                            <View className={`px-3 py-1 rounded-full ${acceptedTerms ? 'bg-green-100' : 'bg-red-100'}`}>
+                                <Text className={`text-xs font-medium ${acceptedTerms ? 'text-green-800' : 'text-red-800'}`}>
+                                    {acceptedTerms ? 'Accepted ✓' : 'Not Accepted'}
+                                </Text>
+                            </View>
+                        </View>
+                        <View className="flex-row items-center justify-between">
+                            <Text className="text-sm text-gray-600">Privacy & Cookie Policy:</Text>
+                            <View className={`px-3 py-1 rounded-full ${acceptedPrivacy ? 'bg-green-100' : 'bg-red-100'}`}>
+                                <Text className={`text-xs font-medium ${acceptedPrivacy ? 'text-green-800' : 'text-red-800'}`}>
+                                    {acceptedPrivacy ? 'Accepted ✓' : 'Not Accepted'}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                    
                     <View className="mt-5">
                         <TouchableOpacity onPress={() => router.push("/auth/login")}>
                             <Text className="text-right underline text-2xl">

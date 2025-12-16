@@ -17,11 +17,26 @@ import NavButton from "../../components/NavButton";
 import TransactionCard from "../../components/TransactionCard";
 import useProfileStore from "../../store/useProfileStore";
 import useTransactionStore from "../../store/useTransactionStore";
-
+import VSaveCarousel from "../../components/VSaveCarousel";
+import CompactVSaveCarousel,{CompactCarouselItems} from "../../components/CompactCarousel";
 export default function Home() {
     const router = useRouter();
     const { profile } = useProfileStore();
     const { transactions, fetchTransactions } = useTransactionStore();
+
+     const handleCarouselItemPress = (item: any) => {
+    Alert.alert(
+      item.title,
+      item.description || 'Tap to explore this offer',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'View Details', onPress: () => {
+          // Navigate to offer details
+          console.log('Navigating to:', item.id);
+        }}
+      ]
+    );
+  };
 
     // Fetch transactions when home screen is focused
     useEffect(() => {
@@ -62,27 +77,29 @@ export default function Home() {
             },
             width: "w-[20%]",
         },
-        {
-            label: "Terminal",
-            bgColor: "bg-[brown]/15",
-            icon: <Landmark color="#B32375" size={28} />,
-            onPress: () => {},
-            width: "w-[40%]",
-        },
+        
+        // {
+        //     label: "Terminal",
+        //     bgColor: "bg-[brown]/15",
+        //     icon: <Landmark color="#B32375" size={28} />,
+        //     onPress: () => {},
+        //     width: "w-[40%]",
+        // },
+
         {
             label: "Quick Loan",
             bgColor: "bg-yellow-200/20",
             icon: <Banknote color="#C1C717" size={28} />,
-            onPress: () => {},
+            onPress: () => {router.push("/home/loan")},
             width: "w-[40%]",
         },
     ];
 
     return (
-        <HomeScreenWrapper bgColor="bg-[#f5f5f5]">
+        <HomeScreenWrapper  >
             {/* <StatusBar barStyle="dark-content" /> */}
-            <View className="mt-6 w-[95%] mx-auto bg-[#f5f5f5]">
-                <View className="flex flex-row justify-between pe-3">
+            <View className="mt-6 w-[95%] mx-auto  ">
+                <View className="flex flex-row justify-between pe-3 ">
                     <Text className="font-meduim text-2xl px-2">
                         Welcome, {profile?.profile?.firstName}
                     </Text>
@@ -103,6 +120,9 @@ export default function Home() {
                         Quick Actions
                     </Text>
                     <View className="flex flex-row flex-wrap justify-between gap-y-4">
+                        {/* <View>
+                            <Text>knxe</Text>
+                        </View> */}
                         {quickActions.map((action) => (
                             <NavButton
                                 key={action.label}
@@ -115,6 +135,22 @@ export default function Home() {
                                 padding="p-4"
                             />
                         ))}
+{/* { */}
+
+// profile.profile.gder==="njfnvewjn"?
+                        <View className="bg-[brown]/15 p-4 w-[40%] h-[27%] justify-self-center">
+                        <View className="justify-center">
+
+
+
+                            <Landmark  color="#B32375" size={28}/>
+                        </View>
+
+
+                            <Text className="absolute mt-16">Terminal</Text>
+
+                            </View>:(<View></View>)
+{/* } */}
                     </View>
                 </View>
                 <View className="mt-3">
@@ -140,6 +176,9 @@ export default function Home() {
                             </Text>
                         )}
                     </View>
+                     <CompactVSaveCarousel 
+
+          />
                 </View>
             </View>
         </HomeScreenWrapper>

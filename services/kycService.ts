@@ -1,5 +1,6 @@
 import useAuthStore from "../store/useAuthStore";
 import { ApiResponse } from "./savingsService"; // Re-using ApiResponse for consistency
+import apiClient from "./apiClient";
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
@@ -54,21 +55,84 @@ export const getSubRegions = async (): Promise<ApiResponse<SubRegion[]>> => {
  * to keep all KYC-related services in one file.
  * You will need to update the import in your KYCScreen.
  */
-export const submitKYCStage1 = async (data: any): Promise<ApiResponse<any>> => {
-    // The implementation for submitting KYC data would go here.
-    // This is just a placeholder to show where it belongs.
-    console.log("Submitting KYC Data:", data);
-    // Example:
-    const response = await fetch(`${API_BASE_URL}/user/register-kyc1`,  data);
-    // return await response.json();
-    return new Promise((resolve) =>
-        setTimeout(
-            () =>
-                resolve({
-                    success: true,
-                    message: "KYC Submitted Successfully",
-                }),
-            1000
-        )
-    );
+// Option 1: Define an interface for better reusability
+interface KYCStage1Data {
+  profession: string;
+  accountNumber: string;
+  bankCode: string;
+  country: string;
+  state: string;
+  address: string;
+  bvn: string;
+  subRegion: string;
+  transactionPin: string;
+}
+
+// Option 2: Add response type for better type safety
+interface KYCStage1Response {
+  success: boolean;
+  message?: string;
+  // Add other response fields as needed
+}
+
+export const submitKYCStage1 = async (data: KYCStage1Data): Promise<KYCStage1Response> => {
+  try {
+    const response = await apiClient.post<KYCStage1Response>("/user/register-kyc1", data);
+    return response.data;
+  } catch (error: any) {
+    // More specific error handling
+    if (error.response) {
+      // Server responded with error status
+      console.error("Server error:", error.response.data);
+      throw new Error(error.response.data.message || "KYC submission failed");
+    } else if (error.request) {
+      // Request made but no response
+      console.error("No response received:", error.request);
+      throw new Error("No response from server. Please check your connection.");
+    } else {
+      // Other errors
+      console.error("Error:", error.message);
+      throw error;
+    }
+  }
 };
+// export const submitKYCStage1 = async (data: any): Promise<ApiResponse<any>> => {
+//     try {
+//         console.log("Submitting KYC Data:", data);
+        
+//         const response = await fetch(`${API_BASE_URL}/user/register-kyc1`, {
+//             method: 'POST',  // Add HTTP method
+//             headers: {
+//                 'Content-Type': 'application/json',
+//                 // Add any auth headers if needed, e.g.:
+//                 // 'Authorization': `Bearer ${token}`
+//             },
+//             body: JSON.stringify(data)  // Stringify the data
+//         });
+
+//         // Handle HTTP errors
+//         if (!response.ok) {
+//             const errorData = await response.json().catch(() => ({}));
+//             return {
+//                 success: false,
+//                 message: errorData.message || `HTTP error! status: ${response.status}`,
+//                 data: errorData
+//             };
+//         }
+
+//         const responseData = await response.json();
+//         return {
+//             success: true,
+//             message: "KYC Submitted Successfully",
+//             data: responseData
+//         };
+        
+//     } catch (error) {
+//         console.error("Error submitting KYC:", error);
+//         return {
+//             success: false,
+//             message: error instanceof Error ? error.message : "Network error occurred",
+//             data: null
+//         };
+//     }
+// };
