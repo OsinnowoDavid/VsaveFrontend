@@ -142,6 +142,20 @@ export default function KYCScreen() {
 
     /* ---------------------------- SUBMIT ---------------------------- */
 
+
+ interface KYCStage1Data {
+    profession: string;
+    accountNumber: string;
+    bankCode: string;  // This is what it expects
+    country: string;
+    state: string;
+    address: string;
+    bvn: string;
+    accountDetails: string;
+    subRegion: string;
+    transactionPin: string;
+}
+
     const handleSubmit = async () => {
         if (!resolvedAccountName) {
             Alert.alert("Error", "Please resolve bank account.");

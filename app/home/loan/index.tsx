@@ -34,20 +34,23 @@ import {
 } from 'lucide-react-native';
 import useProfileStore from '../../../store/useProfileStore';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { checkEligibility } from '../../../services/loan';
+import { checkEligibility, loanApplication } from '../../../services/loan'
 
 const LoanScreen = () => {
   const [activeTab, setActiveTab] = useState('eligibility');
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
-  const [loanAmount, setLoanAmount] = useState('');
-  const [loanDuration, setLoanDuration] = useState('12');
+  const [loanAmount, setLoanAmount] = useState();
+  
+  const [loanDuration, setLoanDuration] = useState('14');
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [creditScore, setCreditScore] = useState(750);
-  const [userInfo, setUserInfo] = useState([]);
+  const [userInfo, setUserInfo] = useState(null);
   const [eligibilityData, setEligibilityData] = useState(null);
-  const [loanTitle, setLoanTitle] = useState("")
+  const [loanTitle, setLoanTitle] = useState("");
+  const [selectedLoanType, setSelectedLoanType] = useState(null);
+  const [activeLoans, setActiveLoans] = useState([]);
 
   const { fetchProfile } = useProfileStore();
 
@@ -59,7 +62,6 @@ const LoanScreen = () => {
       }
       const profileResponse = await fetchProfile(token);
       setUserInfo(profileResponse);
-      console.log("Profile Response:", profileResponse);
     } catch (error) {
       console.error("Error fetching profile:", error);
     }
@@ -71,45 +73,43 @@ const LoanScreen = () => {
       const response = await checkEligibility();
       console.log("ELE Response:", response);
       
-      // Check if response has data property
-      if (response && response.data) {
-        // Set the actual eligibility data from the nested structure
-        const eligibilityData = response.data.data; // This is where your actual data is
-        const message = response.data.message;
+      // Fix: Access the correct response structure
+      if (response && response.status === "Success") {
+        const apiData = response.data; // This contains interestRate, maxAmount, pass, etc.
         
-        console.log("Processed Eligibility Data:", eligibilityData);
+        console.log("API Data:", apiData);
         
         // Transform to match UI expectations
         const transformedResult = {
-          eligible: eligibilityData?.pass || false,
-          maxAmount: eligibilityData?.maxAmount || 0,
-          interestRate: `${eligibilityData?.interestRate || 0}%`,
-          message: message || 'Eligibility check completed',
-          rawData: eligibilityData
+          eligible: apiData?.pass || false,
+          maxAmount: apiData?.maxAmount || 0,
+          interestRate: `${apiData?.interestRate || 0}%`,
+          message: response?.message || 'Eligibility check completed',
+          rawData: apiData
         };
         
         setEligibilityResult(transformedResult);
         
         // Update eligibilityData state
         setEligibilityData({
-          monthlyIncome: 3500, // This should come from user profile
+          monthlyIncome: userInfo?.data?.profile?.monthlyIncome || 3500,
           employmentStatus: 'employed',
           creditScore: 750,
           existingLoans: 2,
-          maxLoanAmount: eligibilityData?.maxAmount || 0,
-          eligibleAmount: eligibilityData?.maxAmount || 0,
-          interestRateRange: `${eligibilityData?.interestRate || 0}%`,
-          apiData: eligibilityData // Store the raw API data
+          maxLoanAmount: apiData?.maxAmount || 0,
+          eligibleAmount: apiData?.maxAmount || 0,
+          interestRateRange: `${apiData?.interestRate || 0}%`,
+          apiData: apiData
         });
         
-        // Also update credit score banner with actual data
-        if (eligibilityData?.maxAmount) {
-          // You might want to calculate credit score based on eligibility
-          setCreditScore(750); // Keep default or calculate based on eligibility
+        // Update credit score based on eligibility
+        if (apiData?.maxAmount) {
+          const newScore = Math.min(750 + Math.floor(apiData.maxAmount / 1000), 850);
+          setCreditScore(newScore);
         }
       } else {
-        console.warn("No data in response:", response);
-        Alert.alert("Info", "No eligibility data received from server.");
+        console.warn("Invalid response structure:", response);
+        Alert.alert("Info", "No valid eligibility data received from server.");
       }
       
     } catch (error) {
@@ -120,40 +120,31 @@ const LoanScreen = () => {
     }
   };
 
-  useEffect(() => {
-    userDetails();
-  }, []);
 
-  // Mock data for active loans
-  const [activeLoans, setActiveLoans] = useState([
-    {
-      id: '1',
-      loanName: 'Personal Loan',
-      amount: 5000,
-      interestRate: 8.5,
-      remainingAmount: 3200,
-      nextPaymentDate: '2024-12-15',
-      nextPaymentAmount: 450,
-      status: 'active',
-      disbursedDate: '2024-06-15',
-      term: '12 months',
-    },
-    {
-      id: '2',
-      loanName: 'Education Loan',
-      amount: 15000,
-      interestRate: 6.5,
-      remainingAmount: 9800,
-      nextPaymentDate: '2024-12-20',
-      nextPaymentAmount: 650,
-      status: 'active',
-      disbursedDate: '2024-03-20',
-      term: '24 months',
-    },
-  ]);
+  const passData = eligibilityData
+  const pass= passData?.apiData?.pass
+  const maxAmount = passData?.apiData?.maxAmount
+  const ratingStatus = passData?.apiData?.ratingStatus
+  const interestRate = passData?.apiData?.interestRate
+  const stage = passData?.apiData?.stage
+  const loanElegibility ={
+    stage,
+    maxAmount,
+    ratingStatus,
+    interestRate,
+    pass
 
-  const applyForLoan = () => {
-    console.log("LOAN",loanTitle, loanAmount)
+  }
+  // console.log("PASSDATA", loanElegibility)
+
+  const applyForLoan = async () => {
+    console.log("LOAN DETAILS:", { loanTitle, loanAmount, loanElegibility });
+    
+    if (!loanTitle.trim()) {
+      Alert.alert('Error', 'Please enter a loan title');
+      return;
+    }
+
     if (!loanAmount || parseFloat(loanAmount) <= 0) {
       Alert.alert('Error', 'Please enter a valid loan amount');
       return;
@@ -166,42 +157,88 @@ const LoanScreen = () => {
                      0;
     
     if (parseFloat(loanAmount) > maxAmount) {
-      Alert.alert('Limit Exceeded', `Maximum loan amount is $${maxAmount.toLocaleString()}`);
+      Alert.alert('Limit Exceeded', `Maximum loan amount is ₦${maxAmount.toLocaleString()}`);
       return;
     }
 
     setIsLoading(true);
-    
-    // Simulate loan application
-    setTimeout(() => {
-      // Use actual interest rate from API if available
-      const interestRate = eligibilityData?.apiData?.interestRate || 1.2;
-      
-      const newLoan = {
-        id: Date.now().toString(),
-        loanName: 'Quick Loan',
-        amount: parseFloat(loanAmount),
-        interestRate: interestRate,
-        remainingAmount: parseFloat(loanAmount),
-        nextPaymentDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        nextPaymentAmount: (parseFloat(loanAmount) * (1 + interestRate/100) / parseInt(loanDuration)).toFixed(2),
-        status: 'pending',
-        disbursedDate: new Date().toISOString().split('T')[0],
-        term: `${loanDuration} months`,
-      };
 
-      setActiveLoans([...activeLoans, newLoan]);
-      setShowLoanModal(false);
-      setLoanAmount('');
-      setIsLoading(false);
+    try {
+      // Call actual loan application API
+      const loanResponse = await loanApplication(loanAmount, loanTitle,loanElegibility);
+      console.log("LOAN-RESPONSE:", loanResponse);
+      if (loanResponse.status === "Success"){
+
+      }
       
-      Alert.alert(
-        'Success!',
-        'Your loan application has been submitted and is under review.',
-        [{ text: 'OK' }]
-      );
-    }, 2000);
+      // if (loanResponse && loanResponse.status === "Success") {
+      //   // Create new loan object from API response
+      //   const interestRate = eligibilityData?.apiData?.interestRate || 1.2;
+      //   const durationInDays = parseInt(loanDuration);
+      //   const dailyIncrease = parseFloat(loanAmount) * 0.012; // 1.2% daily
+        
+      //   const newLoan = {
+      //     id: Date.now().toString(),
+      //     loanName: loanTitle,
+      //     amount: parseFloat(loanAmount),
+      //     interestRate: interestRate,
+      //     remainingAmount: parseFloat(loanAmount) + (dailyIncrease * durationInDays),
+      //     nextPaymentDate: new Date(Date.now() + durationInDays * 24 * 60 * 60 * 1000)
+      //       .toISOString().split('T')[0],
+      //     nextPaymentAmount: (parseFloat(loanAmount) * (interestRate/100)).toFixed(2),
+      //     status: 'pending',
+      //     disbursedDate: new Date().toISOString().split('T')[0],
+      //     term: `${durationInDays} days`,
+      //   };
+
+      //   setActiveLoans(prev => [...prev, newLoan]);
+      //   setShowLoanModal(false);
+      //   setLoanAmount('');
+      //   setLoanTitle('');
+      //   setSelectedLoanType(null);
+        
+      //   Alert.alert(
+      //     'Success!',
+      //     'Your loan application has been submitted and is under review.',
+      //     [{ text: 'OK' }]
+      //   );
+      // } else {
+      //   throw new Error(loanResponse?.message || 'Loan application failed');
+      // }
+
+    } catch (error) {
+      console.error("Error applying for loan:", error);
+      Alert.alert("Error", error.message || "Failed to apply for loan. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
+
+  // Quick apply loan types
+  const quickApplyLoans = [
+    { id: '1', amountRange: "₦5,000 - ₦50,000", min: 5000, max: 50000, term: '14', rate: '1.2%', label: 'Short-term Loan' },
+    { id: '2', amountRange: "₦50,000 - ₦500,000", min: 50000, max: 500000, term: '30', rate: '1.2%', label: 'Medium-term Loan' },
+  ];
+
+  const handleQuickApply = (loan) => {
+    setSelectedLoanType(loan);
+    setLoanDuration(loan.term);
+    setShowLoanModal(true);
+  };
+
+  const calculateDailyIncrease = (amount) => {
+    const interestRate = eligibilityData?.apiData?.interestRate || 1.2;
+    return (parseFloat(amount || 0) * (interestRate / 100)).toFixed(2);
+  };
+
+  const calculateTotalPayable = (amount, days) => {
+    const dailyIncrease = calculateDailyIncrease(amount);
+    return (parseFloat(amount || 0) + (parseFloat(dailyIncrease) * parseInt(days || 0))).toFixed(2);
+  };
+
+  useEffect(() => {
+    userDetails();
+  }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -210,20 +247,15 @@ const LoanScreen = () => {
     });
   };
 
-  const calculateEMI = (amount, rate, months) => {
-    const monthlyRate = rate / 12 / 100;
-    const emi = amount * monthlyRate * Math.pow(1 + monthlyRate, months) / 
-                (Math.pow(1 + monthlyRate, months) - 1);
-    return emi.toFixed(2);
-  };
-
-  // Function to close modal
   const closeModal = () => {
     setShowLoanModal(false);
     setLoanAmount('');
+    setLoanTitle('');
+    setSelectedLoanType(null);
     Keyboard.dismiss();
   };
-
+// 
+  
   // Initialize with defaults if null
   const currentEligibilityData = eligibilityData || {
     monthlyIncome: 3500,
@@ -233,6 +265,7 @@ const LoanScreen = () => {
     maxLoanAmount: 0,
     eligibleAmount: 0,
     interestRateRange: '0%',
+    apiData: null
   };
 
   return (
@@ -259,7 +292,7 @@ const LoanScreen = () => {
               <Text className="text-white ml-2 font-medium">+15 this month</Text>
             </View>
             <Text className="text-white text-sm mt-3">
-              Max Loan: ${currentEligibilityData.maxLoanAmount.toLocaleString()}
+              Max Loan: ₦{currentEligibilityData.maxLoanAmount.toLocaleString()}
             </Text>
           </View>
         </View>
@@ -316,7 +349,7 @@ const LoanScreen = () => {
                     <Text className="text-gray-700 ml-3">Full Name</Text>
                   </View>
                   <Text className="font-semibold text-gray-900">
-                    {userInfo?.data?.profile?.firstName} {userInfo?.data?.profile?.lastName}
+                    {userInfo?.data?.profile?.firstName} {userInfo?.data?.profile?.lastName || 'N/A'}
                   </Text>
                 </View>
 
@@ -352,8 +385,8 @@ const LoanScreen = () => {
                   </Text>
                 </View>
 
-                {/* API Eligibility Results - Show when we have data */}
-                {eligibilityData?.apiData && (
+                {/* API Eligibility Results */}
+                {currentEligibilityData.apiData && (
                   <View className="mt-4 pt-4 border-t border-gray-200">
                     <Text className="text-gray-700 font-semibold mb-3">Eligibility Results</Text>
                     
@@ -362,8 +395,8 @@ const LoanScreen = () => {
                         <CheckCircle size={20} color="#6B7280" />
                         <Text className="text-gray-700 ml-3">Eligibility Status</Text>
                       </View>
-                      <Text className={`font-semibold ${eligibilityData.apiData.pass ? 'text-green-600' : 'text-red-600'}`}>
-                        {eligibilityData.apiData.pass ? 'Eligible' : 'Not Eligible'}
+                      <Text className={`font-semibold ${currentEligibilityData.apiData.pass ? 'text-green-600' : 'text-red-600'}`}>
+                        {currentEligibilityData.apiData.pass ? 'Eligible' : 'Not Eligible'}
                       </Text>
                     </View>
 
@@ -373,7 +406,7 @@ const LoanScreen = () => {
                         <Text className="text-gray-700 ml-3">Max Loan Amount</Text>
                       </View>
                       <Text className="font-semibold text-gray-900">
-                        ${eligibilityData.apiData.maxAmount?.toLocaleString() || 0}
+                        ₦{currentEligibilityData.apiData.maxAmount?.toLocaleString() || 0}
                       </Text>
                     </View>
 
@@ -383,7 +416,7 @@ const LoanScreen = () => {
                         <Text className="text-gray-700 ml-3">Interest Rate</Text>
                       </View>
                       <Text className="font-semibold text-gray-900">
-                        {eligibilityData.apiData.interestRate}%
+                        {currentEligibilityData.apiData.interestRate}%
                       </Text>
                     </View>
 
@@ -393,7 +426,7 @@ const LoanScreen = () => {
                         <Text className="text-gray-700 ml-3">Rating Status</Text>
                       </View>
                       <Text className="font-semibold text-gray-900">
-                        {eligibilityData.apiData.ratingStatus || 'No rating'}
+                        {currentEligibilityData.apiData.ratingStatus || 'No rating'}
                       </Text>
                     </View>
 
@@ -403,7 +436,7 @@ const LoanScreen = () => {
                         <Text className="text-gray-700 ml-3">Stage</Text>
                       </View>
                       <Text className="font-semibold text-gray-900">
-                        Stage {eligibilityData.apiData.stage}
+                        Stage {currentEligibilityData.apiData.stage}
                       </Text>
                     </View>
                   </View>
@@ -429,7 +462,7 @@ const LoanScreen = () => {
                       <View className="flex-row justify-between mb-2">
                         <Text className="text-gray-600">Maximum Amount</Text>
                         <Text className="font-bold text-gray-900">
-                          ${eligibilityResult.maxAmount?.toLocaleString()}
+                          ₦{eligibilityResult.maxAmount?.toLocaleString()}
                         </Text>
                       </View>
                       <View className="flex-row justify-between">
@@ -460,28 +493,26 @@ const LoanScreen = () => {
             </Text>
             
             <ScrollView horizontal showsHorizontalScrollIndicator={false} className="flex-row">
-              {[
-                { amount: "5000 - ₦50,000 ", term: '14 days', rate: '1.2%',  },
-                { amount: "50,000 - ₦500,00", term: '30 days', rate: '1.2%', },
-              ].map((loan, index) => (
+              {quickApplyLoans.map((loan) => (
                 <TouchableOpacity
-                  key={index}
-                  onPress={() => {
-                    setShowLoanModal(true);
-                  }}
+                  key={loan.id}
+                  onPress={() => handleQuickApply(loan)}
                   className="bg-white rounded-xl p-5 mr-4 w-72 shadow-sm border border-gray-100"
                 >
                   <View className="flex-row justify-between items-center">
-                    <Text className="text-2xl font-bold text-gray-900">₦{loan.amount}</Text>
+                    <View>
+                      <Text className="text-lg font-bold text-gray-900">{loan.label}</Text>
+                      <Text className="text-2xl font-bold text-gray-900 mt-1">{loan.amountRange}</Text>
+                    </View>
                     <ArrowRight size={20} color="#6B7280" />
                   </View>
                   <View className="flex-row justify-between mt-4">
                     <View>
                       <Text className="text-gray-500 text-sm">Term</Text>
-                      <Text className="text-gray-900 font-medium">{loan.term}</Text>
+                      <Text className="text-gray-900 font-medium">{loan.term} days</Text>
                     </View>
                     <View>
-                      <Text className="text-gray-500 text-sm">Rate</Text>
+                      <Text className="text-gray-500 text-sm">Daily Rate</Text>
                       <Text className="text-gray-900 font-medium">{loan.rate}</Text>
                     </View>
                   </View>
@@ -525,7 +556,7 @@ const LoanScreen = () => {
                   <View className="mt-6 grid grid-cols-2 gap-4">
                     <View>
                       <Text className="text-gray-500 text-sm">Loan Amount</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">${loan.amount}</Text>
+                      <Text className="text-xl font-bold text-gray-900 mt-1">₦{loan.amount.toLocaleString()}</Text>
                     </View>
                     <View>
                       <Text className="text-gray-500 text-sm">Interest Rate</Text>
@@ -533,7 +564,7 @@ const LoanScreen = () => {
                     </View>
                     <View>
                       <Text className="text-gray-500 text-sm">Remaining</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">${loan.remainingAmount}</Text>
+                      <Text className="text-xl font-bold text-gray-900 mt-1">₦{loan.remainingAmount.toLocaleString()}</Text>
                     </View>
                     <View>
                       <Text className="text-gray-500 text-sm">Term</Text>
@@ -545,7 +576,7 @@ const LoanScreen = () => {
                     <View className="flex-row justify-between items-center">
                       <View>
                         <Text className="text-gray-500 text-sm">Next Payment</Text>
-                        <Text className="text-lg font-bold text-gray-900">${loan.nextPaymentAmount}</Text>
+                        <Text className="text-lg font-bold text-gray-900">₦{loan.nextPaymentAmount}</Text>
                         <Text className="text-gray-600 text-sm mt-1">Due {loan.nextPaymentDate}</Text>
                       </View>
                       <TouchableOpacity className="bg-indigo-50 px-4 py-2 rounded-lg">
@@ -584,7 +615,7 @@ const LoanScreen = () => {
         )}
       </ScrollView>
 
-      {/* Apply for Loan Modal - FIXED VERSION */}
+      {/* Apply for Loan Modal */}
       <Modal
         visible={showLoanModal}
         animationType="slide"
@@ -611,29 +642,31 @@ const LoanScreen = () => {
                         onPress={closeModal}
                         className="p-2"
                       >
-                        <X size={24} color="red" />
+                        <X size={24} color="#DC2626" />
                       </TouchableOpacity>
                     </View>
                     
                     <Text className="text-2xl font-bold text-gray-900">Apply for Loan</Text>
-                    <Text className="text-gray-600 mt-2">Enter loan details to see your EMI</Text>
+                    <Text className="text-gray-600 mt-2">Enter loan details to see your terms</Text>
 
-                    <View className="mt-8 ">
+                    <View className="mt-8 space-y-6">
+                      {/* Loan Title */}
+                      <View>
                         <Text className="text-gray-700 font-medium mb-2">Loan title</Text>
-
-                        <View className=' border border-gray-300 rounded-xl px-4 py-3 mb-3  mt-2'>
+                        <View className='border border-gray-300 rounded-xl px-4 py-3'>
                           <TextInput
-                            className="flex-1 ml-2 text-lg text-black"
-                            placeholder="Enter loan title"
-                            keyboardType="default"
+                            className="text-lg text-black"
+                            placeholder="Enter loan title (e.g., Emergency Funds)"
                             value={loanTitle}
-                            placeholderTextColor="black"
+                            placeholderTextColor="#9CA3AF"
                             onChangeText={setLoanTitle}
                             returnKeyType="done"
                           />
                         </View>
+                      </View>
+
+                      {/* Loan Amount */}
                       <View>
-                        
                         <Text className="text-gray-700 font-medium mb-2">Loan amount</Text>
                         <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-3">
                           <Text className="text-gray-500">₦</Text>
@@ -646,19 +679,21 @@ const LoanScreen = () => {
                             returnKeyType="done"
                           />
                           <TouchableOpacity 
-                            onPress={() => setLoanAmount(currentEligibilityData.maxLoanAmount.toString())}
+                            onPress={() => {
+                              const maxAmount = currentEligibilityData.maxLoanAmount;
+                              setLoanAmount(maxAmount.toString());
+                            }}
                             className="bg-gray-100 px-3 py-1 rounded-lg"
                           >
                             <Text className="text-gray-700">Max</Text>
                           </TouchableOpacity>
                         </View>
-                      
-
                         <Text className="text-gray-500 text-sm mt-2">
                           Available limit: ₦{currentEligibilityData.maxLoanAmount.toLocaleString()}
                         </Text>
                       </View>
 
+                      {/* Loan Duration */}
                       <View>
                         <Text className="text-gray-700 font-medium mb-2">Loan duration</Text>
                         <ScrollView 
@@ -666,14 +701,17 @@ const LoanScreen = () => {
                           showsHorizontalScrollIndicator={false}
                           className="flex-row"
                         >
-                          {[
-                { amount: "5000 - ₦50,000 ", term: '14 days', rate: '1.2%',  },
-                { amount: "50,000 - ₦500,00", term: '30 days', rate: '1.2%', },
-              ].map((duration, index) => (
+                          {quickApplyLoans.map((duration) => (
                             <TouchableOpacity
-                              key={index}
-                              onPress={() => setLoanDuration(duration.term)}
-                              className={`px-4 py-3 rounded-lg mr-2 ${loanDuration === duration.term ? 'bg-green-500 border border-indigo-300' : 'bg-gray-100'}`}
+                              key={duration.id}
+                              onPress={() => {
+                                setLoanDuration(duration.term);
+                                setSelectedLoanType(duration);
+                                if (!loanAmount) {
+                                  setLoanAmount(duration.min.toString());
+                                }
+                              }}
+                              className={`px-4 py-3 rounded-lg mr-2 ${loanDuration === duration.term ? 'bg-green-500' : 'bg-gray-100'}`}
                             >
                               <Text className={`font-medium ${loanDuration === duration.term ? 'text-white' : 'text-gray-700'}`}>
                                 {duration.term} days
@@ -685,33 +723,36 @@ const LoanScreen = () => {
 
                       {/* EMI Calculation Preview */}
                       {loanAmount && parseFloat(loanAmount) > 0 && (
-                        <View className="bg-green-200 mt-2 mb-2 rounded-xl p-4">
-                          <Text className="text-red-800 font-semibold mb-3">Loan default</Text>
-                          <View className="flex-row justify-between">
-                            <View>
-                              <Text className="text-red-800 text-lg">Loan increase</Text>
-                              <Text className="text-2xl font-bold text-red-800">
-                                ₦100 daily
-                                {/* {calculateEMI(parseFloat(loanAmount), 1.2, parseInt(loanDuration))} */}
+                        <View className="bg-green-50 rounded-xl p-4 border border-green-200">
+                          <Text className="text-green-800 font-semibold mb-3">Loan Terms Preview</Text>
+                          <View className="space-y-3">
+                            <View className="flex-row justify-between">
+                              <Text className="text-gray-700">Daily Increase</Text>
+                              <Text className="text-lg font-bold text-green-800">
+                                ₦{calculateDailyIncrease(loanAmount)} daily
                               </Text>
                             </View>
-                            <View>
-                              <Text className=" text-lg">Total Payable</Text>
-                              <Text className="text-2xl font-bold ">
-                                ₦{(parseFloat(loanAmount) * 1.2).toFixed(2)}
+                            <View className="flex-row justify-between">
+                              <Text className="text-gray-700">Total Payable ({loanDuration} days)</Text>
+                              <Text className="text-lg font-bold text-gray-900">
+                                ₦{calculateTotalPayable(loanAmount, loanDuration)}
+                              </Text>
+                            </View>
+                            <View className="flex-row justify-between">
+                              <Text className="text-gray-700">Interest Rate</Text>
+                              <Text className="font-semibold">
+                                {currentEligibilityData.interestRateRange}
                               </Text>
                             </View>
                           </View>
-                          <Text className=" text-sm mt-3">
-                            Interest Rate: 1.2% • Processing Fee: 1%
-                          </Text>
                         </View>
                       )}
 
+                      {/* Apply Button */}
                       <TouchableOpacity
                         onPress={applyForLoan}
-                        disabled={isLoading || !loanAmount}
-                        className={`rounded-xl py-4 items-center ${isLoading || !loanAmount ? 'bg-green-200 mt-2' : 'bg-green-600'}`}
+                        disabled={isLoading || !loanAmount || !loanTitle.trim()}
+                        className={`rounded-xl py-4 items-center ${isLoading || !loanAmount || !loanTitle.trim() ? 'bg-green-200' : 'bg-green-600'}`}
                       >
                         {isLoading ? (
                           <Text className="text-white font-semibold">Processing...</Text>
@@ -724,7 +765,7 @@ const LoanScreen = () => {
                         onPress={closeModal}
                         className="items-center py-3"
                       >
-                        <Text className="text-red-600">Cancel</Text>
+                        <Text className="text-red-600 font-medium">Cancel</Text>
                       </TouchableOpacity>
                     </View>
                   </View>
