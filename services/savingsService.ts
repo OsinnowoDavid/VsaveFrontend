@@ -1,5 +1,5 @@
 import useAuthStore from "../store/useAuthStore";
-
+import apiClient from "./apiClient";
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
 
 export interface AvailableSavingsPlan {
@@ -140,3 +140,13 @@ export const joinSavingsPlan = async (
         };
     }
 };
+
+export const savingsBalances = async() =>{
+    try {
+        const response = await apiClient.get("/user/totalSavingsAndLoanBalance")
+        return response
+    } catch (error) {
+        console.log(error)
+        
+    }
+}

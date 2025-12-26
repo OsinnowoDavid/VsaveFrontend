@@ -53,7 +53,7 @@ export default function HomeScreenWrapper({
             {showFooter && (
                 <View
                     id="footer"
-                    className="border-t border-gray-200 w-full absolute bottom-0 flex flex-row justify-around items-center py-1 bg-white"
+                    className="border-t border-gray-200 w-full h-40 absolute bottom-0 flex flex-row justify-around items-center py-1 bg-white"
                 >
                     {/* <StatusBar barStyle="dark-content" /> */}
                     {navItems.map((item) => {

@@ -4,7 +4,7 @@ import React, { useCallback, useEffect } from "react";
 import {
     ActivityIndicator,
     Alert,
-
+ScrollView,
     Text,
     TouchableOpacity,
     View,
@@ -19,6 +19,7 @@ export default function Savings() {
     const { profile, isProfileLoading } = useProfileStore();
     const {
         availablePlans,
+        savingBalances,
         fetchAvailablePlans,
         isLoading,
         activePlans,
@@ -38,6 +39,7 @@ export default function Savings() {
     }, [fetchAvailablePlans, fetchActivePlans]);
 
     useEffect(() => {
+        
         // Fetch plans only if they haven't been loaded yet
         if (availablePlans.length === 0) {
             fetchAvailablePlans();
@@ -46,15 +48,21 @@ export default function Savings() {
             fetchActivePlans();
         }
     }, [
+        
         fetchAvailablePlans,
         availablePlans.length,
         fetchActivePlans,
         activePlans.length,
     ]);
 
+
     return (
         <HomeScreenWrapper bgColor="bg-gray-50">
-         
+         <ScrollView 
+                         showsVerticalScrollIndicator={false} // Optional: hide scroll indicator
+                         contentContainerStyle={{ flexGrow: 1 }} // Makes sure content can scroll
+                     >
+
 // Prevents content from being hidden by the footer
             
                 {/* Re-introducing the SavingsCard for summary */}
@@ -164,6 +172,7 @@ export default function Savings() {
                         />
                     ))}
                 </View>
+                     </ScrollView>
 
         </HomeScreenWrapper>
     );

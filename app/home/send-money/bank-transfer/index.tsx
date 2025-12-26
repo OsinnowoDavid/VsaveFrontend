@@ -2,6 +2,7 @@ import { router } from "expo-router";
 import { ArrowLeft, CheckCircle2 } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
+    Modal,
     ActivityIndicator,
     Alert,
     Text,
@@ -22,8 +23,197 @@ import {
 import { verifyPin } from "../../../../services/pinService"; // Corrected import
 import useAuthStore from "../../../../store/useAuthStore";
 import { Bank } from "../../../../types/data";
+import { CheckCircle, X, Smartphone, Calendar, Hash } from "lucide-react-native";
 
 export default function BankTransferScreen() {
+    // Simple Button component to replace the problematic one
+    const SimpleButton = ({ 
+        input, 
+        onPress, 
+        variant = "primary",
+        disabled = false,
+        style 
+    }) => {
+        const isPrimary = variant === "primary";
+        const isOutline = variant === "outline";
+
+        return (
+            <TouchableOpacity
+                onPress={onPress}
+                disabled={disabled}
+                style={[
+                    {
+                        paddingVertical: 12,
+                        paddingHorizontal: 16,
+                        borderRadius: 8,
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        borderWidth: isOutline ? 1 : 0,
+                        borderColor: isOutline ? '#10B981' : 'transparent',
+                        backgroundColor: isPrimary ? '#10B981' : isOutline ? 'transparent' : '#F3F4F6',
+                    },
+                    disabled && { opacity: 0.5 },
+                    style
+                ]}
+            >
+                <Text 
+                    style={{
+                        color: isPrimary ? 'white' : isOutline ? '#10B981' : '#374151',
+                        fontSize: 16,
+                        fontWeight: '600',
+                    }}
+                >
+                    {input}
+                </Text>
+            </TouchableOpacity>
+        );
+    };
+
+    // Success Overlay Component
+    const SuccessOverlay = ({ 
+        isVisible, 
+        onClose, 
+        transactionDetails 
+    }) => {
+        return (
+            <Modal
+                visible={isVisible}
+                transparent
+                animationType="fade"
+                statusBarTranslucent
+            >
+                <View className="flex-1 bg-black/70 justify-center items-center p-5">
+                    <View className="bg-white rounded-2xl w-full max-w-md">
+                        {/* Header with Close Button */}
+                        <View className="flex-row justify-between items-center p-5 border-b border-gray-100">
+                            <View className="flex-row items-center">
+                                <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center mr-3">
+                                    <CheckCircle size={24} color="#10B981" />
+                                </View>
+                                <Text className="text-xl font-bold text-gray-900">Transaction Successful!</Text>
+                            </View>
+                            <TouchableOpacity 
+                                onPress={onClose}
+                                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+                            >
+                                <X size={18} color="#6B7280" />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Content */}
+                        <View className="p-5">
+                            {/* Success Message */}
+                            <View className="items-center mb-6">
+                                <View className="w-20 h-20 rounded-full bg-green-50 items-center justify-center mb-4">
+                                    <CheckCircle size={40} color="#10B981" />
+                                </View>
+                                <Text className="text-lg font-semibold text-gray-900 text-center mb-2">
+                                    Money Sent Successfully
+                                </Text>
+                                <Text className="text-gray-600 text-center">
+                                    Your transaction has been processed
+                                </Text>
+                            </View>
+
+                            {/* Transaction Details */}
+                            <View className="bg-gray-50 rounded-xl p-4 mb-6">
+                                <Text className="text-sm font-semibold text-gray-700 mb-3">Transaction Details</Text>
+                                
+                                {transactionDetails ? (
+                                    <>
+                                        <View className="flex-row items-center mb-3">
+                                            <View className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center mr-3">
+                                                <Smartphone size={16} color="#3B82F6" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text className="text-xs text-gray-500">Amount</Text>
+                                                <Text className="text-lg font-bold text-gray-900">
+                                                    ₦{transactionDetails.amount?.toLocaleString() || "0"}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View className="flex-row items-center mb-3">
+                                            <View className="w-8 h-8 rounded-full bg-purple-100 items-center justify-center mr-3">
+                                                <Smartphone size={16} color="#8B5CF6" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text className="text-xs text-gray-500">To</Text>
+                                                <Text className="text-base font-semibold text-gray-900">
+                                                    {transactionDetails.reciever || transactionDetails.receiver || transactionDetails.accountName || "N/A"}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View className="flex-row items-center mb-3">
+                                            <View className="w-8 h-8 rounded-full bg-amber-100 items-center justify-center mr-3">
+                                                <Calendar size={16} color="#F59E0B" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text className="text-xs text-gray-500">Date & Time</Text>
+                                                <Text className="text-base font-medium text-gray-900">
+                                                    {new Date(transactionDetails.createdAt || Date.now()).toLocaleDateString('en-NG', {
+                                                        weekday: 'short',
+                                                        year: 'numeric',
+                                                        month: 'short',
+                                                        day: 'numeric',
+                                                        hour: '2-digit',
+                                                        minute: '2-digit'
+                                                    })}
+                                                </Text>
+                                            </View>
+                                        </View>
+
+                                        <View className="flex-row items-center">
+                                            <View className="w-8 h-8 rounded-full bg-rose-100 items-center justify-center mr-3">
+                                                <Hash size={16} color="#EF4444" />
+                                            </View>
+                                            <View className="flex-1">
+                                                <Text className="text-xs text-gray-500">Reference ID</Text>
+                                                <Text className="text-sm font-medium text-gray-900">
+                                                    {transactionDetails.transactionReference || "N/A"}
+                                                </Text>
+                                            </View>
+                                        </View>
+                                    </>
+                                ) : (
+                                    <Text className="text-gray-500 text-center">Loading transaction details...</Text>
+                                )}
+                            </View>
+
+                            {/* Info Box */}
+                            <View className="bg-green-50 border border-green-100 rounded-lg p-3 mb-6">
+                                <Text className="text-green-800 text-sm text-center">
+                                    ✓ The money has been credited to the recipient's account.
+                                    It may take a few moments to reflect.
+                                </Text>
+                            </View>
+
+                            {/* Buttons */}
+                            <View className="flex-row gap-3">
+                                <SimpleButton
+                                    input="Make Another"
+                                    onPress={onClose}
+                                    variant="outline"
+                                    style={{ flex: 1 }}
+                                />
+                                <SimpleButton
+                                    input="Go Home"
+                                    onPress={() => {
+                                        onClose();
+                                        router.replace("/home");
+                                    }}
+                                    variant="primary"
+                                    style={{ flex: 1 }}
+                                />
+                            </View>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
+        );
+    };
+
     const [banks, setBanks] = useState<Bank[]>([]);
     const [form, setForm] = useState({
         bankCode: "",
@@ -38,20 +228,40 @@ export default function BankTransferScreen() {
     const [isLoading, setIsLoading] = useState(false);
     const [isResolving, setIsResolving] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-    const [transactionStatus, setTransactionStatus] = useState<
-        "success" | "failure"
-    >("success");
+    const [transactionDetails, setTransactionDetails] = useState(null);
+    const [success, setSuccess] = useState(false);
 
     const { token } = useAuthStore();
 
+    // Helper functions to reset form
+    const resetForm = () => {
+        setForm({
+            bankCode: "",
+            accountNumber: "",
+            amount: "",
+            remark: "",
+        });
+        setPin("");
+        setResolvedAccount(null);
+        setIsModalVisible(false);
+    };
+
+    const handleCloseSuccess = () => {
+        setSuccess(false);
+        resetForm();
+    };
+
     useEffect(() => {
         const fetchBanks = async () => {
-            const response = await getBankList();
-            if (response.success) {
-                setBanks(response.data);
-            } else {
-                Alert.alert("Error", "Could not load bank list.");
+            try {
+                const response = await getBankList();
+                if (response.success) {
+                    setBanks(response.data);
+                } else {
+                    Alert.alert("Error", "Could not load bank list.");
+                }
+            } catch (error) {
+                Alert.alert("Error", "Failed to load banks. Please try again.");
             }
         };
         fetchBanks();
@@ -74,16 +284,23 @@ export default function BankTransferScreen() {
 
     const handleResolveAccount = async () => {
         setIsResolving(true);
-        const response = await resolveBankAccount({
-            accountNumber: form.accountNumber,
-            bankCode: form.bankCode,
-        });
-        setIsResolving(false);
-        if (response.success) {
-            setResolvedAccount(response.data as { account_name: string });
-        } else {
+        try {
+            const response = await resolveBankAccount({
+                accountNumber: form.accountNumber,
+                bankCode: form.bankCode,
+            });
+            
+            if (response.success) {
+                setResolvedAccount(response.data as { account_name: string });
+            } else {
+                setResolvedAccount(null);
+                Alert.alert("Verification Failed", response.message);
+            }
+        } catch (error) {
             setResolvedAccount(null);
-            Alert.alert("Verification Failed", response.message);
+            Alert.alert("Error", "Failed to resolve account. Please check details.");
+        } finally {
+            setIsResolving(false);
         }
     };
 
@@ -96,37 +313,39 @@ export default function BankTransferScreen() {
             Alert.alert("Error", "Recipient account is not verified.");
             return;
         }
-
         if (pin.length !== 4) {
             Alert.alert("Error", "Please enter your 4-digit transaction PIN.");
             return;
         }
 
         setIsLoading(true);
+        
         try {
-            // 1. Verify PIN before proceeding with the transfer
-            await verifyPin(pin);
-
-            await sendToBank(
+            const result = await sendToBank(
                 {
                     bankCode: form.bankCode,
                     accountNumber: form.accountNumber,
                     accountName: resolvedAccount.account_name,
                     amount: Number(form.amount),
+                    pin
                 },
                 token
             );
-
-            setTransactionStatus("success");
+            console.log("send", result)
+            
+               
+        if (result.success) {
+            setTransactionDetails(result.data);
+            setSuccess(true);
+            setIsModalVisible(false);
+        } else {
+            throw new Error(result.message || "Bank transfer failed.");
+        }
         } catch (error: any) {
-            setTransactionStatus("failure");
-            // The status modal will show the error, but we can also alert it.
-            Alert.alert("Transfer Failed", error.message);
+            Alert.alert("Transfer Failed", error.message || "An unexpected error occurred.");
+            console.error("Transfer error:", error);
         } finally {
             setIsLoading(false);
-            setIsModalVisible(false);
-            setPin(""); // Clear PIN after attempt
-            setIsStatusModalVisible(true);
         }
     };
 
@@ -135,8 +354,7 @@ export default function BankTransferScreen() {
         value: bank.code,
     }));
 
-    const selectedBankName =
-        banks.find((b) => b.code === form.bankCode)?.name || "";
+    const selectedBankName = banks.find((b) => b.code === form.bankCode)?.name || "";
 
     return (
         <SafeAreaView className="flex-1 bg-gray-50">
@@ -235,11 +453,12 @@ export default function BankTransferScreen() {
                     { label: "Remark", value: form.remark || "N/A" },
                 ]}
             />
-
-            <TransactionStatusModal
-                isVisible={isStatusModalVisible}
-                status={transactionStatus}
-                onRedirectHome={() => router.replace("/home")}
+            
+            {/* Success Overlay */}
+            <SuccessOverlay
+                isVisible={success}
+                onClose={handleCloseSuccess}
+                transactionDetails={transactionDetails}
             />
         </SafeAreaView>
     );

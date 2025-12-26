@@ -88,33 +88,65 @@ export const resolveBankAccount = async (details: {
         return { success: false, message: errorMessage };
     }
 };
+// In bankService.ts
 export const sendToBank = async (
     details: {
         bankCode: string;
         accountNumber: string;
         accountName: string;
         amount: number;
+        pin: string;
     },
     token: string
-): Promise<{ success: boolean; data?: any; message?: string }> => {
+): Promise<{ 
+    success: boolean; 
+    data?: any; 
+    message?: string;
+    status?: string; // Keep original status too
+}> => {
     try {
-        const response = await apiClient.post("/payout", details, {
-            headers: { Authorization: `Bearer ${token}` },
+        console.log("Sending to bank with details:", details);
+        
+        const response = await apiClient.post("/user/payout", details, {
+            headers: { 
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
         });
 
-        if (response.data && response.data.status === "Success") {
-            return {
-                success: true,
-                data: response.data.data,
-                message: response.data.message,
-            };
-        } else {
-            throw new Error(response.data.message || "Bank transfer failed.");
-        }
+        const responseData = response.data || response;
+        
+        // Determine if transaction was successful
+        const status = responseData.status?.toString().toLowerCase();
+        const isSuccess = status === "success" || 
+                         status === "completed" ||
+                         responseData.success === true;
+        
+        return {
+            success: isSuccess,
+            data: responseData.data || responseData,
+            message: responseData.message,
+            status: responseData.status
+        };
+        
     } catch (error: any) {
-        const errorMessage =
-            error.response?.data?.message ||
-            "An error occurred during the bank transfer.";
-        throw new Error(errorMessage);
+        console.log("Bank transfer error:", error);
+        
+        let errorMessage = "An error occurred during the bank transfer.";
+        
+        if (error.response) {
+            errorMessage = error.response.data?.message || 
+                          error.response.data?.error || 
+                          `Error ${error.response.status}`;
+        } else if (error.request) {
+            errorMessage = "Network error. Please check your connection.";
+        } else {
+            errorMessage = error.message;
+        }
+        
+        return {
+            success: false,
+            message: errorMessage
+        };
     }
 };

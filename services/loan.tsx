@@ -17,7 +17,7 @@ export const checkEligibility = async () => {
 export const getAllLoanRecord = async () => {
   try {
     // Properly await the promise[citation:7]
-    const response = await apiClient.get("/loan/loan/all-loan-record");
+    const response = await apiClient.get("/loan/all-loan-record");
     // Return the data property, not the full Axios response object
     return response.data;
   } catch (error) {
@@ -50,3 +50,28 @@ export const loanApplication = async (loanAmount: number, loanTitle: string, loa
     );
   }
 };
+
+export const getAllLoans = async()=>{
+  try {
+    const getLoans = apiClient.get("/loan/all-loan-record")
+    console.log("allLoan", getLoans)
+    return getLoans
+  } catch (error) {
+    console.log(error)
+  }
+}
+
+export const payLoan = async (amount:number) =>{
+
+  try {
+    const payLoanResponse = await apiClient.post("/loan/loan-Settlement",{
+    amount
+  })
+  return payLoanResponse
+
+    
+  } catch (error) {
+    console.log(error)
+    
+  }
+}

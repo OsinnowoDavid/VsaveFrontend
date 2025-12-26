@@ -14,6 +14,8 @@ import {
   Platform,
   TouchableWithoutFeedback,
   Keyboard,
+  FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import {
@@ -27,14 +29,20 @@ import {
   ArrowRight,
   Users,
   ShieldCheck,
-  ChevronRight,
   Filter,
   Plus,
   X,
+  FileText,
+  AlertTriangle,
+  History,
 } from 'lucide-react-native';
 import useProfileStore from '../../../store/useProfileStore';
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { checkEligibility, loanApplication } from '../../../services/loan'
+import { checkEligibility, loanApplication } from '../../../services/loan';
+import { useRouter } from 'expo-router';
+import { getAllLoanRecord } from '../../../services/loan';
+import { payLoan } from '../../../services/loan';
+import { number } from 'zod';
 
 const LoanScreen = () => {
   const [activeTab, setActiveTab] = useState('eligibility');
@@ -42,7 +50,6 @@ const LoanScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [showLoanModal, setShowLoanModal] = useState(false);
   const [loanAmount, setLoanAmount] = useState();
-  
   const [loanDuration, setLoanDuration] = useState('14');
   const [eligibilityResult, setEligibilityResult] = useState(null);
   const [creditScore, setCreditScore] = useState(750);
@@ -51,8 +58,14 @@ const LoanScreen = () => {
   const [loanTitle, setLoanTitle] = useState("");
   const [selectedLoanType, setSelectedLoanType] = useState(null);
   const [activeLoans, setActiveLoans] = useState([]);
-
+  const [completedLoans, setCompletedLoans] = useState([]);
+  const [showResultModal, setShowResultModal] = useState(false);
+  const [loanResult, setLoanResult] = useState(null);
+  const [modalType, setModalType] = useState('');
+  const [openPayLoan, setOpenPayLoan] = useState(false);
+  const [loadingLoans, setLoadingLoans] = useState(false);
   const { fetchProfile } = useProfileStore();
+  const router = useRouter();
 
   const userDetails = async () => {
     try {
@@ -71,15 +84,10 @@ const LoanScreen = () => {
     setIsLoading(true);
     try {
       const response = await checkEligibility();
-      console.log("ELE Response:", response);
       
-      // Fix: Access the correct response structure
       if (response && response.status === "Success") {
-        const apiData = response.data; // This contains interestRate, maxAmount, pass, etc.
+        const apiData = response.data;
         
-        console.log("API Data:", apiData);
-        
-        // Transform to match UI expectations
         const transformedResult = {
           eligible: apiData?.pass || false,
           maxAmount: apiData?.maxAmount || 0,
@@ -90,7 +98,6 @@ const LoanScreen = () => {
         
         setEligibilityResult(transformedResult);
         
-        // Update eligibilityData state
         setEligibilityData({
           monthlyIncome: userInfo?.data?.profile?.monthlyIncome || 3500,
           employmentStatus: 'employed',
@@ -102,14 +109,12 @@ const LoanScreen = () => {
           apiData: apiData
         });
         
-        // Update credit score based on eligibility
         if (apiData?.maxAmount) {
           const newScore = Math.min(750 + Math.floor(apiData.maxAmount / 1000), 850);
           setCreditScore(newScore);
         }
       } else {
-        console.warn("Invalid response structure:", response);
-        Alert.alert("Info", "No valid eligibility data received from server.");
+        Alert.alert("Not Eligible", "You might be on a loan plan");
       }
       
     } catch (error) {
@@ -120,26 +125,62 @@ const LoanScreen = () => {
     }
   };
 
+  const getActiveLoan = async() => {
+    try {
+      setLoadingLoans(true);
+      const response = await getAllLoanRecord();
+      console.log("ALL-LOAN", response);
+      
+      if (response && response.data && Array.isArray(response.data)) {
+        // REMOVED FILTER: Just display all data if available
+        console.log("ALL LOANS (NO FILTER):", response.data.length, response.data);
+        setActiveLoans(response.data);
+        
+        // For history tab, still show all data (or you can keep the completed filter)
+        setCompletedLoans(response.data);
+      } else {
+        setActiveLoans([]);
+        setCompletedLoans([]);
+      }
+    } catch (error) {
+      console.log("Error fetching loans:", error);
+      Alert.alert("Error", "Failed to load loans");
+      setActiveLoans([]);
+      setCompletedLoans([]);
+    } finally {
+      setLoadingLoans(false);
+    }
+  };
 
-  const passData = eligibilityData
-  const pass= passData?.apiData?.pass
-  const maxAmount = passData?.apiData?.maxAmount
-  const ratingStatus = passData?.apiData?.ratingStatus
-  const interestRate = passData?.apiData?.interestRate
-  const stage = passData?.apiData?.stage
-  const loanElegibility ={
+  const handleRepayLoan = async()=>{
+try {
+  const response = await payLoan(loanAmount)
+
+  console.log("REPAY-LOAN", response.data)
+
+} catch (error) {
+  console.log(error)
+  
+}
+
+
+  }
+
+  const passData = eligibilityData;
+  const pass = passData?.apiData?.pass;
+  const maxAmount = passData?.apiData?.maxAmount;
+  const ratingStatus = passData?.apiData?.ratingStatus;
+  const interestRate = passData?.apiData?.interestRate;
+  const stage = passData?.apiData?.stage;
+  const loanElegibility = {
     stage,
     maxAmount,
     ratingStatus,
     interestRate,
     pass
-
-  }
-  // console.log("PASSDATA", loanElegibility)
+  };
 
   const applyForLoan = async () => {
-    console.log("LOAN DETAILS:", { loanTitle, loanAmount, loanElegibility });
-    
     if (!loanTitle.trim()) {
       Alert.alert('Error', 'Please enter a loan title');
       return;
@@ -150,7 +191,6 @@ const LoanScreen = () => {
       return;
     }
 
-    // Get max amount from eligibility data
     const maxAmount = eligibilityData?.apiData?.maxAmount || 
                      eligibilityResult?.maxAmount || 
                      eligibilityData?.maxLoanAmount || 
@@ -164,47 +204,24 @@ const LoanScreen = () => {
     setIsLoading(true);
 
     try {
-      // Call actual loan application API
-      const loanResponse = await loanApplication(loanAmount, loanTitle,loanElegibility);
-      console.log("LOAN-RESPONSE:", loanResponse);
-      if (loanResponse.status === "Success"){
+      const loanResponse = await loanApplication(loanAmount, loanTitle, loanElegibility);
 
+      if (loanResponse) {
+        setLoanResult(loanResponse);
+        
+        if (loanResponse.status === "Success" && loanResponse.data?.status === "approved") {
+          setModalType('success');
+          getActiveLoan(); // Refresh loans after successful application
+        } else {
+          setModalType('error');
+        }
+        
+        setShowResultModal(true);
+        setShowLoanModal(false);
+        setLoanAmount('');
+        setLoanTitle('');
+        setSelectedLoanType(null);
       }
-      
-      // if (loanResponse && loanResponse.status === "Success") {
-      //   // Create new loan object from API response
-      //   const interestRate = eligibilityData?.apiData?.interestRate || 1.2;
-      //   const durationInDays = parseInt(loanDuration);
-      //   const dailyIncrease = parseFloat(loanAmount) * 0.012; // 1.2% daily
-        
-      //   const newLoan = {
-      //     id: Date.now().toString(),
-      //     loanName: loanTitle,
-      //     amount: parseFloat(loanAmount),
-      //     interestRate: interestRate,
-      //     remainingAmount: parseFloat(loanAmount) + (dailyIncrease * durationInDays),
-      //     nextPaymentDate: new Date(Date.now() + durationInDays * 24 * 60 * 60 * 1000)
-      //       .toISOString().split('T')[0],
-      //     nextPaymentAmount: (parseFloat(loanAmount) * (interestRate/100)).toFixed(2),
-      //     status: 'pending',
-      //     disbursedDate: new Date().toISOString().split('T')[0],
-      //     term: `${durationInDays} days`,
-      //   };
-
-      //   setActiveLoans(prev => [...prev, newLoan]);
-      //   setShowLoanModal(false);
-      //   setLoanAmount('');
-      //   setLoanTitle('');
-      //   setSelectedLoanType(null);
-        
-      //   Alert.alert(
-      //     'Success!',
-      //     'Your loan application has been submitted and is under review.',
-      //     [{ text: 'OK' }]
-      //   );
-      // } else {
-      //   throw new Error(loanResponse?.message || 'Loan application failed');
-      // }
 
     } catch (error) {
       console.error("Error applying for loan:", error);
@@ -217,7 +234,7 @@ const LoanScreen = () => {
   // Quick apply loan types
   const quickApplyLoans = [
     { id: '1', amountRange: "₦5,000 - ₦50,000", min: 5000, max: 50000, term: '14', rate: '1.2%', label: 'Short-term Loan' },
-    { id: '2', amountRange: "₦50,000 - ₦500,000", min: 50000, max: 500000, term: '30', rate: '1.2%', label: 'Medium-term Loan' },
+    // { id: '2', amountRange: "₦50,000 - ₦500,000", min: 50000, max: 500000, term: '30', rate: '1.2%', label: 'Medium-term Loan' },
   ];
 
   const handleQuickApply = (loan) => {
@@ -238,11 +255,15 @@ const LoanScreen = () => {
 
   useEffect(() => {
     userDetails();
+    getActiveLoan();
   }, []);
 
   const onRefresh = () => {
     setRefreshing(true);
-    checkEligibilityData().finally(() => {
+    Promise.all([
+      checkEligibilityData(),
+      getActiveLoan()
+    ]).finally(() => {
       setRefreshing(false);
     });
   };
@@ -254,9 +275,18 @@ const LoanScreen = () => {
     setSelectedLoanType(null);
     Keyboard.dismiss();
   };
-// 
-  
-  // Initialize with defaults if null
+
+  const closeResultModal = () => {
+    setShowResultModal(false);
+    setLoanResult(null);
+    setModalType('');
+  };
+
+  const handleMakeAnotherLoan = () => {
+    closeResultModal();
+    setShowLoanModal(true);
+  };
+
   const currentEligibilityData = eligibilityData || {
     monthlyIncome: 3500,
     employmentStatus: 'employed',
@@ -268,12 +298,228 @@ const LoanScreen = () => {
     apiData: null
   };
 
+  // Render Active Loan Item
+  const renderActiveLoanItem = ({ item }) => {
+    const totalAmount = (item.amount || 0) + (item.interest || 0);
+    const totalRepaid = item.repayments?.reduce((sum, repayment) => 
+      sum + (repayment.amount || 0), 0
+    ) || 0;
+    const remainingAmount = totalAmount - totalRepaid;
+    
+    const dueDate = new Date(item.dueDate);
+    const today = new Date();
+    const daysRemaining = Math.ceil((dueDate - today) / (1000 * 60 * 60 * 24));
+    
+    const getStatusColor = (status) => {
+      switch(status) {
+        case 'active': return { bg: 'bg-green-100', text: 'text-green-800' };
+        case 'pending': return { bg: 'bg-yellow-100', text: 'text-yellow-800' };
+        case 'approved': return { bg: 'bg-blue-100', text: 'text-blue-800' };
+        case 'processing': return { bg: 'bg-purple-100', text: 'text-purple-800' };
+        case 'completed': return { bg: 'bg-gray-100', text: 'text-gray-800' };
+        default: return { bg: 'bg-gray-100', text: 'text-gray-800' };
+      }
+    };
+    
+    const statusColor = getStatusColor(item.status);
+
+    return (
+      <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
+        <View className="flex-row justify-between items-start">
+          <View>
+            <Text className="text-lg font-bold text-gray-900">{item.loanTitle}</Text>
+            <Text className="text-gray-600 text-sm mt-1">
+              Started: {new Date(item.startDate).toLocaleDateString()}
+            </Text>
+          </View>
+          <View className={`px-3 py-1 rounded-full ${statusColor.bg}`}>
+            <Text className={`font-medium ${statusColor.text}`}>
+              {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+            </Text>
+          </View>
+        </View>
+
+        <View className="mt-6 grid grid-cols-2 gap-4">
+          <View>
+            <Text className="text-gray-500 text-sm">Loan Amount</Text>
+            <Text className="text-xl font-bold text-gray-900 mt-1">
+              ₦{(item.amount || 0).toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Interest ({item.interestPercentage || 0}%)</Text>
+            <Text className="text-xl font-bold text-gray-900 mt-1">
+              ₦{(item.interest || 0).toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Remaining</Text>
+            <Text className="text-xl font-bold text-gray-900 mt-1">
+              ₦{remainingAmount.toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Days Left</Text>
+            <Text className={`text-xl font-bold mt-1 ${
+              daysRemaining < 0 ? 'text-red-600' : 
+              daysRemaining < 7 ? 'text-yellow-600' : 
+              'text-green-600'
+            }`}>
+              {daysRemaining > 0 ? daysRemaining : 'Overdue'}
+            </Text>
+          </View>
+        </View>
+
+        {totalAmount > 0 && (
+          <View className="mt-4">
+            <Text className="text-gray-500 text-sm mb-1">Repayment Progress</Text>
+            <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+              <View 
+                className="h-full bg-green-500 rounded-full"
+                style={{ 
+                  width: `${totalRepaid > 0 ? Math.min((totalRepaid / totalAmount) * 100, 100) : 0}%` 
+                }}
+              />
+            </View>
+            <View className="flex-row justify-between mt-1">
+              <Text className="text-gray-600 text-xs">
+                Paid: ₦{totalRepaid.toLocaleString()}
+              </Text>
+              <Text className="text-gray-600 text-xs">
+                Total: ₦{totalAmount.toLocaleString()}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        <View className="mt-6 pt-6 border-t border-gray-100">
+          <View className="flex-row justify-between items-center">
+            <View>
+              <Text className="text-gray-500 text-sm">Due Date</Text>
+              <Text className="text-lg font-bold text-gray-900">
+                {new Date(item.dueDate).toLocaleDateString()}
+              </Text>
+              <Text className="text-gray-600 text-sm mt-1">
+                {daysRemaining > 0 
+                  ? `${daysRemaining} days remaining` 
+                  : 'Past due date'}
+              </Text>
+            </View>
+            <TouchableOpacity 
+              className="bg-green-50 px-4 py-2 rounded-lg" 
+              onPress={() => setOpenPayLoan(true)}
+            >
+              <Text className="text-green-700 font-semibold">Repay Now</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {item.remark && (
+          <View className="mt-4 p-3 bg-blue-50 rounded-lg">
+            <Text className="text-blue-800 text-sm">{item.remark}</Text>
+          </View>
+        )}
+      </View>
+    );
+  };
+
+  // Render Completed Loan Item for History
+  const renderCompletedLoanItem = ({ item }) => {
+    const totalAmount = (item.amount || 0) + (item.interest || 0);
+    const totalRepaid = item.repayments?.reduce((sum, repayment) => 
+      sum + (repayment.amount || 0), 0
+    ) || totalAmount;
+
+    return (
+      <View className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
+        <View className="flex-row justify-between items-start">
+          <View>
+            <Text className="text-lg font-bold text-gray-900">{item.loanTitle}</Text>
+            <Text className="text-gray-600 text-sm mt-1">
+              {new Date(item.startDate).toLocaleDateString()} - {new Date(item.dueDate).toLocaleDateString()}
+            </Text>
+          </View>
+          <View className="px-3 py-1 rounded-full bg-green-100">
+            <Text className="font-medium text-green-800">
+              {item.status?.charAt(0).toUpperCase() + item.status?.slice(1)}
+            </Text>
+          </View>
+        </View>
+
+        <View className="mt-4 grid grid-cols-2 gap-4">
+          <View>
+            <Text className="text-gray-500 text-sm">Loan Amount</Text>
+            <Text className="text-lg font-bold text-gray-900 mt-1">
+              ₦{(item.amount || 0).toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Interest ({item.interestPercentage || 0}%)</Text>
+            <Text className="text-lg font-bold text-gray-900 mt-1">
+              ₦{(item.interest || 0).toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Total Repaid</Text>
+            <Text className="text-lg font-bold text-gray-900 mt-1">
+              ₦{totalRepaid.toLocaleString()}
+            </Text>
+          </View>
+          <View>
+            <Text className="text-gray-500 text-sm">Completion Date</Text>
+            <Text className="text-lg font-bold text-gray-900 mt-1">
+              {item.repaymentCompletedDate 
+                ? new Date(item.repaymentCompletedDate).toLocaleDateString()
+                : 'N/A'}
+            </Text>
+          </View>
+        </View>
+
+        <View className="mt-4 pt-4 border-t border-gray-100">
+          <View className="flex-row items-center">
+            <CheckCircle size={16} color="#059669" />
+            <Text className="text-green-600 text-sm ml-2">Loan fully settled</Text>
+          </View>
+          {item.remark && (
+            <Text className="text-gray-600 text-sm mt-2">{item.remark}</Text>
+          )}
+        </View>
+      </View>
+    );
+  };
+
+  const renderEmptyActiveLoans = () => (
+    <View className="items-center justify-center py-12 px-6">
+      <Banknote size={64} color="#D1D5DB" />
+      <Text className="text-gray-700 text-lg font-medium mt-4">No Loans Found</Text>
+      <Text className="text-gray-500 text-sm mt-2 text-center">
+        You don't have any loans at the moment
+      </Text>
+      <TouchableOpacity
+        onPress={() => setShowLoanModal(true)}
+        className="mt-6 bg-green-600 px-6 py-3 rounded-lg"
+      >
+        <Text className="text-white font-semibold">Apply for New Loan</Text>
+      </TouchableOpacity>
+    </View>
+  );
+
+  const renderEmptyHistory = () => (
+    <View className="items-center justify-center py-12 px-6">
+      <History size={64} color="#D1D5DB" />
+      <Text className="text-gray-700 text-lg font-medium mt-4">No Loan History</Text>
+      <Text className="text-gray-500 text-sm mt-2 text-center">
+        You haven't completed any loans yet
+      </Text>
+    </View>
+  );
+
   return (
     <SafeAreaView className="flex-1 bg-gray-50">
       <StatusBar style="dark" />
       
       {/* Header */}
-      <View className="px-6 pt-6 pb-4 bg-white border-b border-gray-200">
+      <View className="px-6 pt-6 pb-4 bg-white border-b border-gray-200 mt-5">
         <Text className="text-3xl font-bold text-gray-900">Loan Services</Text>
         <Text className="text-gray-600 mt-1">Manage your loans and check eligibility</Text>
       </View>
@@ -312,21 +558,21 @@ const LoanScreen = () => {
               }`}
             >
               {tab === 'eligibility' ? 'Eligibility' : 
-               tab === 'active' ? 'Active Loans' : 'History'}
+               tab === 'active' ? 'All Loans' : 'History'}
             </Text>
           </TouchableOpacity>
         ))}
       </View>
 
-      <ScrollView 
-        className="flex-1"
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-        showsVerticalScrollIndicator={false}
-      >
-        {activeTab === 'eligibility' ? (
-          // Eligibility Check Section
+      {activeTab === 'eligibility' ? (
+        // Eligibility Check Section
+        <ScrollView 
+          className="flex-1"
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+          showsVerticalScrollIndicator={false}
+        >
           <View className="px-6 py-6">
             <View className="bg-white rounded-2xl p-6 shadow-sm border border-gray-100">
               <View className="flex-row items-center">
@@ -520,100 +766,313 @@ const LoanScreen = () => {
               ))}
             </ScrollView>
           </View>
-        ) : activeTab === 'active' ? (
-          // Active Loans Section
-          <View className="px-6 py-6">
-            <View className="flex-row justify-between items-center mb-6">
+        </ScrollView>
+      ) : activeTab === 'active' ? (
+        // All Loans Section with FlatList (NO FILTER)
+        <View className="flex-1">
+          {/* Header */}
+          <View className="px-6 pt-6">
+            <View className="flex-row justify-between items-center mb-4">
               <Text className="text-xl font-bold text-gray-900">
-                Active Loans ({activeLoans.length})
+                All Loans ({activeLoans.length})
               </Text>
               <TouchableOpacity className="flex-row items-center">
                 <Filter size={20} color="#6B7280" />
                 <Text className="text-gray-600 ml-2">Filter</Text>
               </TouchableOpacity>
             </View>
+          </View>
 
-            {activeLoans.length === 0 ? (
-              <View className="items-center justify-center py-12">
-                <Banknote size={64} color="#D1D5DB" />
-                <Text className="text-gray-500 text-lg mt-4">No active loans</Text>
+          {/* Loading State */}
+          {loadingLoans ? (
+            <View className="flex-1 items-center justify-center py-12">
+              <ActivityIndicator size="large" color="#059669" />
+              <Text className="text-gray-600 mt-4">Loading loans...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={activeLoans}
+              keyExtractor={(item) => item._id}
+              renderItem={renderActiveLoanItem}
+              contentContainerStyle={{
+                paddingHorizontal: 24,
+                paddingBottom: 24,
+              }}
+              ListEmptyComponent={renderEmptyActiveLoans}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl 
+                  refreshing={refreshing} 
+                  onRefresh={onRefresh}
+                  colors={['#059669']}
+                  tintColor="#059669"
+                />
+              }
+              ListFooterComponent={
+                activeLoans.length > 0 ? (
+                  <View className="py-4">
+                    <Text className="text-center text-gray-500">
+                      {activeLoans.length} loan{activeLoans.length !== 1 ? 's' : ''} found
+                    </Text>
+                  </View>
+                ) : null
+              }
+            />
+          )}
+
+          {/* Apply for New Loan Button */}
+          <TouchableOpacity
+            onPress={() => setShowLoanModal(true)}
+            className="mx-6 my-4 bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 items-center"
+          >
+            <View className="w-12 h-12 bg-green-100 rounded-full items-center justify-center">
+              <Plus size={24} color="#059669" />
+            </View>
+            <Text className="text-green-600 font-semibold text-lg mt-3">
+              Apply for New Loan
+            </Text>
+            <Text className="text-gray-600 text-center mt-2">
+              Get instant approval with competitive rates
+            </Text>
+          </TouchableOpacity>
+        </View>
+      ) : (
+        // History Tab with All Loans (NO FILTER)
+        <View className="flex-1">
+          {/* Header */}
+          <View className="px-6 pt-6">
+            <View className="flex-row justify-between items-center mb-4">
+              <Text className="text-xl font-bold text-gray-900">
+                Loan History ({completedLoans.length})
+              </Text>
+              <TouchableOpacity className="flex-row items-center">
+                <Filter size={20} color="#6B7280" />
+                <Text className="text-gray-600 ml-2">Filter</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* Loading State */}
+          {loadingLoans ? (
+            <View className="flex-1 items-center justify-center py-12">
+              <ActivityIndicator size="large" color="#059669" />
+              <Text className="text-gray-600 mt-4">Loading history...</Text>
+            </View>
+          ) : (
+            <FlatList
+              data={completedLoans}
+              keyExtractor={(item) => item._id}
+              renderItem={renderCompletedLoanItem}
+              contentContainerStyle={{
+                paddingHorizontal: 24,
+                paddingBottom: 24,
+              }}
+              ListEmptyComponent={renderEmptyHistory}
+              showsVerticalScrollIndicator={false}
+              refreshControl={
+                <RefreshControl 
+                  refreshing={refreshing} 
+                  onRefresh={onRefresh}
+                  colors={['#059669']}
+                  tintColor="#059669"
+                />
+              }
+              ListFooterComponent={
+                completedLoans.length > 0 ? (
+                  <View className="py-4">
+                    <Text className="text-center text-gray-500">
+                      {completedLoans.length} loan{completedLoans.length !== 1 ? 's' : ''}
+                    </Text>
+                  </View>
+                ) : null
+              }
+            />
+          )}
+        </View>
+      )}
+
+      {/* Result Modal (Success/Error) */}
+      <Modal
+        visible={showResultModal}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={closeResultModal}
+      >
+        <View className="flex-1 bg-black/70 justify-center items-center p-5">
+          <View className="bg-white rounded-2xl w-full max-w-md">
+            {/* Header with Close Button */}
+            <View className="flex-row justify-between items-center p-5 border-b border-gray-100">
+              <View className="flex-row items-center">
+                <View className={`w-10 h-10 rounded-full ${modalType === 'success' ? 'bg-green-100' : 'bg-red-100'} items-center justify-center mr-3`}>
+                  {modalType === 'success' ? (
+                    <CheckCircle size={24} color="#10B981" />
+                  ) : (
+                    <AlertTriangle size={24} color="#DC2626" />
+                  )}
+                </View>
+                <Text className={`text-xl font-bold ${modalType === 'success' ? 'text-gray-900' : 'text-red-900'}`}>
+                  {modalType === 'success' ? 'Loan Approved!' : 'Application Failed'}
+                </Text>
               </View>
-            ) : (
-              activeLoans.map((loan) => (
-                <View key={loan.id} className="bg-white rounded-2xl p-5 mb-4 shadow-sm border border-gray-100">
-                  <View className="flex-row justify-between items-start">
-                    <View>
-                      <Text className="text-lg font-bold text-gray-900">{loan.loanName}</Text>
-                      <Text className="text-gray-600 text-sm mt-1">Disbursed on {loan.disbursedDate}</Text>
+              <TouchableOpacity 
+                onPress={closeResultModal}
+                className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center"
+              >
+                <X size={18} color="#6B7280" />
+              </TouchableOpacity>
+            </View>
+
+            {/* Content */}
+            <View className="p-5">
+              {/* Message */}
+              <View className="items-center mb-6">
+                <View className={`w-20 h-20 rounded-full ${modalType === 'success' ? 'bg-green-50' : 'bg-red-50'} items-center justify-center mb-4`}>
+                  {modalType === 'success' ? (
+                    <CheckCircle size={40} color="#10B981" />
+                  ) : (
+                    <AlertTriangle size={40} color="#DC2626" />
+                  )}
+                </View>
+                <Text className={`text-lg font-semibold ${modalType === 'success' ? 'text-gray-900' : 'text-red-900'} text-center mb-2`}>
+                  {modalType === 'success' ? 'Loan Application Successful' : 'Loan Application Failed'}
+                </Text>
+                <Text className="text-gray-600 text-center">
+                  {loanResult?.message || (modalType === 'success' ? 'Your loan has been approved and disbursed' : 'Unable to process your loan application')}
+                </Text>
+              </View>
+
+              {/* Loan Details */}
+              {loanResult?.data && (
+                <View className="bg-gray-50 rounded-xl p-4 mb-6">
+                  <Text className="text-sm font-semibold text-gray-700 mb-3">Loan Details</Text>
+                  
+                  <View className="flex-row items-center mb-3">
+                    <View className="w-8 h-8 rounded-full bg-blue-100 items-center justify-center mr-3">
+                      <Banknote size={16} color="#3B82F6" />
                     </View>
-                    <View className={`px-3 py-1 rounded-full ${loan.status === 'active' ? 'bg-green-100' : 'bg-yellow-100'}`}>
-                      <Text className={`font-medium ${loan.status === 'active' ? 'text-green-800' : 'text-yellow-800'}`}>
-                        {loan.status.charAt(0).toUpperCase() + loan.status.slice(1)}
+                    <View className="flex-1">
+                      <Text className="text-xs text-gray-500">Loan Amount</Text>
+                      <Text className="text-lg font-bold text-gray-900">
+                        ₦{loanResult.data.amount?.toLocaleString() || "0"}
                       </Text>
                     </View>
                   </View>
 
-                  <View className="mt-6 grid grid-cols-2 gap-4">
-                    <View>
-                      <Text className="text-gray-500 text-sm">Loan Amount</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">₦{loan.amount.toLocaleString()}</Text>
+                  <View className="flex-row items-center mb-3">
+                    <View className="w-8 h-8 rounded-full bg-purple-100 items-center justify-center mr-3">
+                      <FileText size={16} color="#8B5CF6" />
                     </View>
-                    <View>
-                      <Text className="text-gray-500 text-sm">Interest Rate</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">{loan.interestRate}%</Text>
-                    </View>
-                    <View>
-                      <Text className="text-gray-500 text-sm">Remaining</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">₦{loan.remainingAmount.toLocaleString()}</Text>
-                    </View>
-                    <View>
-                      <Text className="text-gray-500 text-sm">Term</Text>
-                      <Text className="text-xl font-bold text-gray-900 mt-1">{loan.term}</Text>
+                    <View className="flex-1">
+                      <Text className="text-xs text-gray-500">Loan Title</Text>
+                      <Text className="text-base font-semibold text-gray-900">
+                        {loanResult.data.loanTitle || "N/A"}
+                      </Text>
                     </View>
                   </View>
 
-                  <View className="mt-6 pt-6 border-t border-gray-100">
-                    <View className="flex-row justify-between items-center">
-                      <View>
-                        <Text className="text-gray-500 text-sm">Next Payment</Text>
-                        <Text className="text-lg font-bold text-gray-900">₦{loan.nextPaymentAmount}</Text>
-                        <Text className="text-gray-600 text-sm mt-1">Due {loan.nextPaymentDate}</Text>
+                  {loanResult.data.interest !== undefined && (
+                    <View className="flex-row items-center mb-3">
+                      <View className="w-8 h-8 rounded-full bg-green-100 items-center justify-center mr-3">
+                        <TrendingUp size={16} color="#10B981" />
                       </View>
-                      <TouchableOpacity className="bg-indigo-50 px-4 py-2 rounded-lg">
-                        <Text className="text-indigo-700 font-semibold">Pay Now</Text>
-                      </TouchableOpacity>
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500">Interest</Text>
+                        <Text className="text-base font-medium text-gray-900">
+                          ₦{loanResult.data.interest?.toLocaleString() || "0"}
+                        </Text>
+                      </View>
                     </View>
-                  </View>
-                </View>
-              ))
-            )}
+                  )}
 
-            <TouchableOpacity
-              onPress={() => setShowLoanModal(true)}
-              className="bg-white border-2 border-dashed border-gray-300 rounded-2xl p-6 items-center mt-4"
-            >
-              <View className="w-12 h-12 bg-indigo-100 rounded-full items-center justify-center">
-                <Plus size={24} color="#4F46E5" />
+                  {loanResult.data.dueDate && (
+                    <View className="flex-row items-center mb-3">
+                      <View className="w-8 h-8 rounded-full bg-amber-100 items-center justify-center mr-3">
+                        <Calendar size={16} color="#F59E0B" />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500">Due Date</Text>
+                        <Text className="text-base font-medium text-gray-900">
+                          {new Date(loanResult.data.dueDate).toLocaleDateString()}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+
+                  {loanResult.data.status && (
+                    <View className="flex-row items-center">
+                      <View className={`w-8 h-8 rounded-full ${loanResult.data.status === 'approved' ? 'bg-green-100' : 'bg-red-100'} items-center justify-center mr-3`}>
+                        {loanResult.data.status === 'completed' ? (
+                          <CheckCircle size={16} color="#10B981" />
+                        ) : (
+                          <AlertCircle size={16} color="#DC2626" />
+                        )}
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-xs text-gray-500">Status</Text>
+                        <Text className={`text-sm font-medium ${loanResult.data.status === 'approved' ? 'text-green-700' : 'text-red-700'}`}>
+                          {loanResult.data.status?.charAt(0).toUpperCase() + loanResult.data.status?.slice(1) || "N/A"}
+                        </Text>
+                      </View>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {/* Info Box */}
+              <View className={`${modalType === 'success' ? 'bg-green-50 border border-green-100' : 'bg-red-50 border border-red-100'} rounded-lg p-3 mb-6`}>
+                <Text className={`${modalType === 'success' ? 'text-green-800' : 'text-red-800'} text-sm text-center`}>
+                  {modalType === 'success' 
+                    ? '✓ The loan has been disbursed to your account. Please ensure timely repayment to maintain your credit score.'
+                    : '✗ Unable to process your loan application. Please check your eligibility and try again.'
+                  }
+                </Text>
               </View>
-              <Text className="text-indigo-600 font-semibold text-lg mt-3">
-                Apply for New Loan
-              </Text>
-              <Text className="text-gray-600 text-center mt-2">
-                Get instant approval with competitive rates
-              </Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          // History Tab
-          <View className="px-6 py-6">
-            <Text className="text-xl font-bold text-gray-900 mb-6">Loan History</Text>
-            <View className="items-center justify-center py-12">
-              <Clock size={64} color="#D1D5DB" />
-              <Text className="text-gray-500 text-lg mt-4">No loan history yet</Text>
+
+              {/* Buttons */}
+              <View className="flex-row gap-3">
+                {modalType === 'success' ? (
+                  <>
+                    <TouchableOpacity
+                      onPress={handleMakeAnotherLoan}
+                      className="flex-1 py-3 rounded-lg border border-green-700 items-center justify-center"
+                    >
+                      <Text className="text-green-700 font-semibold">Make Another</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        closeResultModal();
+                        router.replace("/home");
+                      }}
+                      className="flex-1 py-3 rounded-lg bg-green-700 items-center justify-center"
+                    >
+                      <Text className="text-white font-semibold">Go Home</Text>
+                    </TouchableOpacity>
+                  </>
+                ) : (
+                  <>
+                    <TouchableOpacity
+                      onPress={closeResultModal}
+                      className="flex-1 py-3 rounded-lg border border-red-700 items-center justify-center"
+                    >
+                      <Text className="text-red-700 font-semibold">Close</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity
+                      onPress={() => {
+                        closeResultModal();
+                        router.replace("/home");
+                      }}
+                      className="flex-1 py-3 rounded-lg bg-red-700 items-center justify-center"
+                    >
+                      <Text className="text-white font-semibold">Go Home</Text>
+                    </TouchableOpacity>
+                  </>
+                )}
+              </View>
             </View>
           </View>
-        )}
-      </ScrollView>
+        </View>
+      </Modal>
 
       {/* Apply for Loan Modal */}
       <Modal
@@ -711,7 +1170,7 @@ const LoanScreen = () => {
                                   setLoanAmount(duration.min.toString());
                                 }
                               }}
-                              className={`px-4 py-3 rounded-lg mr-2 ${loanDuration === duration.term ? 'bg-green-500' : 'bg-gray-100'}`}
+                              className={`px-4 py-3 mb-3 rounded-lg mr-2 ${loanDuration === duration.term ? 'bg-green-500' : 'bg-gray-100'}`}
                             >
                               <Text className={`font-medium ${loanDuration === duration.term ? 'text-white' : 'text-gray-700'}`}>
                                 {duration.term} days
@@ -763,6 +1222,83 @@ const LoanScreen = () => {
 
                       <TouchableOpacity
                         onPress={closeModal}
+                        className="items-center py-3"
+                      >
+                        <Text className="text-red-600 font-medium">Cancel</Text>
+                      </TouchableOpacity>
+                    </View>
+                  </View>
+                </ScrollView>
+              </KeyboardAvoidingView>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
+      {/* Pay Loan Modal */}
+      <Modal
+        visible={openPayLoan}
+        animationType="slide"
+        transparent={true}
+        onRequestClose={() => setOpenPayLoan(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setOpenPayLoan(false)}>
+          <View className="flex-1 bg-black/50 justify-end">
+            <TouchableWithoutFeedback onPress={() => {}}>
+              <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                className="max-h-[90%]"
+              >
+                <ScrollView 
+                  className="bg-white rounded-t-3xl"
+                  keyboardShouldPersistTaps="handled"
+                  showsVerticalScrollIndicator={false}
+                >
+                  <View className="pt-6 px-6 pb-8">
+                    {/* Header with close button */}
+                    <View className="flex-row justify-between items-center mb-4">
+                      <View className="w-12 h-1 bg-gray-300 rounded-full" />
+                      <TouchableOpacity 
+                        onPress={() => setOpenPayLoan(false)}
+                        className="p-2"
+                      >
+                        <X size={24} color="#DC2626" />
+                      </TouchableOpacity>
+                    </View>
+                    
+                    <Text className="text-2xl font-bold text-gray-900">Pay Loan</Text>
+                    <Text className="text-gray-600 mt-2">Repay your loan before due date to increase your credit score</Text>
+
+                    <View className="mt-8 space-y-6">
+                      {/* Loan Amount */}
+                      <View>
+                        <Text className="text-gray-700 font-medium mb-5">Enter amount to repay</Text>
+                        <View className="flex-row items-center border border-gray-300 rounded-xl px-4 py-3 mb-10">
+                          <Text className="text-gray-500">₦</Text>
+                          <TextInput
+                            className="flex-1 ml-2 text-lg"
+                            placeholder="Enter amount"
+                            keyboardType="numeric"
+                            value={loanAmount}
+                            onChangeText={setLoanAmount}
+                            returnKeyType="done"
+                          />
+                        </View>
+                      </View>
+
+                      {/* Pay Button */}
+                      <TouchableOpacity
+                        onPress={() => {
+                          handleRepayLoan()
+                        }}
+                        disabled={!loanAmount}
+                        className={`rounded-xl py-4 items-center ${!loanAmount ? 'bg-green-200' : 'bg-green-600'}`}
+                      >
+                        <Text className="text-white font-semibold text-lg">Pay Now</Text>
+                      </TouchableOpacity>
+
+                      <TouchableOpacity
+                        onPress={() => setOpenPayLoan(false)}
                         className="items-center py-3"
                       >
                         <Text className="text-red-600 font-medium">Cancel</Text>

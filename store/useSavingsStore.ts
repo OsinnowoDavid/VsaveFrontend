@@ -3,6 +3,7 @@ import {
     AvailableSavingsPlan,
     getActiveSavings,
     getAvailableSavings,
+    savingsBalances
 } from "../services/savingsService";
 
 interface SavingsState {
@@ -10,12 +11,14 @@ interface SavingsState {
     activePlans: AvailableSavingsPlan[];
     fetchAvailablePlans: () => Promise<void>;
     fetchActivePlans: () => Promise<void>;
+    savingBalances: () => Promise<void>;
     isLoading: boolean;
     isLoadingActive: boolean;
 }
 
 const useSavingsStore = create<SavingsState>((set) => ({
     availablePlans: [],
+    savings:[],
     isLoading: false,
     activePlans: [],
     isLoadingActive: false,
@@ -52,6 +55,23 @@ const useSavingsStore = create<SavingsState>((set) => ({
             set({ isLoadingActive: false });
         }
     },
+    savingBalances: async  () =>{
+        set({ isLoadingActive: true });
+         try {
+            const response = await savingsBalances();
+            if (response.data && response.data) {
+                set({ activePlans: response.data });
+            } else {
+                console.error(response.data.message);
+            }
+        } catch (error) {
+            console.error("Failed to fetch active savings plans:", error);
+        } finally {
+            set({ isLoadingActive: false });
+        }
+
+
+    }
 }));
 
 export default useSavingsStore;

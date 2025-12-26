@@ -1,4 +1,4 @@
-import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+ import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import React from "react";
 import { Text, View } from "react-native";
 
@@ -77,7 +77,7 @@ export default function TransactionCard(props: TransactionCardProps) {
                     <Icon size={20} color={iconColor} />
                 </View>
                 <View>
-                    <Text className="text-base font-semibold text-gray-800">
+                    <Text className="text-base w-44 font-semibold text-gray-800 ">
                         {title}
                     </Text>
                     <Text className="text-sm text-gray-500">
