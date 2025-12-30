@@ -66,7 +66,7 @@ export default function SavingsCard({
                 </LinearGradient>
             </View>
             {/* Actions */}
-            <View className="flex-row justify-between gap-3">
+            {/* <View className="flex-row justify-between gap-3">
                 <TouchableOpacity className="bg-[#1B8A52] rounded text-center items-center justify-center p-2 flex-grow">
                     <Text className="text-white text-base font-semibold whitespace-nowrap">
                         Top Up
@@ -77,7 +77,7 @@ export default function SavingsCard({
                         Withdraw
                     </Text>
                 </TouchableOpacity>
-            </View>
+            </View> */}
         </View>
     );
 }

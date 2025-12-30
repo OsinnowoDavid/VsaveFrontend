@@ -24,6 +24,7 @@ import TransactionCard from "../../components/TransactionCard";
 import useProfileStore from "../../store/useProfileStore";
 import useTransactionStore from "../../store/useTransactionStore";
 import CompactVSaveCarousel  from "../../components/CompactCarousel";
+import { push } from "expo-router/build/global-state/routing";
 
 export default function Home() {
     const router = useRouter();
@@ -139,15 +140,16 @@ export default function Home() {
                             
                             {/* Fixed conditional rendering syntax */}
                             {/* {profile?.kyc? === "male" ? ( */}
-                                <View className="bg-[brown]/15 p-4 w-[40%] h-[27%] justify-self-center">
+                            <TouchableOpacity onPress={()=> router.push("/home/terminal")}>
+
+                                <View className="bg-[brown]/15 p-4 w-[40%]  justify-self-center">
                                     <View className="justify-center">
                                         <Landmark color="#B32375" size={28}/>
                                     </View>
                                     <Text className="absolute mt-16">Terminal</Text>
                                 </View>
-                            // ) : (
-                            //     <View></View>
-                            // )}
+                            </TouchableOpacity>
+
                         </View>
                     </View>
                     

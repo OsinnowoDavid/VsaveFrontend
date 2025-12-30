@@ -15,7 +15,12 @@ export interface AvailableSavingsPlan {
     status: string;
     savingsCircleId?: string;
 }
+export interface savingsResponse{
+       success: boolean;
+    data:string ;
+    message?: string;
 
+}
 export interface ApiResponse<T> {
     success: boolean;
     data?: T;
