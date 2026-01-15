@@ -65,7 +65,7 @@ export default function HomeScreenWrapper({
                                 iconComponent={<Icon isActive={isActive} />}
                                 input={item.input}
                                 onPress={() =>
-                                    item.href !== "/reward" &&
+                                    item.href !== "/" &&
                                     !isActive &&
                                     router.push(item.href as any)
                                 }

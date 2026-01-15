@@ -5,6 +5,7 @@ import {
     ActivityIndicator,
     Alert,
     Text,
+    TouchableOpacity,
     View,
 } from "react-native";
 
@@ -207,6 +208,14 @@ export default function KYCScreen() {
 
     return (
         <ScreenWrapper>
+            <TouchableOpacity onPress={()=> router.back()}>
+
+<View className="  mt-10">
+    <Text className="text-white">
+        Go home
+    </Text>
+</View>
+            </TouchableOpacity>
 
             <FormWrapper heading="KYC Verification">
                 <KeyboardAvoidingWrapper>

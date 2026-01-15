@@ -8,6 +8,7 @@ const PIN_KEY = "vs_transaction_pin";
  */
 export const createPin = async (pin: string): Promise<void> => {
     try {
+        console.log(pin)
         // SecureStore encrypts the value on iOS and Android.
         await SecureStore.setItemAsync(PIN_KEY, pin);
     } catch (error) {

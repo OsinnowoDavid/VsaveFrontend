@@ -3,43 +3,66 @@ import { Alert } from "react-native";
 import useAuthStore from "../store/useAuthStore";
 import { SignUpData } from "../types/data";
 import apiClient from "./apiClient";
-// import { getKYCStatus } from "./kycService";
+import axios from "axios";
+export interface ApiResponse {
+  success: boolean;
+  message: string;
+  data?: any;
+  error?: any;
+}
+
 export const handleSignup = async (registrationData: SignUpData) => {
-    // 1. Validate input
-    if (!registrationData.email || !registrationData.password) {
-        return { 
-            success: false, 
-            message: "Email and password are required" 
-        };
-    }
-
-    // 2. Better name parsing (or better: collect separate firstName/lastName)
-    const names = registrationData.fullName.trim().split(/\s+/);
-    const firstName = names[0] || "";
-    const lastName = names.length > 1 ? names.slice(1).join(" ") : "";
-    
-    const form = {
-        firstName: firstName,
-        lastName: lastName || firstName, // Fallback for single-name entries
-        email: registrationData.email.toLowerCase().trim(),
-        phoneNumber: registrationData.phoneNumber?.trim() || "",
-        gender: registrationData.gender,
-        dateOfBirth: registrationData.dateOfBirth,
-        password: registrationData.password,
-    };
-
-    // 3. Optional: Password strength validation
-    if (form.password.length < 8) {
-        return {
-            success: false,
-            message: "Password must be at least 8 characters long"
-        };
-    }
-
     try {
-        const response = await apiClient.post("/user/register", form);
+        // Parse the full name
+        const names = registrationData.fullName.trim().split(/\s+/);
+        const firstName = names[0] || "";
+        const lastName = names.length > 1 ? names.slice(1).join(" ") : firstName;
         
-        // 4. Secure logging - only log non-sensitive data
+        // Ensure we have a valid Date object
+        let dateOfBirth: Date;
+        
+        try {
+            dateOfBirth = registrationData.dateOfBirth instanceof Date 
+                ? registrationData.dateOfBirth 
+                : new Date(registrationData.dateOfBirth);
+            
+            if (isNaN(dateOfBirth.getTime())) {
+                return {
+                    success: false,
+                    message: "Invalid date of birth",
+                    data: null
+                };
+            }
+        } catch (dateError) {
+            return {
+                success: false,
+                message: "Invalid date format",
+                data: null
+            };
+        }
+
+        // Format date as YYYY-MM-DD (ISO format) to avoid ambiguity
+        const year = dateOfBirth.getFullYear();
+        const month = String(dateOfBirth.getMonth() + 1).padStart(2, '0');
+        const day = String(dateOfBirth.getDate()).padStart(2, '0');
+        const formattedDate = `${year}-${month}-${day}`;
+
+        const form: any = {
+            firstName: firstName,
+            lastName: lastName,
+            email: registrationData.email.toLowerCase().trim(),
+            password: registrationData.password,
+            gender: registrationData.gender,
+            dateOfBirth: formattedDate, // YYYY-MM-DD format
+            phoneNumber: registrationData.phoneNumber.trim(),
+            referralCode: registrationData.referralCode.trim()
+        };
+
+        console.log("Final payload:", JSON.stringify(form, null, 2));
+
+        const response = await apiClient.post("/user/register", form);
+        console.log("backend", response)
+         // 4. Secure logging - only log non-sensitive data
         console.log("Signup attempt for:", form.email);
         
         if (response.data.status?.toLowerCase?.() === "success") {
@@ -58,116 +81,155 @@ export const handleSignup = async (registrationData: SignUpData) => {
                 message: response.data.message || "Registration failed. Please try again.",
                 errorCode: response.data.code // If available
             };
+        
         }
     } catch (error: any) {
-        // 6. Better error handling with type safety
-        let errorMessage = "An unexpected error occurred. Please try again.";
-        
-        if (error.response) {
-            // Server responded with error status
-            errorMessage = error.response.data?.message || 
-                          `Server error: ${error.response.status}`;
-        } else if (error.request) {
-            // Request made but no response
-            errorMessage = "Network error. Please check your connection.";
-        }
-        
-        // 7. Use console.error for errors
-        console.error("Signup error:", errorMessage, error);
+        console.error("Signup error:", error.response?.data || error.message);
         
         return { 
             success: false, 
-            message: errorMessage,
-            error: error // Only include in development
+            message: error.response?.data?.message || "An error occurred",
+            data: error.response?.data || null
         };
     }
 };
+export const verifyEmail = async (data: { email: string; code: string }): Promise<ApiResponse> => {
+  try {
+    const response = await apiClient.post("/user/verify-email", data);
+    console.log("Email verification response:", response.data);
 
-export const verifyEmail = async (data: { email: string; code: string }) => {
-    try {
-        const response = await apiClient.post("/user/verify-email", data);
-        console.log("Email verification response:", response);
-
-        if (response.data.status.toLowerCase() === "success") {
-            return { success: true, message: response.data.message };
-        } else {
-            return {
-                success: false,
-                message: response.data.message || "An unknown error occurred.",
-            };
-        }
-    } catch (error: any) {
-        console.error(
-            "Email verification error:",
-            error.response?.data || error.message
-        );
-        const errorMessage =
-            error.response?.data?.message ||
-            "An error occurred during verification. Please try again.";
-        return { success: false, message: errorMessage };
+    if (response.data?.status?.toLowerCase() === "success") {
+      return {
+        success: true,
+        message: response.data.message || "Email verified successfully",
+        data: response.data
+      };
+    } else {
+      return {
+        success: false,
+        message: response.data?.message || "Verification failed",
+        data: response.data
+      };
     }
+  } catch (error: any) {
+    console.error("Email verification error:", error);
+    
+    const errorMessage = error.response?.data?.message ||
+                        error.message ||
+                        "An error occurred during verification.";
+    
+    return {
+      success: false,
+      message: errorMessage,
+      error: error
+    };
+  }
 };
 
-export const resendVerificationToken = async (data: { email: string }) => {
-    try {
-        const response = await apiClient.post(
-            "/user/resend-verification-token",
-            data
-        );
+export const resendVerificationToken = async (data: { email: string }): Promise<ApiResponse> => {
+  try {
+    const response = await apiClient.post("/user/resend-verification-token", data);
+    console.log("Resend token response:", response.data);
 
-        if (response.data.status === "success") {
-            console.log("Resend token successful:", response.data.message);
-            return { success: true, message: response.data.message };
-        } else {
-        }
-    } catch (error: any) {
-        console.error(
-            "Resend token error:",
-            error.response?.data || error.message
-        );
-        const errorMessage =
-            error.response?.data?.message ||
-            "An error occurred while resending the token.";
-        return { success: false, message: errorMessage };
+    if (response.data?.status === "success") {
+      return {
+        success: true,
+        message: response.data.message || "Verification token resent",
+        data: response.data
+      };
+    } else {
+      return {
+        success: false,
+        message: response.data?.message || "Failed to resend token",
+        data: response.data
+      };
     }
+  } catch (error: any) {
+    console.error("Resend token error:", error);
+    
+    const errorMessage = error.response?.data?.message ||
+                        error.message ||
+                        "An error occurred while resending the token.";
+    
+    return {
+      success: false,
+      message: errorMessage,
+      error: error
+    };
+  }
 };
 
 export const handleSignin = async (form: {
-    email: string;
-    password: string;
-}): Promise<{
-    success: boolean;
-    message?: string;
-}> => {
-    const login = useAuthStore.getState().login;
-    try {
-        const response = await apiClient.post("/user/login", form);
-        console.log("Login response:", response.data);
+  email: string;
+  password: string;
+}): Promise<ApiResponse> => {
+  try {
+    const { login } = useAuthStore.getState();
+    const response = await apiClient.post("/user/login", form);
+    console.log("Login response:", response.data);
 
-        if (
-            response.data &&
-            response.data.status?.toLowerCase?.() === "success"
-        ) {
-            await login(response.data.token); // Save token to Zustand store
-
-            // Redirect to home immediately without checking verification
-            router.replace("/home");
-            
-            return {
-                success: true,
-            };
-        } else {
-            return {
-                success: false,
-                message:
-                    response.data.message || "Login failed. Please try again.",
-            };
-        }
-    } catch (error: any) {
-        console.error("Signin error:", error.response?.data || error.message);
-        const errorMessage =
-            error.response?.data?.message ||
-            "An error occurred during login. Please try again.";
-        return { success: false, message: errorMessage };
+    if (response.data?.status?.toLowerCase() === "success" && response.data.token) {
+      // Save token to Zustand store
+      await login(response.data.token);
+      
+      // Optionally save user data if provided
+      if (response.data.user) {
+        // You might want to store user data in your auth store or profile store
+        console.log("User data:", response.data.user);
+      }
+      
+      // Redirect to home
+      router.replace("/home");
+      
+      return {
+        success: true,
+        message: response.data.message || "Login successful",
+        data: response.data
+      };
+    } else {
+      return {
+        success: false,
+        message: response.data?.message || "Login failed",
+        data: response.data
+      };
     }
+  } catch (error: any) {
+    console.error("Signin error:", error);
+    
+    let errorMessage = "An unexpected error occurred during login.";
+    
+    if (error.response?.status === 401) {
+      errorMessage = "Invalid email or password";
+    } else if (error.response?.status === 403) {
+      errorMessage = "Account not verified. Please verify your email first.";
+    } else if (error.response?.data?.message) {
+      errorMessage = error.response.data.message;
+    } else if (error.message) {
+      errorMessage = error.message;
+    }
+    
+    return {
+      success: false,
+      message: errorMessage,
+      error: error
+    };
+  }
+};
+
+// Helper function to check if user is logged in
+export const checkAuthStatus = async (): Promise<boolean> => {
+  const { token, isTokenValid } = useAuthStore.getState();
+  
+  if (!token || !isTokenValid()) {
+    return false;
+  }
+  
+  // Optionally verify token with server
+  try {
+    const response = await apiClient.get("/user/verify-token");
+    return response.data?.valid === true;
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return false;
+  }
 };

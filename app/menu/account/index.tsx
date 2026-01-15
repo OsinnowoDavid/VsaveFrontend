@@ -59,8 +59,8 @@ export default function AccountScreen() {
     };
 
     return (
-        <HomeScreenWrapper bgColor="bg-gray-50">
-            <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
+        <HomeScreenWrapper >
+            <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View className="flex-row items-center p-4">
                     <TouchableOpacity

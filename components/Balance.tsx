@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Alert, Image, Text, TouchableOpacity, View } from "react-native";
 import useProfileStore from "../store/useProfileStore";
 import { router } from "expo-router";
-
+import { useEffect } from "react";
 export default function Balance({ version = "v1" }: { version?: "v1" | "v2" }) {
     if (version === "v1") {
         return <BalanceV1 />;
@@ -100,6 +100,11 @@ function BalanceV1() {
 
 function BalanceV2() {
     const { profile } = useProfileStore();
+    console.log("profile", profile)
+    useEffect(()=>{
+profile
+    },[])
+
     const [showBalance, setShowBalance] = useState(true);
 
     const formatCurrency = (amount: number | undefined) => {

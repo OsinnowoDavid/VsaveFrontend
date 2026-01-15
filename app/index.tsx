@@ -1,7 +1,9 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { Alert, Image, ImageBackground, StatusBar, View } from "react-native";
+import { StatusBar } from 'expo-status-bar';
+
+import { Alert, Image, ImageBackground, View } from "react-native";
 import Button from "../components/Button";
 import SloganText from "../components/SloganText";
 import "../global.css";

@@ -58,9 +58,7 @@ export default function Savings() {
 
     return (
         <HomeScreenWrapper bgColor="bg-gray-50">
-         <ScrollView 
-                         showsVerticalScrollIndicator={false} // Optional: hide scroll indicator
-                         contentContainerStyle={{ flexGrow: 1 }} // Makes sure content can scroll
+         <ScrollView  className="flex-1 " // Makes sure content can scroll
                      >
 
 // Prevents content from being hidden by the footer

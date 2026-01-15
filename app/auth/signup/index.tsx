@@ -1,4 +1,3 @@
-import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
     Alert,
@@ -9,7 +8,6 @@ import {
     View,
     Text,
     TouchableOpacity,
-    Linking
 } from "react-native";
 import { Check } from "lucide-react-native";
 import ScreenWrapper from "../../../components/AuthScreenWrapper";
@@ -18,16 +16,6 @@ import DatePickerField from "../../../components/DatePickerField";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
 import { useKeyboardVisible } from "../../../hooks/useKeyboardVisible";
-import {
-    confirmPasswordSchema,
-    dateOfBirthSchema,
-    emailSchema,
-    fullNameSchema,
-    genderSchema,
-    passwordSchema,
-    phoneNumberSchema,
-    signupSchema,
-} from "../../../schema/form";
 import { handleSignup } from "../../../services/authService";
 import { SignUpData } from "../../../types/data";
 import { useRouter } from "expo-router";
@@ -43,15 +31,14 @@ export default function SignUpScreen() {
         dateOfBirth: new Date(),
         password: "",
         confirmPassword: "",
+        referralCode: "",
     });
 
     const [acceptedTerms, setAcceptedTerms] = useState(false);
     const [acceptedPrivacy, setAcceptedPrivacy] = useState(false);
-    const [showTermsModal, setShowTermsModal] = useState(false);
-    const [showPrivacyModal, setShowPrivacyModal] = useState(false);
     
     const keyboardVisible = useKeyboardVisible();
-    const [barStyle, setBarStyle] = useState("light-content");
+    const [barStyle, setBarStyle] = useState<StatusBarStyle>("light-content");
     const [signupInput, setSignupInput] = useState("Sign Up");
     const [signupBg, setSignBg] = useState("bg-green-700");
     const [isLoading, setIsLoading] = useState(false);
@@ -63,37 +50,12 @@ export default function SignUpScreen() {
     useEffect(handleKeyboardVisible, [keyboardVisible]);
 
     const handleSubmit = async () => {
-        // Check if terms are accepted
+        // Only check terms acceptance (required by UI)
         if (!acceptedTerms || !acceptedPrivacy) {
             Alert.alert(
                 "Accept Terms Required",
-                "You must accept both the Terms & Conditions and Privacy & Cookie Policy to continue.",
-                [
-                    {
-                        text: "Show Terms",
-                        onPress: () => {
-                            router.push("/auth/terms");
-                        }
-                    },
-                    {
-                        text: "Show Privacy Policy",
-                        onPress: () => {
-                            router.push("/auth/privacy");
-                        }
-                    },
-                    {
-                        text: "OK",
-                        style: "cancel"
-                    }
-                ]
+                "You must accept both the Terms & Conditions and Privacy & Cookie Policy to continue."
             );
-            return;
-        }
-
-        const validationResult = signupSchema.safeParse(form);
-        if (!validationResult.success) {
-            const firstError = validationResult.error;
-            Alert.alert("Invalid Input", firstError.issues[0].message);
             return;
         }
 
@@ -106,9 +68,10 @@ export default function SignUpScreen() {
             if (result.success) {
                 Alert.alert(
                     "Signup Successful",
-                    "Please check your email to verify your account.",
+                    result.message || "Please check your email to verify your account.",
                     [
                         {
+                            text: "OK",
                             onPress: () => {
                                 router.replace({
                                     pathname: "/auth/email-verification",
@@ -119,24 +82,15 @@ export default function SignUpScreen() {
                     ]
                 );
             } else {
-                Alert.alert("Signup", result.message);
-                console.log(result.message);
+                Alert.alert("Signup Failed", result.message);
             }
         } catch (error: any) {
-            Alert.alert(
-                "Signup Error",
-                error.message || "An unexpected error occurred."
-            );
+            Alert.alert("Signup Error", error.message || "An unexpected error occurred.");
         } finally {
             setIsLoading(false);
             setSignupInput("Sign Up");
             setSignBg("bg-green-700");
         }
-    };
-
-    // Debug function to check form state
-    const debugFormState = () => {
-        console.log("Form State:", form);
     };
 
     const CustomCheckbox = ({ 
@@ -155,6 +109,8 @@ export default function SignUpScreen() {
                 onPress={onPress}
                 className="flex-row items-start mb-4"
                 activeOpacity={0.7}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked }}
             >
                 <View className={`w-6 h-6 rounded-md border-2 mr-3 mt-1 flex items-center justify-center
                     ${checked 
@@ -198,63 +154,54 @@ export default function SignUpScreen() {
 
     const readPolicy = (type: 'terms' | 'privacy') => {
         if (type === 'terms') {
-            router.push("/auth/terms");
+            router.push("/auth/TermsAndCondition");
         } else {
-            router.push("/auth/privacy");
+            router.push("/auth/Policy");
         }
     };
 
     return (
         <ScreenWrapper>
+            <StatusBar barStyle={barStyle} />
             <FormWrapper heading="Sign Up">
                 <ScrollView
                     className="max-h-[500px]"
                     contentContainerStyle={{ paddingBottom: 24 }}
                     showsVerticalScrollIndicator={false}
+                    keyboardShouldPersistTaps="handled"
                 >
                     <FormField
                         label="Full Name"
                         value={form.fullName}
                         onChangeText={(fullName) => {
                             setForm({ ...form, fullName });
-                            debugFormState();
                         }}
                         placeholder="John Doe"
-                        schema={fullNameSchema}
-                        validate
-                        field={form.fullName}
                     />
                     <FormField
                         label="Email"
                         value={form.email}
                         onChangeText={(email) => {
                             setForm({ ...form, email });
-                            debugFormState();
                         }}
                         placeholder="you@example.com"
-                        validate
-                        schema={emailSchema}
-                        field={form.email}
+                        keyboardType="email-address"
+                        // autoCapitalize="none"
                     />
                     <FormField
                         label="Phone Number"
                         value={form.phoneNumber}
                         onChangeText={(phoneNumber) => {
                             setForm({ ...form, phoneNumber });
-                            debugFormState();
                         }}
                         placeholder="08012345678"
                         keyboardType="phone-pad"
-                        validate
-                        schema={phoneNumberSchema}
-                        field={form.phoneNumber}
                     />
                     <FormField
                         label="Gender"
                         value={form.gender}
                         onChangeText={(gender) => {
                             setForm({ ...form, gender });
-                            debugFormState();
                         }}
                         type="select"
                         options={[
@@ -262,51 +209,39 @@ export default function SignUpScreen() {
                             { label: "Male", value: "Male" },
                             { label: "Female", value: "Female" },
                         ]}
-                        validate
-                        schema={genderSchema}
-                        field={form.gender}
                     />
                     <DatePickerField
                         label="Date of Birth"
-                        value={form.dateOfBirth as Date}
+                        value={form.dateOfBirth}
                         onChange={(dateOfBirth) => {
                             setForm({ ...form, dateOfBirth });
-                            debugFormState();
                         }}
-                        validate
-                        schema={dateOfBirthSchema}
-                        field={form.dateOfBirth}
+                    />
+                    <FormField
+                        label="Referral Code (Optional)"
+                        value={form.referralCode}
+                        onChangeText={(referralCode) => {
+                            setForm({ ...form, referralCode });
+                        }}
+                        placeholder="Enter your referral code"
                     />
                     <FormField
                         label="Password"
                         value={form.password}
                         onChangeText={(password) => {
-                            console.log("Password input:", password);
                             setForm({ ...form, password });
-                            debugFormState();
                         }}
                         placeholder="Enter your password"
                         secureTextEntry
-                        validate
-                        schema={passwordSchema}
-                        field={form.password}
                     />
                     <FormField
                         label="Confirm Password"
                         value={form.confirmPassword}
                         onChangeText={(confirmPassword) => {
-                            console.log("Confirm Password input:", confirmPassword);
                             setForm({ ...form, confirmPassword });
-                            debugFormState();
                         }}
                         placeholder="Confirm your password"
                         secureTextEntry
-                        validate
-                        schema={confirmPasswordSchema}
-                        field={{
-                            password: form.password,
-                            confirmPassword: form.confirmPassword,
-                        }}
                     />
 
                     {/* Terms and Privacy Acceptance Section */}
@@ -395,6 +330,7 @@ export default function SignUpScreen() {
                         color="text-white"
                         bg={signupBg}
                         disabled={isLoading || !acceptedTerms || !acceptedPrivacy}
+                        // loading={isLoading}
                     />
 
                     {/* Acceptance Status */}
@@ -418,7 +354,10 @@ export default function SignUpScreen() {
                     </View>
                     
                     <View className="mt-5">
-                        <TouchableOpacity onPress={() => router.push("/auth/login")}>
+                        <TouchableOpacity 
+                            onPress={() => router.push("/auth/login")}
+                            disabled={isLoading}
+                        >
                             <Text className="text-right underline text-2xl">
                                 Login Instead
                             </Text>

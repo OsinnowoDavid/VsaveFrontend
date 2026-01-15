@@ -24,6 +24,7 @@ interface ProfileDetails {
 }
 
 interface KycDetails {
+    profession:string
     // Add your KYC properties here
 }
 
@@ -34,6 +35,8 @@ interface Transaction {
     amount: number;
     date: string;
     status: string;
+    profession:string
+
 }
 
 interface ProfileState {
@@ -91,6 +94,7 @@ const useProfileStore = create<ProfileState>((set, get) => ({
                     profile: response.data,
                     // Assuming KYC is complete if the `kyc` object exists and is not null
                     hasCompletedKYC: !!response.data.kyc,
+
                 });
             }
             return response;
