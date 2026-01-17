@@ -23,6 +23,7 @@ interface FormFieldProps {
     type?: "text" | "select";
     options?: { label: string; value: string }[];
     keyboardType?: KeyboardTypeOptions;
+placeholderTextColor?: string;
     maxLength?: number;
     validate?: boolean;
     schema?: any;
@@ -35,6 +36,8 @@ export default function FormField({
     value,
     onChangeText,
     placeholder,
+        placeholderTextColor ,// Default gray color
+
     secureTextEntry,
     type = "text",
     options = [],
@@ -117,6 +120,7 @@ export default function FormField({
                             value={value}
                             onChangeText={handleChangeText}
                             placeholder={placeholder}
+                            placeholderTextColor={placeholderTextColor}
                             secureTextEntry={
                                 secureTextEntry && !isPasswordVisible
                             }

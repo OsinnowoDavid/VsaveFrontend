@@ -13,21 +13,25 @@ import {
 import EditableField from "../../../components/EditableField";
 import HomeScreenWrapper from "../../../components/HomeScreenWrapper";
 import useProfileStore from "../../../store/useProfileStore";
+import { updateProfile } from "../../../services/authService";
 
 export default function AccountScreen() {
-    const { profile, updateProfile } = useProfileStore();
+    const { profile, updateProfile: updateLocalProfile } = useProfileStore();
 
-    // This function would call your backend API to persist the changes.
+    // Rename to avoid conflict with imported function
     const handleSave = async (
         field: "firstName" | "lastName" | "email" | "phoneNumber",
         value: string
     ) => {
         try {
-            // --- API Call Placeholder ---
-            // const updatedProfile = await api.updateUserProfile({ [field]: value });
+            // Create update data object
+            const updateData = { [field]: value };
+            
+            // Call the API with the object
+            const response = await updateProfile(updateData);
+            
             // On success, update the local store state.
-            console.log(`Simulating save for ${field}: ${value}`);
-            updateProfile({ [field]: value });
+            updateLocalProfile(updateData);
             Alert.alert("Success", `${field} updated successfully.`);
         } catch (error) {
             console.error("Failed to update profile:", error);
@@ -48,18 +52,36 @@ export default function AccountScreen() {
 
         if (!result.canceled) {
             const newImageUri = result.assets[0].uri;
-            // --- API Call Placeholder for Image Upload ---
-            // const formData = new FormData();
-            // formData.append('profilePicture', { uri: newImageUri, name: 'photo.jpg', type: 'image/jpeg' });
-            // const response = await api.uploadProfilePicture(formData);
-            // On success, update the store with the new URL from the backend
-            console.log(`Simulating image upload for URI: ${newImageUri}`);
-            updateProfile({ profilePicture: newImageUri });
+            
+            // Create FormData for image upload
+            const formData = new FormData();
+            const fileName = newImageUri.split('/').pop();
+            const fileType = fileName?.split('.').pop();
+            
+            formData.append('profilePicture', {
+                uri: newImageUri,
+                type: `image/${fileType || 'jpeg'}`,
+                name: fileName || 'profile.jpg',
+            } as any);
+
+            // Call the API for image upload
+            // Note: You need to create an uploadProfilePicture API function
+            try {
+                const response = await updateProfile({ profilePicture: newImageUri });
+                // Assuming your API can handle profile picture updates
+                // If not, you'll need a separate upload function
+                
+                console.log(`Image uploaded: ${newImageUri}`);
+                updateLocalProfile({ profilePicture: newImageUri });
+            } catch (error) {
+                console.error("Failed to upload image:", error);
+                Alert.alert("Error", "Failed to update profile picture.");
+            }
         }
     };
 
     return (
-        <HomeScreenWrapper >
+        <HomeScreenWrapper>
             <ScrollView className="flex-1" contentContainerStyle={{ paddingBottom: 20 }}>
                 {/* Header */}
                 <View className="flex-row items-center p-4">

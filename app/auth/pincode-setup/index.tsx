@@ -46,7 +46,7 @@ export default function PinCodeSetupScreen() {
 
     return (
         <ScreenWrapper>
-            <FormWrapper heading="Create Transaction PIN">
+            <FormWrapper heading="Create login pin">
                 <View>
                     <Text className="text-center text-gray-600 mb-6">
                         Create a 4-digit PIN to secure your transactions.

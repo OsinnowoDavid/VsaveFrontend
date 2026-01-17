@@ -79,9 +79,9 @@ export const fetchUserProfile = async (
 export const getReward = async (id: string) => {
     try {
         const response = await apiClient.get("/user/get-single-referral/" + id);
-          return response.data // Return only the data part, not the full response
+        return response.data; // Return only the data part
     } catch (error) {
         console.log(error);
-        throw error; // Re-throw the error so it can be caught in the component
+        throw error;
     }
 }

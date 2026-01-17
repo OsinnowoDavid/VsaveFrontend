@@ -16,7 +16,22 @@ const RewardAndReferralScreen = () => {
   useEffect(() => {
     fetchRewardData()
   }, [])
-
+const handleCopyReferralCode = async () => {
+  const referralCode = rewardData?.referralCode || profile?.profile?.referralCode;
+  
+  if (!referralCode || referralCode === 'N/A') {
+    Alert.alert('Error', 'Referral code not available');
+    return;
+  }
+  
+  await Clipboard.setStringAsync(referralCode);
+  setCopied(true);
+  Alert.alert('Copied!', 'Referral code copied to clipboard');
+  
+  setTimeout(() => {
+    setCopied(false);
+  }, 2000);
+}
  const fetchRewardData = async () => {
   try {
     setLoading(true);
@@ -30,55 +45,88 @@ const RewardAndReferralScreen = () => {
     }
 
     console.log("Fetching reward data for ID:", id);
-    const apiResponse = await getReward(id); // This now returns the data part
+    const response = await getReward(id); // Now gets only data part
     
-    console.log("API Response:", apiResponse);
+    console.log("API Response:", response.data);
     
-    // Check if we have referral data
-    if (apiResponse?.status === "Success") {
-      if (apiResponse.data) {
+    // Check if we have a successful response
+    if (response?.status === "Success") {
+      if (response.data) {
         // User has a referral record
-        setRewardData(apiResponse.data);
-        // setHasReferralRecord(true);
+        setRewardData({
+          ...response.data,
+          // Ensure all expected properties exist
+          bonusAmount: response.data.bonusAmount || 0,
+          referralCode: response.data.referralCode || profile?.profile?.referralCode || 'N/A',
+          status: response.data.status || 'pending',
+          depositedToAvaliableBalnace: response.data.depositedToAvaliableBalnace || false,
+          referredUserTask: response.data.referredUserTask || {
+            fundVSaveWallet: false,
+            createSavingsPlan: false,
+            complete5SuccessfulSavingsCircle: false
+          },
+          referredUser: response.data.referredUser || null,
+          createdAt: response.data.createdAt,
+          updatedAt: response.data.updatedAt
+        });
       } else {
-        // User has no referral record yet (data is null)
-        // setHasReferralRecord(false);
+        // User has no referral record yet (data is null or empty)
         setRewardData({
           bonusAmount: 0,
           status: 'pending',
+          referralCode: profile?.profile?.referralCode || 'N/A',
           depositedToAvaliableBalnace: false,
           referredUserTask: {
             fundVSaveWallet: false,
             createSavingsPlan: false,
             complete5SuccessfulSavingsCircle: false
-          }
+          },
+          referredUser: null,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
         });
       }
     } else {
-      setError(apiResponse?.message || 'Failed to fetch reward data');
+      // Handle API error response
+      setError(response?.message || 'Failed to fetch reward data');
+      // Set default data even on API error
+      setRewardData({
+        bonusAmount: 0,
+        status: 'pending',
+        referralCode: profile?.profile?.referralCode || 'N/A',
+        depositedToAvaliableBalnace: false,
+        referredUserTask: {
+          fundVSaveWallet: false,
+          createSavingsPlan: false,
+          complete5SuccessfulSavingsCircle: false
+        },
+        referredUser: null,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
     }
   } catch (error) {
     console.log("Error fetching reward:", error);
     setError(error.message || 'Failed to fetch reward data');
+    // Set default data on error
+    setRewardData({
+      bonusAmount: 0,
+      status: 'pending',
+      referralCode: profile?.profile?.referralCode || 'N/A',
+      depositedToAvaliableBalnace: false,
+      referredUserTask: {
+        fundVSaveWallet: false,
+        createSavingsPlan: false,
+        complete5SuccessfulSavingsCircle: false
+      },
+      referredUser: null,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    });
   } finally {
     setLoading(false);
   }
-}
-  const handleCopyReferralCode = async () => {
-    if (!rewardData?.referralCode) {
-      Alert.alert('Error', 'Referral code not available')
-      return
-    }
-    
-    await Clipboard.setStringAsync(rewardData.referralCode)
-    setCopied(true)
-    Alert.alert('Copied!', 'Referral code copied to clipboard')
-    
-    setTimeout(() => {
-      setCopied(false)
-    }, 2000)
-  }
-  
+} 
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A'
     const date = new Date(dateString)

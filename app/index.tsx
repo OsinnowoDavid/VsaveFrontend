@@ -1,7 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
-import { StatusBar } from 'expo-status-bar';
 
 import { Alert, Image, ImageBackground, View } from "react-native";
 import Button from "../components/Button";
@@ -87,7 +86,6 @@ export default function App() {
             className="flex-1 justify-center items-center relative"
             resizeMode="cover"
         >
-            <StatusBar barStyle="light-content" />
             <Image
                 source={require("../assets/images/transparent-logo.png")}
                 className="absolute top-25"

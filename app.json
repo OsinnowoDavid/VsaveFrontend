@@ -1,61 +1,65 @@
 {
-    "expo": {
-        "name": "Vsave",
-        "slug": "Vsave",
-        "version": "1.0.0",
-        "orientation": "portrait",
-        "icon": "./assets/images/icon.png",
-        "scheme": "vsavefrontend",
-        "userInterfaceStyle": "automatic",
-        "newArchEnabled": true,
-        "splash": {
-            "image": "./assets/images/splash-icon.png",
-            "resizeMode": "contain",
-            "backgroundColor": "#ffffff"
-        },
-        "ios": {
-            "bundleIdentifier": "com.vsave.app",
-            "supportsTablet": true,
-            "infoPlist": {
-                "UIViewControllerBasedStatusBarAppearance": true
-            },
-            "splash": {
-                "image": "./assets/images/splash-icon.png",
-                "resizeMode": "cover", 
-                "backgroundColor": "#191B1F"
-            }
-        },
-        "android": {
-            "package": "com.vsave.app",
-            "adaptiveIcon": {
-                "backgroundColor": "#FFFFFF",
-                "foregroundImage": "./assets/images/android-icon-foreground.png",
-                "monochromeImage": "./assets/images/android-icon-monochrome.png"
-            },
-            "edgeToEdgeEnabled": true,
-            "predictiveBackGestureEnabled": false,
-            "splash": {
-                "image": "./assets/images/android-icon-foreground.png",
-                "resizeMode": "cover",
-                "backgroundColor": "#191B1F"
-            }
-        },
-        "web": {
-            "output": "static",
-            "favicon": "./assets/images/favicon.png",
-            "bundler": "metro"
-        },
-        "plugins": ["expo-router", "expo-secure-store", "expo-web-browser"],
-        "experiments": {
-            "typedRoutes": true,
-            "reactCompiler": true
-        },
-        "extra": {
-            "router": {},
-            "eas": {
-                "projectId": "ed6956a2-946a-4c11-897c-65805a0aac29"
-            }
-        },
-        "owner": "vsave"
-    }
+  "expo": {
+    "name": "Vsave",
+    "slug": "vsave",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "vsavefrontend",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/images/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "ios": {
+      "bundleIdentifier": "com.vsave.app",
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIViewControllerBasedStatusBarAppearance": true
+      },
+      "splash": {
+        "image": "./assets/images/splash-icon.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#191B1F"
+      }
+    },
+    "android": {
+      "package": "com.vsave.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#FFFFFF",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "splash": {
+        "image": "./assets/images/android-icon-foreground.png",
+        "resizeMode": "cover",
+        "backgroundColor": "#191B1F"
+      }
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png",
+      "bundler": "metro"
+    },
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "expo-web-browser"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "5d49bca9-7087-4c91-b17a-c1f7efd3e002"
+      }
+    },
+    "owner": "osinnowo"
+  }
 }

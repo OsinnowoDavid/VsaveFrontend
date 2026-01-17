@@ -233,3 +233,25 @@ export const checkAuthStatus = async (): Promise<boolean> => {
     return false;
   }
 };
+
+export const updateProfile = async (updateData: Record<string, any>) => {
+  try {
+    const response = await apiClient.post("/user/update-profile", updateData);
+    console.log(response.data);
+    return response.data;
+  } catch (error) {
+    console.log(error);
+    throw error; // Important: re-throw the error so it can be caught in the component
+  }
+};
+
+export const getBalance = async () => {
+  try {
+    const response = await apiClient.get("/user/account-balance");
+    // You need to return the data from the response, not the entire response object
+    return response.data;
+  } catch (error) {
+    console.log("Balance fetch error:", error);
+    throw error; // Important: Throw the error so React Query can catch it
+  }
+};

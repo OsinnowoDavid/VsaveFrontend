@@ -173,6 +173,8 @@ export default function SignUpScreen() {
                     <FormField
                         label="Full Name"
                         value={form.fullName}
+                        placeholderTextColor="grey"
+
                         onChangeText={(fullName) => {
                             setForm({ ...form, fullName });
                         }}
@@ -186,6 +188,8 @@ export default function SignUpScreen() {
                         }}
                         placeholder="you@example.com"
                         keyboardType="email-address"
+                        placeholderTextColor="grey"
+
                         // autoCapitalize="none"
                     />
                     <FormField
@@ -196,6 +200,9 @@ export default function SignUpScreen() {
                         }}
                         placeholder="08012345678"
                         keyboardType="phone-pad"
+                        placeholderTextColor="grey"
+                    
+                        
                     />
                     <FormField
                         label="Gender"
@@ -224,6 +231,8 @@ export default function SignUpScreen() {
                             setForm({ ...form, referralCode });
                         }}
                         placeholder="Enter your referral code"
+                        placeholderTextColor="grey"
+
                     />
                     <FormField
                         label="Password"
@@ -233,6 +242,8 @@ export default function SignUpScreen() {
                         }}
                         placeholder="Enter your password"
                         secureTextEntry
+                        placeholderTextColor="grey"
+
                     />
                     <FormField
                         label="Confirm Password"
@@ -242,6 +253,8 @@ export default function SignUpScreen() {
                         }}
                         placeholder="Confirm your password"
                         secureTextEntry
+                        placeholderTextColor="grey"
+
                     />
 
                     {/* Terms and Privacy Acceptance Section */}
