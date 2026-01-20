@@ -45,7 +45,9 @@ export default function PinCodeSetupScreen() {
     };
 
     return (
-        <ScreenWrapper>
+
+        <View className="mt-[50%]">
+
             <FormWrapper heading="Create login pin">
                 <View>
                     <Text className="text-center text-gray-600 mb-6">
@@ -73,6 +75,7 @@ export default function PinCodeSetupScreen() {
                     </View>
                 </View>
             </FormWrapper>
-        </ScreenWrapper>
+        </View>
+
     );
 }

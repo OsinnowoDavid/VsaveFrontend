@@ -20,7 +20,7 @@ export const accountItems: MenuItem[] = [
         label: "Reset Password",
         icon: Lock,
         type: "navigation",
-        screen: "/menu/reset-password",
+        screen: "/auth/reset-password",
     },
     {
         label: "Biometrics",

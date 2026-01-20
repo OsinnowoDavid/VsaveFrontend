@@ -255,3 +255,34 @@ export const getBalance = async () => {
     throw error; // Important: Throw the error so React Query can catch it
   }
 };
+// services/authService.ts
+
+export const sendMail = async (email: string): Promise<any> => {
+  try {
+    const data = await apiClient.post("/user/init-password-reset", { 
+      email: email 
+    });
+    return data;
+  } catch (error: any) {
+    console.log("Send mail error:", error);
+    throw error; // Important: re-throw the error to handle it in the component
+  }
+};
+
+export const resetPassword = async (
+  email: string, 
+  code: string, 
+  password: string
+): Promise<any> => {
+  try {
+    const data = await apiClient.post("/user/password-reset", { 
+      email, 
+      code, 
+      password 
+    });
+    return data;
+  } catch (error: any) {
+    console.log("Reset password error:", error);
+    throw error;
+  }
+};
