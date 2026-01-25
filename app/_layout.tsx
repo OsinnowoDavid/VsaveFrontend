@@ -99,7 +99,7 @@ const useProtectedRoute = () => {
     // Redirect to home.
     if (token && hasCompletedKYC && pinStatus.hasPin && inAuthGroup) {
       // Redirect away from the auth group if the user is signed in.
-      router.replace("/home");
+      router.replace("/auth/login-with-pin");
     }
   }, [
     token,

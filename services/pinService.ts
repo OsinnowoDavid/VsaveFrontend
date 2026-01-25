@@ -21,9 +21,10 @@ export const createPin = async (pin: string): Promise<void> => {
  * Verifies the user's transaction PIN against the one stored on the device.
  * @param pin The 4-digit transaction PIN to verify.
  */
-export const welcomeBack = async (pin: string): Promise<void> => {
+export const welcomeBack = async (pin: string): Promise<boolean> => {
     try {
         const storedPin = await SecureStore.getItemAsync(PIN_KEY);
+        console.log('Stored PIN exists:', !!storedPin);
 
         if (storedPin === null) {
             throw new Error(
@@ -31,13 +32,12 @@ export const welcomeBack = async (pin: string): Promise<void> => {
             );
         }
 
-        if (storedPin !== pin) {
-            throw new Error("Invalid PIN entered. Please try again.");
-        }
-
-        // If we reach here, the PIN is correct. The function resolves successfully.
+        const isMatch = storedPin === pin;
+        console.log('PIN verification:', isMatch ? 'Matched' : 'Failed');
+        
+        return isMatch;
     } catch (error: any) {
-        // Re-throw the error to be caught by the UI component.
+        console.error("Error verifying PIN:", error);
         throw error;
     }
 };

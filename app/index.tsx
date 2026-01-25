@@ -4,8 +4,7 @@ import React, { useState } from "react";
 import { 
   Alert, 
   Image, 
-  View, 
-  SafeAreaView, 
+  View,  
   Text 
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
@@ -15,7 +14,7 @@ import "../global.css";
 import { hasPin } from "../services/pinService";
 import useAuthStore from "../store/useAuthStore";
 import useProfileStore from "../store/useProfileStore";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function App(): React.ReactElement {
     const router = useRouter();
     const { hasCachedToken } = useAuthStore();

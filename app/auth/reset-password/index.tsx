@@ -1,13 +1,15 @@
 import { router } from "expo-router";
 import { ArrowLeft, Lock, Mail, ShieldCheck, Eye, EyeOff, Key, AlertCircle, Smartphone } from "lucide-react-native";
 import React, { useState, useEffect, useRef } from "react";
-import { Alert, Pressable, Text, TouchableOpacity, View, Animated, Easing, SafeAreaView, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
+import { Alert, Pressable, Text, TouchableOpacity, View, Animated, Easing, ScrollView, KeyboardAvoidingView, Platform } from "react-native";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import PinInput from "../../../components/PinInput";
 import { confirmPasswordSchema, passwordSchema } from "../../../schema/form";
 import { validateFormField } from "../../../utils";
 import { sendMail, resetPassword } from "../../../services/authService";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 
 const EmailStep = ({
   email,

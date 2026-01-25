@@ -5,7 +5,6 @@ import {
     Pressable,
     Text,
     View,
-    SafeAreaView,
     Image,
     KeyboardAvoidingView,
     Platform,
@@ -16,6 +15,8 @@ import { Mail, ShieldCheck, Clock, ArrowLeft } from "lucide-react-native";
 import Button from "../../../components/Button";
 import FormWrapper from "../../../components/FormWrapper";
 import PinInput from "../../../components/PinInput";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
     resendVerificationToken,
     verifyEmail,

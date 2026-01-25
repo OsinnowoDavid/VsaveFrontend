@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import {
-  SafeAreaView,
+  
   View,
   Text,
   TextInput,
@@ -21,6 +21,7 @@ import useAuthStore from "../../../store/useAuthStore";
 import { CheckCircle, X, Smartphone, Calendar, Hash, CreditCard } from "lucide-react-native";
 import { fundTerminal } from '../../../services/fundTerminal';
 import axios from 'axios'; // If you're using axios
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface TransactionDetails {
     amount?: number;

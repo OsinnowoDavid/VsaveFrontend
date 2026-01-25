@@ -44,8 +44,9 @@ const useSavingsStore = create<SavingsState>((set) => ({
         set({ isLoadingActive: true });
         try {
             const response = await getActiveSavings();
-            if (response.success && response.data) {
-                set({ activePlans: response.data });
+            console.log(response)
+            if (response.success && response) {
+                set({ activePlans: response });
             } else {
                 console.error(response.message);
             }

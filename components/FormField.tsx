@@ -5,7 +5,7 @@ import {
     KeyboardTypeOptions,
     Modal,
     Pressable,
-    SafeAreaView,
+    
     Text,
     TextInput,
     TouchableOpacity,
@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface FormFieldProps {
     label: string;

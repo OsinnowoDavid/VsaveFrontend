@@ -1,14 +1,19 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
     ActivityIndicator,
     RefreshControl,
     ScrollView,
     Text,
     View,
+    FlatList,
+    TouchableOpacity as RNTouchableOpacity,
 } from "react-native";
 import HomeScreenWrapper from "../../../components/HomeScreenWrapper";
 import PlanCard from "../../../components/PlanCard";
 import useSavingsStore from "../../../store/useSavingsStore";
+import { TouchableOpacity } from "react-native";
+import { ArrowLeft, Calendar, DollarSign, Clock, TrendingUp, ChevronRight } from "lucide-react-native";
+import { useRouter } from "expo-router";
 
 export default function ActivePlansScreen() {
     const {
@@ -19,84 +24,320 @@ export default function ActivePlansScreen() {
         fetchAvailablePlans,
     } = useSavingsStore();
     
-    console.log("ACTIVE-PLANS", activePlans);
+    const [expandedPlanId, setExpandedPlanId] = useState<string | null>(null);
+    const router = useRouter();
+
+    console.log("ACTIVE-PLANS RAW DATA:", JSON.stringify(activePlans, null, 2));
 
     const onRefresh = useCallback(async () => {
-        // Refresh both active and available plans
         await Promise.all([fetchActivePlans(), fetchAvailablePlans()]);
     }, [fetchActivePlans, fetchAvailablePlans]);
 
     useEffect(() => {
-        // Fetch plans if the store is empty
-        if (activePlans.length === 0) {
+        if (!activePlans?.data?.data || activePlans.data.data.length === 0) {
             fetchActivePlans();
         }
         if (availablePlans.length === 0) {
             fetchAvailablePlans();
         }
-    }, [
-        fetchActivePlans,
-        activePlans.length,
-        fetchAvailablePlans,
-        availablePlans.length,
-    ]);
+    }, [fetchActivePlans, activePlans, fetchAvailablePlans, availablePlans.length]);
 
-    // Extract only the active plans (second item in each array)
-    const extractedActivePlans = useMemo(() => {
-        if (!Array.isArray(activePlans)) return [];
+    // Extract all savings records from API response
+    const savingsRecords = useMemo(() => {
+        console.log("Extracting savings records from API...");
         
-        return activePlans
-            .map(group => {
-                // Each group is an array of 2 items: [planDetails, activePlan]
-                if (Array.isArray(group) && group.length >= 2) {
-                    return group[1]; // Return the active plan (second item)
-                }
-                return null;
-            })
-            .filter(Boolean); // Remove nulls
+        if (!activePlans?.success) {
+            console.log("API call not successful");
+            return [];
+        }
+        
+        if (!activePlans?.data?.data || !Array.isArray(activePlans.data.data)) {
+            console.log("No data array in response");
+            return [];
+        }
+        
+        console.log("Found", activePlans.data.data.length, "savings records");
+        
+        // Directly extract savingsRecord and contributionRecord from each item
+        return activePlans.data.data.map((item) => ({
+            savingsRecord: item.savingsRecord,
+            contributionRecord: item.contributionRecord,
+            // Flatten the structure for easier access
+            ...item.savingsRecord,
+            contributionDetails: item.contributionRecord,
+            savingsCircleId: item.savingsRecord?.savingsCircleId,
+            // Calculate additional fields
+            currentAmountSaved: item.contributionRecord?.currentAmountSaved || 0,
+            totalContributions: item.contributionRecord?.record?.length || 0,
+        }));
     }, [activePlans]);
 
-    console.log("EXTRACTED-ACTIVE-PLANS", extractedActivePlans);
+    console.log("SAVINGS RECORDS EXTRACTED:", savingsRecords.length);
+    console.log("First record details:", savingsRecords[0]?.savingsRecord);
 
-    // Extract plan details (first item in each array)
-    const planDetailsList = useMemo(() => {
-        if (!Array.isArray(activePlans)) return [];
-        
-        return activePlans
-            .map(group => {
-                if (Array.isArray(group) && group.length >= 1) {
-                    return group[0]; // Return the plan details (first item)
-                }
-                return null;
-            })
-            .filter(Boolean);
-    }, [activePlans]);
+    // Filter for active plans only
+    const activePlansOnly = useMemo(() => {
+        return savingsRecords.filter(plan => plan.savingsRecord?.status === "ACTIVE");
+    }, [savingsRecords]);
 
-    // Create a map for quick lookups of available plan details by their ID.
+    // Create a map for available plan details
     const availablePlansMap = useMemo(() => {
-        // Combine availablePlans from API with planDetailsList from activePlans
-        const allPlans = [...availablePlans, ...planDetailsList];
-        return new Map(allPlans.map((plan) => [plan._id, plan]));
-    }, [availablePlans, planDetailsList]);
+        let plansArray = availablePlans;
+        if (availablePlans?.data?.data && Array.isArray(availablePlans.data.data)) {
+            plansArray = availablePlans.data.data;
+        } else if (Array.isArray(availablePlans)) {
+            plansArray = availablePlans;
+        } else {
+            plansArray = [];
+        }
+        
+        return new Map(plansArray.map((plan) => [plan._id, plan]));
+    }, [availablePlans]);
 
-    const calculateProgress = (startDate: string, endDate: string) => {
+    // Calculate statistics
+    const calculateStatistics = useMemo(() => {
+        const stats = {
+            totalSavings: 0,
+            totalTarget: 0,
+            totalContributions: 0,
+            activeCount: 0,
+            pausedCount: 0,
+        };
+
+        savingsRecords.forEach(plan => {
+            const savings = plan.savingsRecord;
+            const contributions = plan.contributionRecord;
+            
+            if (savings) {
+                stats.totalTarget += savings.maturityAmount || 0;
+                
+                if (savings.status === "ACTIVE") {
+                    stats.activeCount++;
+                } else if (savings.status === "PAUSED") {
+                    stats.pausedCount++;
+                }
+            }
+            
+            if (contributions) {
+                stats.totalSavings += contributions.currentAmountSaved || 0;
+                stats.totalContributions += contributions.record?.length || 0;
+            }
+        });
+
+        return stats;
+    }, [savingsRecords]);
+
+    // Helper functions
+    const calculateProgress = (plan: any) => {
         try {
-            const start = new Date(startDate).getTime();
-            const end = new Date(endDate).getTime();
-            const now = new Date().getTime();
-
-            if (now >= end) return 100;
-            if (now <= start) return 0;
-
-            const totalDuration = end - start;
-            const elapsedDuration = now - start;
-
-            return Math.min(100, (elapsedDuration / totalDuration) * 100);
+            const savings = plan.savingsRecord;
+            const contributions = plan.contributionRecord;
+            
+            if (!savings || !contributions) return 0;
+            
+            const currentAmount = contributions.currentAmountSaved || 0;
+            const targetAmount = savings.maturityAmount || 1;
+            
+            return Math.min(100, Math.round((currentAmount / targetAmount) * 100));
         } catch (error) {
             console.error("Error calculating progress:", error);
             return 0;
         }
     };
+
+    const calculateDaysRemaining = (endDate: string) => {
+        try {
+            const end = new Date(endDate);
+            const now = new Date();
+            const diffTime = end.getTime() - now.getTime();
+            return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        } catch (error) {
+            return 0;
+        }
+    };
+
+    const calculateDaysElapsed = (startDate: string) => {
+        try {
+            const start = new Date(startDate);
+            const now = new Date();
+            const diffTime = now.getTime() - start.getTime();
+            return Math.floor(diffTime / (1000 * 60 * 60 * 24));
+        } catch (error) {
+            return 0;
+        }
+    };
+
+    const formatDate = (dateString: string) => {
+        try {
+            return new Date(dateString).toLocaleDateString("en-GB", {
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric'
+            });
+        } catch (error) {
+            return dateString;
+        }
+    };
+
+    const toggleExpandPlan = (planId: string) => {
+        setExpandedPlanId(expandedPlanId === planId ? null : planId);
+    };
+
+    // Render contribution item
+    const renderContributionItem = ({ item }: { item: any }) => (
+        <View className="bg-green-600 rounded-lg p-3 mb-2">
+            <View className="flex-row justify-between items-center">
+                <View>
+                    <Text className="text-white font-medium">
+                        Period {item.periodIndex}
+                    </Text>
+                    <Text className=" text-xs">
+                        Status: <Text className={`font-semibold ${item.status === 'paid' ? 'text-white' : 'text-red-600'}`}>
+                            {item.status?.toUpperCase()}
+                        </Text>
+                    </Text>
+                </View>
+                <View className="items-end">
+                    <Text className="text-white font-bold">
+                        ₦{item.amount?.toLocaleString()}
+                    </Text>
+                    <Text className="text-white text-xs">
+                        ID: {item._id?.substring(0, 8)}...
+                    </Text>
+                </View>
+            </View>
+        </View>
+    );
+
+    // Render savings record details
+    const renderSavingsRecordDetails = (savingsRecord: any) => {
+        if (!savingsRecord) return null;
+
+        return (
+            <View className="bg-blue-50 rounded-lg p-4 mt-3 border border-blue-100">
+                <Text className="text-blue-800 font-bold mb-3">Savings Record Details</Text>
+                
+                <View className="space-y-3">
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Record ID:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {savingsRecord._id?.substring(0, 16)}...
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Status:</Text>
+                        <View className={`px-2 py-1 rounded-full ${savingsRecord.status === 'ACTIVE' ? 'bg-green-100' : 'bg-yellow-100'}`}>
+                            <Text className={`text-xs font-bold ${savingsRecord.status === 'ACTIVE' ? 'text-green-800' : 'text-yellow-800'}`}>
+                                {savingsRecord.status}
+                            </Text>
+                        </View>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Period:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {savingsRecord.period} / {savingsRecord.duration}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Auto Restart:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {savingsRecord.autoRestartEnabled ? "Enabled" : "Disabled"}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Payout Status:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {savingsRecord.payOutStatus ? "Paid" : "Not Paid"}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Created:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {formatDate(savingsRecord.createdAt)}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-blue-700 text-sm">Updated:</Text>
+                        <Text className="text-blue-900 font-medium text-sm">
+                            {formatDate(savingsRecord.updatedAt)}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    };
+
+    // Render contribution record details
+    const renderContributionRecordDetails = (contributionRecord: any) => {
+        if (!contributionRecord) return null;
+
+        return (
+            <View className="bg-green-50 rounded-lg p-4 mt-3 border border-green-100">
+                <Text className="text-green-800 font-bold mb-3">Contribution Record Details</Text>
+                
+                <View className="space-y-3">
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Record ID:</Text>
+                        <Text className="text-green-900 font-medium text-sm">
+                            {contributionRecord._id?.substring(0, 16)}...
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Total Saved:</Text>
+                        <Text className="text-green-900 font-bold text-sm">
+                            ₦{(contributionRecord.currentAmountSaved || 0).toLocaleString()}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Admin Fee:</Text>
+                        <Text className="text-green-900 font-medium text-sm">
+                            ₦{(contributionRecord.adminFirstTimeFee || 0).toLocaleString()}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Total Contributions:</Text>
+                        <Text className="text-green-900 font-bold text-sm">
+                            {contributionRecord.record?.length || 0}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Created:</Text>
+                        <Text className="text-green-900 font-medium text-sm">
+                            {formatDate(contributionRecord.createdAt)}
+                        </Text>
+                    </View>
+                    
+                    <View className="flex-row justify-between">
+                        <Text className="text-green-700 text-sm">Updated:</Text>
+                        <Text className="text-green-900 font-medium text-sm">
+                            {formatDate(contributionRecord.updatedAt)}
+                        </Text>
+                    </View>
+                </View>
+            </View>
+        );
+    };
+
+    if (isLoadingActive && savingsRecords.length === 0) {
+        return (
+            <HomeScreenWrapper showFooter={false}>
+                <View className="flex-1 justify-center items-center">
+                    <ActivityIndicator size="large" color="#1B8A52" />
+                    <Text className="mt-4 text-gray-600">Loading your savings plans...</Text>
+                </View>
+            </HomeScreenWrapper>
+        );
+    }
 
     return (
         <HomeScreenWrapper showFooter={false}>
@@ -113,54 +354,288 @@ export default function ActivePlansScreen() {
                     flexGrow: 1,
                 }}
             >
-                {isLoadingActive && extractedActivePlans.length === 0 && (
-                    <ActivityIndicator
-                        size="large"
-                        color="#1B8A52"
-                        className="mt-16"
-                    />
-                )}
+                {/* Header */}
+                <View className="mb-6">
+                    <TouchableOpacity 
+                        onPress={() => router.back()}
+                        className="flex-row items-center mb-6"
+                        activeOpacity={0.7}
+                    >
+                        <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center mr-3">
+                            <ArrowLeft size={20} color="#374151" />
+                        </View>
+                        <Text className="text-lg font-semibold text-gray-800">Back</Text>
+                    </TouchableOpacity>
+                    
+                    <Text className="text-2xl font-bold text-gray-900 mb-2">
+                        My Savings Plans
+                    </Text>
+                    <Text className="text-gray-500">
+                        {savingsRecords.length} total plans • {activePlansOnly.length} active
+                    </Text>
+                </View>
 
-                {!isLoadingActive && extractedActivePlans.length === 0 && (
-                    <View className="flex-1 justify-center items-center mt-24">
-                        <Text className="text-lg text-gray-500">
-                            You have no active savings plans.
+                {/* Statistics Overview */}
+                <View className="bg-green-600 rounded-2xl p-5 mb-6 shadow-lg">
+                    <View className="flex-row items-center justify-between mb-4">
+                        <View>
+                            <Text className="text-white text-lg font-semibold">
+                                Total Savings
+                            </Text>
+                            <Text className="text-white/80 text-sm">
+                                Across all plans
+                            </Text>
+                        </View>
+                        <DollarSign size={24} color="white" />
+                    </View>
+                    
+                    <View className="flex-row justify-between mb-6">
+                        <View className="items-center">
+                            <Text className="text-white/80 text-sm">Saved</Text>
+                            <Text className="text-white text-2xl font-bold">
+                                ₦{calculateStatistics.totalSavings.toLocaleString()}
+                            </Text>
+                        </View>
+                        <View className="items-center">
+                            <Text className="text-white/80 text-sm">Target</Text>
+                            <Text className="text-white text-2xl font-bold">
+                                ₦{calculateStatistics.totalTarget.toLocaleString()}
+                            </Text>
+                        </View>
+                        <View className="items-center">
+                            <Text className="text-white/80 text-sm">Contributions</Text>
+                            <Text className="text-white text-2xl font-bold">
+                                {calculateStatistics.totalContributions}
+                            </Text>
+                        </View>
+                    </View>
+                    
+                    {/* Progress Bar */}
+                    <View className="mt-2">
+                        <View className="flex-row justify-between mb-1">
+                            <Text className="text-white/80 text-sm">Overall Progress</Text>
+                            <Text className="text-white text-sm font-medium">
+                                {calculateStatistics.totalTarget > 0 
+                                    ? Math.round((calculateStatistics.totalSavings / calculateStatistics.totalTarget) * 100) 
+                                    : 0}%
+                            </Text>
+                        </View>
+                        <View className="h-3 bg-white/30 rounded-full overflow-hidden">
+                            <View 
+                                className="h-full bg-white rounded-full"
+                                style={{ 
+                                    width: `${calculateStatistics.totalTarget > 0 
+                                        ? Math.min(100, (calculateStatistics.totalSavings / calculateStatistics.totalTarget) * 100) 
+                                        : 0}%` 
+                                }}
+                            />
+                        </View>
+                    </View>
+                </View>
+
+                {/* Plans Status Summary */}
+                <View className="flex-row justify-between mb-6">
+                    <View className="bg-white rounded-xl p-4 flex-1 mr-2 shadow-sm border border-gray-100">
+                        <View className="flex-row items-center">
+                            <View className="w-10 h-10 rounded-full bg-green-100 items-center justify-center mr-3">
+                                <TrendingUp size={20} color="#1B8A52" />
+                            </View>
+                            <View>
+                                <Text className="text-gray-500 text-sm">Active Plans</Text>
+                                <Text className="text-2xl font-bold text-gray-900">
+                                    {calculateStatistics.activeCount}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                    
+                    <View className="bg-white rounded-xl p-4 flex-1 ml-2 shadow-sm border border-gray-100">
+                        <View className="flex-row items-center">
+                            <View className="w-10 h-10 rounded-full bg-yellow-100 items-center justify-center mr-3">
+                                <Clock size={20} color="#D97706" />
+                            </View>
+                            <View>
+                                <Text className="text-gray-500 text-sm">Paused Plans</Text>
+                                <Text className="text-2xl font-bold text-gray-900">
+                                    {calculateStatistics.pausedCount}
+                                </Text>
+                            </View>
+                        </View>
+                    </View>
+                </View>
+
+                {/* Plans List */}
+                <Text className="text-lg font-bold text-gray-800 mb-4">
+                    All Savings Plans ({savingsRecords.length})
+                </Text>
+
+                {!isLoadingActive && savingsRecords.length === 0 && (
+                    <View className="flex-1 justify-center items-center mt-10 py-10">
+                        <View className="bg-gray-100 rounded-full p-6 mb-4">
+                            <Text className="text-4xl">💰</Text>
+                        </View>
+                        <Text className="text-lg text-gray-500 mb-2 font-semibold">
+                            No savings plans found
                         </Text>
+                        <Text className="text-gray-400 text-center text-sm mb-6">
+                            Start your savings journey by creating a new plan
+                        </Text>
+                        <TouchableOpacity 
+                            className="bg-[#1B8A52] px-6 py-3 rounded-full"
+                            onPress={() => router.push('/savings/create')}
+                        >
+                            <Text className="text-white font-semibold">
+                                Create Savings Plan
+                            </Text>
+                        </TouchableOpacity>
                     </View>
                 )}
 
-                {extractedActivePlans.map((activePlan) => {
-                    // Look up the plan details from the available plans map
-                    // using savingsCircleId as the key.
-                    const planDetails = availablePlansMap.get(
-                        activePlan.savingsCircleId
-                    );
+                {savingsRecords.map((plan, index) => {
+                    const savingsRecord = plan.savingsRecord;
+                    const contributionRecord = plan.contributionRecord;
+                    
+                    if (!savingsRecord) return null;
 
-                    let title = planDetails?.savingsTitle ?? "Active Plan";
-
-                    // Truncate the title if it's longer than 30 characters.
-                    if (title.length > 30) {
-                        title = title.substring(0, 30) + "...";
-                    }
+                    const isExpanded = expandedPlanId === savingsRecord._id;
+                    const progress = calculateProgress(plan);
+                    const daysRemaining = calculateDaysRemaining(savingsRecord.endDate);
+                    const daysElapsed = calculateDaysElapsed(savingsRecord.startDate);
+                    const planDetails = availablePlansMap.get(savingsRecord.savingsCircleId);
+                    const planTitle = planDetails?.savingsTitle || `Savings Plan ${index + 1}`;
 
                     return (
-                        <PlanCard
-                            key={activePlan._id}
-                            title={title}
-                            amount={`₦${(activePlan.maturityAmount || 0).toLocaleString()}`}
-                            startDate={new Date(
-                                activePlan.startDate
-                            ).toLocaleDateString("en-GB")}
-                            maturityDate={new Date(
-                                activePlan.endDate
-                            ).toLocaleDateString("en-GB")}
-                            progress={calculateProgress(
-                                activePlan.startDate,
-                                activePlan.endDate
+                        <View key={savingsRecord._id} className="mb-6">
+                            {/* Plan Card */}
+                            <TouchableOpacity 
+                                onPress={() => toggleExpandPlan(savingsRecord._id)}
+                                activeOpacity={0.9}
+                                className="bg-white rounded-2xl p-5 shadow-sm border border-gray-200"
+                            >
+                                <View className="flex-row justify-between items-start mb-4">
+                                    <View className="flex-1">
+                                        <View className="flex-row items-center mb-2">
+                                            <View className={`w-3 h-3 rounded-full mr-2 ${savingsRecord.status === 'ACTIVE' ? 'bg-green-500' : 'bg-yellow-500'}`} />
+                                            <Text className="text-gray-900 font-bold text-lg">
+                                                {planTitle}
+                                            </Text>
+                                        </View>
+                                        <Text className="text-gray-500 text-sm">
+                                            ID: {savingsRecord._id?.substring(0, 10)}...
+                                        </Text>
+                                    </View>
+                                    <ChevronRight 
+                                        size={20} 
+                                        color="#6B7280" 
+                                        style={{ transform: [{ rotate: isExpanded ? '90deg' : '0deg' }] }}
+                                    />
+                                </View>
+
+                                {/* Plan Stats */}
+                                <View className="flex-row justify-between mb-4">
+                                    <View className="items-center">
+                                        <Text className="text-gray-500 text-sm">Saved</Text>
+                                        <Text className="text-gray-900 font-bold text-lg">
+                                            ₦{contributionRecord?.currentAmountSaved?.toLocaleString() || '0'}
+                                        </Text>
+                                    </View>
+                                    <View className="items-center">
+                                        <Text className="text-gray-500 text-sm">Target</Text>
+                                        <Text className="text-gray-900 font-bold text-lg">
+                                            ₦{savingsRecord.maturityAmount?.toLocaleString() || '0'}
+                                        </Text>
+                                    </View>
+                                    <View className="items-center">
+                                        <Text className="text-gray-500 text-sm">Progress</Text>
+                                        <Text className="text-gray-900 font-bold text-lg">
+                                            {progress}%
+                                        </Text>
+                                    </View>
+                                </View>
+
+                                {/* Progress Bar */}
+                                <View className="mb-4">
+                                    <View className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                                        <View 
+                                            className="h-full bg-[#1B8A52] rounded-full"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    </View>
+                                </View>
+
+                                {/* Plan Details */}
+                                <View className="flex-row justify-between">
+                                    <View className="flex-row items-center">
+                                        <Calendar size={14} color="#6B7280" />
+                                        <Text className="text-gray-500 text-sm ml-1">
+                                            {daysElapsed} / {savingsRecord.duration} days
+                                        </Text>
+                                    </View>
+                                    <View className="flex-row items-center">
+                                        <Clock size={14} color="#6B7280" />
+                                        <Text className="text-gray-500 text-sm ml-1">
+                                            {daysRemaining > 0 ? `${daysRemaining} days left` : 'Completed'}
+                                        </Text>
+                                    </View>
+                                </View>
+                            </TouchableOpacity>
+
+                            {/* Expanded Details */}
+                            {isExpanded && (
+                                <View className="mt-3 space-y-3">
+                                    {/* Savings Record Details */}
+                                    {renderSavingsRecordDetails(savingsRecord)}
+                                    
+                                    {/* Contribution Record Details */}
+                                    {renderContributionRecordDetails(contributionRecord)}
+                                    
+                                    {/* Contributions List */}
+                                    {contributionRecord?.record && contributionRecord.record.length > 0 && (
+                                        <View className="bg-white rounded-xl p-4 border border-gray-200">
+                                            <Text className="text-gray-800 font-bold mb-3">
+                                                All Contributions ({contributionRecord.record.length})
+                                            </Text>
+                                            <FlatList
+                                                data={contributionRecord.record}
+                                                renderItem={renderContributionItem}
+                                                keyExtractor={(item, index) => item._id || index.toString()}
+                                                scrollEnabled={false}
+                                                initialNumToRender={10}
+                                                maxToRenderPerBatch={10}
+                                                windowSize={5}
+                                            />
+                                        </View>
+                                    )}
+                                </View>
                             )}
-                        />
+                        </View>
                     );
                 })}
+
+                {/* API Data Summary (for debugging) */}
+                <View className="bg-gray-50 rounded-xl p-4 mt-6 border border-gray-200">
+                    <Text className="text-gray-800 font-bold mb-2">API Data Summary</Text>
+                    <View className="space-y-2">
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-600 text-sm">Total Records from API:</Text>
+                            <Text className="text-gray-800 font-medium text-sm">
+                                {savingsRecords.length}
+                            </Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-600 text-sm">API Response Status:</Text>
+                            <Text className="text-green-600 font-medium text-sm">
+                                {activePlans?.success ? 'Success' : 'Failed'}
+                            </Text>
+                        </View>
+                        <View className="flex-row justify-between">
+                            <Text className="text-gray-600 text-sm">Last Updated:</Text>
+                            <Text className="text-gray-800 font-medium text-sm">
+                                {new Date().toLocaleTimeString()}
+                            </Text>
+                        </View>
+                    </View>
+                </View>
             </ScrollView>
         </HomeScreenWrapper>
     );

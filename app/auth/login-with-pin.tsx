@@ -7,7 +7,7 @@ import {
     Text,
     TouchableOpacity,
     View,
-    SafeAreaView,
+    
     KeyboardAvoidingView,
     Platform,
     ScrollView,
@@ -21,7 +21,7 @@ import PinInput from "../../components/PinInput";
 import { welcomeBack } from "../../services/pinService";
 import useAuthStore from "../../store/useAuthStore";
 import useProfileStore from "../../store/useProfileStore";
-
+import { SafeAreaView } from "react-native-safe-area-context";
 export default function LoginWithPinScreen() {
     const [pin, setPin] = useState("");
     const [isLoading, setIsLoading] = useState(false);
@@ -85,9 +85,12 @@ export default function LoginWithPinScreen() {
         try {
             // 1. Verify the PIN against the one stored on the device
             await welcomeBack(pin);
+          
+            const token = await AsyncStorage.getItem("authToken");
+
+        //   if (Response === )
 
             // 2. If PIN is correct, retrieve the token from storage
-            const token = await AsyncStorage.getItem("authToken");
             if (!token) {
                 throw new Error(
                     "Session expired. Please log in with your password."

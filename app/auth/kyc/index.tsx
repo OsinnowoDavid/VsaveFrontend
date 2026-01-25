@@ -7,12 +7,14 @@ import {
     Text,
     TouchableOpacity,
     View,
-    SafeAreaView,
+    
     ScrollView,
     KeyboardAvoidingView,
     Platform,
     Image
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import { ArrowLeft, Building, MapPin, User, Shield, CreditCard, Home, Briefcase, Globe } from "lucide-react-native";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";

@@ -81,7 +81,7 @@ export const getActiveSavings = async (): Promise<
         }
 
         // This is the new endpoint your backend will need to provide.
-        const response = await fetch(`${API_BASE_URL}/user/active-savings`, {
+        const response = await fetch(`${API_BASE_URL}/user/all-savings-record`, {
             headers: {
                 Authorization: `${token}`,
                 "Content-Type": "application/json",
@@ -90,9 +90,10 @@ export const getActiveSavings = async (): Promise<
         });
 
         const result = await response.json();
+        console.log(result.data)
 
         if (response.ok && result.status.toLowerCase() === "success") {
-            return { success: true, data: result.data };
+            return { success: true, data: result };
         } else {
             return { success: false, message: result.message };
         }

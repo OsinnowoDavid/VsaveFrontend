@@ -4,7 +4,7 @@ import {
   Text,
   View,
   TouchableOpacity,
-  SafeAreaView,
+
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -15,6 +15,8 @@ import { Eye, EyeOff, Lock, Mail, Shield } from "lucide-react-native";
 import Button from "../../../components/Button";
 import FormField from "../../../components/FormField";
 import FormWrapper from "../../../components/FormWrapper";
+import { SafeAreaView } from "react-native-safe-area-context";
+
 import {
   emailSchema,
   passwordSchema,
@@ -139,9 +141,6 @@ export default function LoginScreen() {
               </Text>
             </View>
             
-            <Text className="text-gray-600 text-base mb-2">
-              Sign in to access your secure financial dashboard
-            </Text>
             
             {/* Quick Stats */}
             
@@ -315,7 +314,7 @@ export default function LoginScreen() {
             {/* Alternative Actions */}
             <View className="space-y-4">
               <TouchableOpacity
-                onPress={() => router.push("/auth/pincode-setup")}
+                onPress={() => router.push("/auth/signup")}
                 className="py-3 px-4 border-2 border-emerald-600 rounded-xl active:bg-emerald-50"
                 activeOpacity={0.7}
               >
