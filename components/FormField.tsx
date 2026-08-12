@@ -5,15 +5,14 @@ import {
     KeyboardTypeOptions,
     Modal,
     Pressable,
-    
     Text,
     TextInput,
     TouchableOpacity,
     View,
 } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { validateFormField } from "../utils";
 import FormFieldError from "./FormFieldError";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 interface FormFieldProps {
     label: string;
@@ -24,7 +23,7 @@ interface FormFieldProps {
     type?: "text" | "select";
     options?: { label: string; value: string }[];
     keyboardType?: KeyboardTypeOptions;
-placeholderTextColor?: string;
+    placeholderTextColor?: string;
     maxLength?: number;
     validate?: boolean;
     schema?: any;
@@ -37,7 +36,7 @@ export default function FormField({
     value,
     onChangeText,
     placeholder,
-        placeholderTextColor ,// Default gray color
+    placeholderTextColor, // Default gray color
 
     secureTextEntry,
     type = "text",
@@ -62,7 +61,7 @@ export default function FormField({
         if (!validate) return;
         const error = validateFormField(schema, field).errorMessage;
         if (!!error) setFieldError(error);
-        
+
         // Auto-trim on blur for non-password fields
         if (autoTrim && type === "text" && !secureTextEntry && value) {
             const trimmedValue = value.trim();
@@ -76,7 +75,9 @@ export default function FormField({
         // For non-password fields, trim spaces in real-time
         if (autoTrim && type === "text" && !secureTextEntry) {
             // Remove leading spaces and prevent multiple consecutive spaces
-            const processedText = text.replace(/^\s+/, '').replace(/\s{2,}/g, ' ');
+            const processedText = text
+                .replace(/^\s+/, "")
+                .replace(/\s{2,}/g, " ");
             onChangeText(processedText);
         } else {
             onChangeText(text);
@@ -189,4 +190,4 @@ export default function FormField({
             )}
         </View>
     );
-} 
+}
