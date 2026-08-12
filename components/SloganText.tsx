@@ -1,24 +1,26 @@
-import React from 'react';
-import Animated, { FadeInUp, FadeIn } from "react-native-reanimated";
+import React from "react";
 import { Text, View } from "react-native";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 
 interface SloganTextProps {
-  tagline?: string;
+    tagline?: string;
 }
 
-export default function SloganText({ tagline = "Secure financial planning with  encryption and intuitive controls" }: SloganTextProps): React.ReactElement {
+export default function SloganText({
+    tagline = "Secure financial planning with  encryption and intuitive controls",
+}: SloganTextProps): React.ReactElement {
     return (
         <View className="items-center">
-            <Animated.View 
+            <Animated.View
                 entering={FadeIn.duration(500)}
                 className="flex-row items-baseline mb-4"
             >
-                <View className="w-3 h-3 bg-emerald-400 rounded-full mr-3" />
-                <Text className="text-sm font-medium text-emerald-600 uppercase tracking-wider">
+                {/* <View className="w-3 h-3 bg-emerald-400 rounded-full mr-3" /> */}
+                {/* <Text className="text-sm font-medium text-emerald-600 uppercase tracking-wider">
                     Financial Security
-                </Text>
+                </Text> */}
             </Animated.View>
-            
+
             <Animated.View
                 entering={FadeInUp.duration(700).delay(200)}
                 className="items-center"
@@ -36,16 +38,16 @@ export default function SloganText({ tagline = "Secure financial planning with  
                         Better
                     </Text>
                 </View>
-                
+
                 {/* Divider */}
                 <View className="w-20 h-0.5 bg-emerald-200 my-8" />
-                
+                {/* 
                 <Text className="text-lg text-gray-500 text-center px-6 leading-relaxed">
                     {tagline}
-                </Text>
-                
+                </Text> */}
+
                 {/* Feature Points */}
-                <View className="flex-row flex-wrap justify-center mt-8 gap-4">
+                {/* <View className="flex-row flex-wrap justify-center mt-8 gap-4">
                     <View className="flex-row items-center bg-emerald-50 px-4 py-2 rounded-full">
                         <Text className="text-emerald-700 text-sm font-medium">✓ Access to loan</Text>
                     </View>
@@ -55,7 +57,7 @@ export default function SloganText({ tagline = "Secure financial planning with  
                     <View className="flex-row items-center bg-emerald-50 px-4 py-2 rounded-full">
                         <Text className="text-emerald-700 text-sm font-medium">✓ PIN Protection</Text>
                     </View>
-                </View>
+                </View> */}
             </Animated.View>
         </View>
     );
